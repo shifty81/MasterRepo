@@ -1,0 +1,10 @@
+{
+    "activeProject": "NovaForge",
+    "projects": {
+        "NovaForge": {
+            "path": "Projects/NovaForge",
+            "description": "Primary game project — space exploration and construction",
+            "version": "0.1.0"
+        }
+    }
+}

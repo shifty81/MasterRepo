@@ -684,4 +684,265 @@ cmake --build .
 
 ---
 
+## Appendix A: Existing Repo Migration Plan
+
+If you already have code in **NovaForge**, **PioneerForge**, **AtlasForge**, or **SwissAgent**, follow this step-by-step migration to bring usable code into the MasterRepo structure.
+
+> **Source:** implement2.md Steps 0–15
+
+### Step 0 — Assess Current Code
+
+Inventory what exists in each repo. Categorize files as: engine, game, editor, assets, experiments, broken, or deprecated.
+
+### Step 1 — Import as Project
+
+Copy the existing repo into `Projects/NovaForge/` (or appropriate project folder). Do NOT restructure yet.
+
+### Step 2 — Archive Originals
+
+Copy original repos into both:
+- `Archive/NovaForgeOriginal/` (for AI learning)
+- `External/NovaForgeOriginal/` (for reference)
+
+### Step 3 — Extract Engine Code → `Engine/`
+
+Move pure engine systems out of the project:
+
+| From | To |
+|------|----|
+| `*/renderer/`, `*/render/` | `Engine/Render/` |
+| `*/input/` | `Engine/Input/` |
+| `*/math/` | `Engine/Math/` |
+| `*/window/` | `Engine/Window/` |
+| `*/platform/` | `Engine/Platform/` |
+| `*/physics/` (core) | `Engine/Physics/` |
+| `*/audio/` | `Engine/Audio/` |
+
+### Step 4 — Extract Shared Systems → `Core/`
+
+Move shared/reusable systems:
+
+| From | To |
+|------|----|
+| `*/serialization/` | `Core/Serialization/` |
+| `*/events/` | `Core/Events/` |
+| `*/reflection/` | `Core/Reflection/` |
+| `*/resources/` | `Core/ResourceManager/` |
+| `*/messaging/` | `Core/Messaging/` |
+| `*/commands/` | `Core/CommandSystem/` |
+
+### Step 5 — Extract Gameplay → `Runtime/`
+
+Move gameplay logic:
+
+| From | To |
+|------|----|
+| `*/player/` | `Runtime/Player/` |
+| `*/inventory/` | `Runtime/Inventory/` |
+| `*/equipment/` | `Runtime/Equipment/` |
+| `*/crafting/` | `Runtime/Crafting/` |
+| `*/world/` | `Runtime/World/` |
+| `*/components/` | `Runtime/Components/` |
+| `*/systems/` | `Runtime/Systems/` |
+| `*/saveload/` | `Runtime/SaveLoad/` |
+
+### Step 6 — Extract Builder → `Builder/`
+
+Move builder/construction code:
+
+| From | To |
+|------|----|
+| `*/builder/` | `Builder/Core/` |
+| `*/damage/` | `Builder/Damage/` |
+| `*/collision/` | `Builder/Collision/` |
+| `*/physicsdata/` | `Builder/PhysicsData/` |
+| `*/snap*/` | `Builder/SnapRules/` |
+
+### Step 7 — Move Assets → Project
+
+Keep game assets inside the project:
+- `Projects/NovaForge/Assets/`
+- `Projects/NovaForge/Prefabs/`
+- `Projects/NovaForge/Ships/`
+- `Projects/NovaForge/Recipes/`
+- `Projects/NovaForge/Scenes/`
+
+### Step 8 — Split UI
+
+| UI Type | Destination |
+|---------|-------------|
+| Editor UI | `Editor/UI/` |
+| Runtime/HUD UI | `Runtime/UI/` |
+| Game-specific UI | `Projects/NovaForge/UI/` |
+| Shared widgets | `UI/` |
+
+### Step 9 — Move Editor Code → `Editor/`
+
+Move panels, viewport, gizmos, overlays, node editors into `Editor/`.
+
+### Step 10 — Move Experiments → `Experiments/` or `Archive/`
+
+All test systems, prototypes, temp code goes to `Experiments/`. Broken/old code goes to `Archive/`.
+
+### Step 11 — Fix Include Paths
+
+Update all includes from:
+```cpp
+#include "player.h"
+```
+to:
+```cpp
+#include "Runtime/Player/player.h"
+#include "Core/Events/Event.h"
+```
+
+### Step 12 — Build and Verify
+
+Build order: `Core → Engine → Runtime → Builder → UI → Editor → AI → Projects/NovaForge`
+
+Fix all compiler errors from moved files. This is the most tedious step but ensures everything works.
+
+### Step 13 — Set Up AI Training Pipeline
+
+After refactor, AI can read:
+- `Archive/` — all old code
+- `Projects/NovaForge/` — live game
+- `Runtime/` + `Builder/` + `PCG/` — systems
+- `Logs/` + `Versions/` — history
+
+This feeds: `TrainingData/ → Embeddings/ → Memory/ → Agents`
+
+### External Repo Feature Extraction
+
+| Repo | Primary Features to Extract |
+|------|-----------------------------|
+| **SwissAgent** | AI agents, offline learning, automation scripts, memory systems |
+| **AtlasForge** | Engine core, runtime foundations, platform abstraction |
+| **Nova-Forge-Expeditions** | Gameplay modules, PCG, quests, builder extensions |
+| **Atlas-NovaForge** | Networking, client/server, editor, combined systems |
+
+---
+
+## Appendix B: Extended Phases (Future Expansion)
+
+These phases expand the system beyond the core 0–10 roadmap, adding advanced capabilities as the system matures.
+
+> **Source:** implement3.md Phases 3–14
+
+### Phase 11 — Multi-Repo Reverse Engineering & Asset Extraction
+
+- Analyze external repos for reusable patterns
+- Extract and refactor usable systems into MasterRepo
+- AI-assisted code audit and merge suggestions
+- Automated conflict detection across repos
+
+### Phase 12 — GUI Systems (Advanced)
+
+- In-game GUI system (beyond HUD)
+- GUI editor/designer tool
+- Animation system for UI transitions
+- Accessibility features
+- Localization support
+
+### Phase 13 — Blender Addon Integration (Deep)
+
+- Full Blender addon for bidirectional asset pipeline
+- Procedural geometry generation via `bpy`
+- Rig/animation export pipeline
+- Material conversion (Blender → Engine)
+- Batch asset processing
+
+### Phase 14 — AI-Driven Testing, Simulation & Analytics
+
+- AI generates test cases from code
+- Automated regression testing
+- Simulation playback and comparison
+- Performance analytics dashboard
+- AI-assisted bug triage
+
+### Phase 15 — Onboard Natural Language AI Assistant
+
+- Natural language command interface in editor
+- Voice-to-action pipeline (optional)
+- Context-aware help system
+- AI tutorials and walkthroughs
+- Interactive documentation
+
+### Phase 16 — Core Systems Expansion
+
+Additional core systems for production use:
+
+| System | Description |
+|--------|-------------|
+| Hot Reload | Live code/asset reload without restart |
+| Local CI Pipeline | Automated build/test on file save |
+| Package Manager | Dependency management for plugins |
+| Crash Report System | Crash dumps, telemetry, log analysis |
+| Multi-Thread Job System | Advanced GPU/CPU task scheduling |
+| Code Intelligence | LSP-like symbol index, go-to-definition |
+| Database Support | SQLite/custom for asset DB, save data |
+| Network Protocol Gen | Auto-generate serialization for multiplayer |
+
+### Phase 17 — Offline Self-Build Automation
+
+The ultimate goal: AI can expand the project semi-autonomously.
+
+1. User gives high-level goal (e.g., "Build a docking bay module")
+2. AI generates code, assets, and procedural rules
+3. AI validates via physics simulation and PCG rules
+4. AI stores iterations in `Archive/`
+5. User reviews and approves/merges best iteration
+6. Repeat
+
+This is the "self-building" mode described in implement3.md, where the AI uses scaffolds, archive templates, and procedural rules to progressively build out the project offline.
+
+---
+
+## Appendix C: v10.7 Ultra Blueprint Systems Map
+
+The final comprehensive systems map from implement3.md showing all subsystems and their relationships:
+
+```
+MasterRepo (v10.7 Ultra Blueprint)
+│
+├── Atlas (Engine Layer)
+│   ├── engine_core (physics, GPU compute, serialization)
+│   ├── editor (Custom GUI, Code/Script, NodeGraph, Shader, PCG Rule, AI Chat, Metrics)
+│   ├── plugins (procedural mesh, AI tools, asset importers, VR/AR)
+│   ├── rendering_pipeline (LOD, GI, RayTracing, Volumetrics, Particles)
+│   ├── pcg_pipeline (Starbase generators, constraint solver, sandbox sim, validation)
+│   ├── audio_pipeline (procedural audio, SuperCollider, FluidSynth)
+│   └── animation_pipeline (rigging, mocap, procedural animation)
+│
+├── NovaForge (Game Layer)
+│   ├── gameplay (player, ships, crafting, NPC AI, environment, networking)
+│   ├── pcg_assets (noise generators, dungeon maps, Blender addon)
+│   └── pcg_validation (OpenCV, anomaly detection, AI-guided fixes)
+│
+├── AI (Intelligence Layer)
+│   ├── models (LLaMA, MPT, ONNX, DeepSpeed, GPT4All)
+│   ├── orchestrator (pipeline scheduler, priority/dependency management)
+│   ├── validator (automated debugging, pull-request reports)
+│   ├── rules_engine (constraint checking)
+│   ├── metrics_dashboard (PCG, rendering, gameplay metrics)
+│   ├── rendering_optimizer (visual optimization suggestions)
+│   └── meta_learning_layer (cross-project knowledge transfer)
+│
+├── Server (optional multiplayer)
+│   ├── engine_runtime, networking, pcg_pipeline, ai_integration
+│   └── admin_console (metrics, validation, web UI)
+│
+├── ClientOffline (standalone offline mode)
+│   ├── engine_runtime (embedded headless server)
+│   ├── pcg_pipeline, ai_integration, hud_interface
+│
+└── dev_tools
+    ├── code_scaffolding_pipeline
+    ├── automated_testing_pipeline
+    ├── build_deployment_pipeline
+    └── metrics_reporting_pipeline
+```
+
+---
+
 *This roadmap is a living document. Update it as phases are completed and new requirements emerge.*

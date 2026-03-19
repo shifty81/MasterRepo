@@ -1,0 +1,11 @@
+{
+    "snapDistance": 0.1,
+    "weldStrength": 100.0,
+    "maxPartsPerAssembly": 1000,
+    "showSnapPoints": true,
+    "showConnectionGraph": false,
+    "physics": {
+        "enableCollision": true,
+        "enableDamage": true
+    }
+}
