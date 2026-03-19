@@ -1,0 +1,10 @@
+{
+    "host": "0.0.0.0",
+    "port": 7777,
+    "maxPlayers": 32,
+    "tickRate": 60,
+    "networking": {
+        "backend": "ENet",
+        "timeout": 5000
+    }
+}
