@@ -18,14 +18,14 @@ struct Vec3 {
         if (len < 1e-8f) return {0, 0, 0};
         return {x / len, y / len, z / len};
     }
-} // namespace Engine::Camera;
+};
 
 enum class CameraMode : uint8_t {
     FreeLook,
     Strategy,
     FPS,
     Orbital
-} // namespace Engine::Camera;
+};
 
 class Camera {
 public:
@@ -73,6 +73,6 @@ private:
     float m_yaw = 0.0f;
     float m_pitch = 0.0f;
     float m_moveSpeed = 5.0f;
-} // namespace Engine::Camera;
+};
 
 } // namespace Engine::Camera
