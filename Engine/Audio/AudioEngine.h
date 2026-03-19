@@ -12,7 +12,7 @@ enum class SoundState : uint8_t {
     Stopped,
     Playing,
     Paused
-} // namespace Engine::Audio;
+};
 
 struct SoundSource {
     SoundID id = 0;
@@ -24,7 +24,7 @@ struct SoundSource {
     float posX = 0.0f, posY = 0.0f, posZ = 0.0f;
     float playbackTime = 0.0f;
     float duration = 0.0f;
-} // namespace Engine::Audio;
+};
 
 class AudioEngine {
 public:
@@ -62,6 +62,6 @@ private:
     SoundID m_nextId = 1;
     float m_masterVolume = 1.0f;
     bool m_initialized = false;
-} // namespace Engine::Audio;
+};
 
 } // namespace Engine::Audio

@@ -41,10 +41,10 @@ include_directories(${CMAKE_SOURCE_DIR})
 # ==============================================================================
 
 # Phase 1: Core systems (everything depends on this)
-# add_subdirectory(Core)
+add_subdirectory(Core)
 
 # Phase 2: Engine foundation
-# add_subdirectory(Engine)
+add_subdirectory(Engine)
 
 # Phase 3: Editor framework
 # if(BUILD_EDITOR)

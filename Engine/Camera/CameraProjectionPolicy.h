@@ -8,7 +8,7 @@ enum class WorldMode : uint8_t {
     TopDown2D,
     TopDownOrbit2_5D,
     Isometric2_5D
-} // namespace Engine::Camera;
+};
 
 struct CameraProjectionPolicy {
     WorldMode mode = WorldMode::TopDown2D;
@@ -24,6 +24,6 @@ struct CameraProjectionPolicy {
     float tileHeight = 0.5f;
 
     bool snapToGrid = false;
-} // namespace Engine::Camera;
+};
 
 } // namespace Engine::Camera
