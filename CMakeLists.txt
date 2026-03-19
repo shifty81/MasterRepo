@@ -52,9 +52,9 @@ include_directories(${CMAKE_SOURCE_DIR})
 # endif()
 
 # Phase 4: Runtime / gameplay
-# if(BUILD_RUNTIME)
-#     add_subdirectory(Runtime)
-# endif()
+if(BUILD_RUNTIME)
+    add_subdirectory(Runtime)
+endif()
 
 # Phase 5: AI agent system
 # if(BUILD_AI)

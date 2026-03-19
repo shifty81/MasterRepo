@@ -15,6 +15,6 @@ public:
     int MaxLOD() const override { return 0; }
     bool IsValidLOD(int lod) const override { return lod == 0; }
     float ChunkWorldSize(int lod) const override;
-} // namespace Runtime::World;
+};
 
 } // namespace Runtime::World
