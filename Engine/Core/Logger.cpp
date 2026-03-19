@@ -1,7 +1,7 @@
-#include "Logger.h"
+#include "Engine/Core/Logger.h"
 #include <iostream>
 
-namespace atlas {
+namespace Engine::Core {
 
 void Logger::Init() {
     Info("Logger initialized");
@@ -19,4 +19,4 @@ void Logger::Error(const std::string& msg) {
     std::cerr << "[ERROR] " << msg << std::endl;
 }
 
-}
+} // namespace Engine::Core

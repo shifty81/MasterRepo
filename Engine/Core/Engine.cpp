@@ -1,7 +1,7 @@
-#include "Engine.h"
-#include "Logger.h"
+#include "Engine/Core/Engine.h"
+#include "Engine/Core/Logger.h"
 
-namespace atlas {
+namespace Engine::Core {
 
 Engine::Engine(const EngineConfig& cfg) : m_config(cfg) {
 }
@@ -37,6 +37,7 @@ void Engine::InitECS() {
 }
 
 void Engine::InitNetworking() {
+#if 0 // TODO: Enable when Engine/Net/NetContext.h is imported
     net::NetMode netMode = net::NetMode::Standalone;
     if (m_config.mode == EngineMode::Server) {
         netMode = net::NetMode::Server;
@@ -44,6 +45,7 @@ void Engine::InitNetworking() {
         netMode = net::NetMode::Client;
     }
     m_net.Init(netMode);
+#endif
     Logger::Info("Networking initialized");
 }
 
@@ -58,21 +60,25 @@ void Engine::Run() {
     m_scheduler.SetTickRate(m_config.tickRate);
 
     switch (m_config.mode) {
-        case EngineMode::Editor: Logger::Info("Running Atlas Editor");  break;
-        case EngineMode::Client: Logger::Info("Running Atlas Client");  break;
-        case EngineMode::Server: Logger::Info("Running Atlas Server");  break;
+        case EngineMode::Editor: Logger::Info("Running Editor");  break;
+        case EngineMode::Client: Logger::Info("Running Client");  break;
+        case EngineMode::Server: Logger::Info("Running Server");  break;
     }
 
     while (m_running) {
+#if 0 // TODO: Enable when Engine/Net/NetContext.h is imported
         m_net.Poll();
+#endif
         float dt = 1.0f / static_cast<float>(m_config.tickRate);
         m_scheduler.Tick([this](float d) {
             m_world.Update(d);
         });
         if (m_frameCallback) m_frameCallback(dt);
+#if 0 // TODO: Enable when Engine/Net/NetContext.h is imported
         if (m_config.mode == EngineMode::Server) {
             m_net.Flush();
         }
+#endif
         m_tickCount++;
         if (m_config.maxTicks > 0 && m_tickCount >= m_config.maxTicks) {
             m_running = false;
@@ -99,7 +105,9 @@ bool Engine::Running() const {
 void Engine::Shutdown() {
     if (m_running) {
         Logger::Info("Engine shutting down");
+#if 0 // TODO: Enable when Engine/Net/NetContext.h is imported
         m_net.Shutdown();
+#endif
         m_running = false;
     }
 }
@@ -124,4 +132,4 @@ bool Engine::Can(Capability cap) const {
     return false;
 }
 
-}
+} // namespace Engine::Core

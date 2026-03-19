@@ -1,7 +1,7 @@
-#include "RuntimeBootstrap.h"
-#include "Logger.h"
+#include "Engine/Core/RuntimeBootstrap.h"
+#include "Engine/Core/Logger.h"
 
-namespace atlas {
+namespace Engine::Core {
 
 RuntimeBootstrap::RuntimeBootstrap() = default;
 RuntimeBootstrap::~RuntimeBootstrap() = default;
@@ -75,4 +75,4 @@ EngineMode RuntimeBootstrap::ToEngineMode(RuntimeMode mode) {
     }
 }
 
-} // namespace atlas
+} // namespace Engine::Core

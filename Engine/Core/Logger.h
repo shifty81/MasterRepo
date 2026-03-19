@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-namespace atlas {
+namespace Engine::Core {
 
 class Logger {
 public:
@@ -11,4 +11,4 @@ public:
     static void Error(const std::string& msg);
 };
 
-}
+} // namespace Engine::Core

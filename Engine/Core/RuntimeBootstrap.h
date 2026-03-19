@@ -9,16 +9,16 @@
  * LoadPlatformSystems().
  *
  * Usage:
- *   atlas::RuntimeBootstrap bootstrap;
- *   atlas::Engine& engine = bootstrap.Initialize(atlas::RuntimeMode::Editor);
+ *   Engine::Core::RuntimeBootstrap bootstrap;
+ *   Engine::Core::Engine& engine = bootstrap.Initialize(Engine::Core::RuntimeMode::Editor);
  *   // ... set up mode-specific resources ...
  *   engine.Run();
  */
 
-#include "Engine.h"
+#include "Engine/Core/Engine.h"
 #include <memory>
 
-namespace atlas {
+namespace Engine::Core {
 
 /** Runtime modes that RuntimeBootstrap understands. */
 enum class RuntimeMode {
@@ -73,4 +73,4 @@ private:
     std::unique_ptr<Engine> m_engine;
 };
 
-} // namespace atlas
+} // namespace Engine::Core

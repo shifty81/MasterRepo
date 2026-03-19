@@ -2,11 +2,11 @@
 #include <string>
 #include <cstdint>
 #include <functional>
-#include "../ecs/ECS.h"
-#include "../net/NetContext.h"
-#include "../sim/TickScheduler.h"
+#include "Runtime/ECS/ECS.h"
+// TODO: #include "Engine/Net/NetContext.h" // Not yet imported
+#include "Engine/Sim/TickScheduler.h"
 
-namespace atlas {
+namespace Engine::Core {
 
 enum class RuntimeRole {
     Editor,
@@ -70,18 +70,22 @@ public:
 
     const EngineConfig& Config() const { return m_config; }
 
-    ecs::World& GetWorld() { return m_world; }
+    ::Runtime::ECS::World& GetWorld() { return m_world; }
+#if 0 // TODO: Enable when Engine/Net/NetContext.h is imported
     net::NetContext& GetNet() { return m_net; }
-    sim::TickScheduler& GetScheduler() { return m_scheduler; }
+#endif
+    Sim::TickScheduler& GetScheduler() { return m_scheduler; }
 
 private:
     EngineConfig m_config;
     bool m_running = false;
     uint64_t m_tickCount = 0;
-    ecs::World m_world;
+    ::Runtime::ECS::World m_world;
+#if 0 // TODO: Enable when Engine/Net/NetContext.h is imported
     net::NetContext m_net;
-    sim::TickScheduler m_scheduler;
+#endif
+    Sim::TickScheduler m_scheduler;
     FrameCallback m_frameCallback;
 };
 
-}
+} // namespace Engine::Core
