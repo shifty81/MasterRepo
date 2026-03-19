@@ -8,7 +8,7 @@
 #include <any>
 #include <string>
 
-namespace atlas::ecs {
+namespace Runtime::ECS {
 
 using EntityID = uint32_t;
 using ComponentTypeID = uint32_t;
@@ -16,7 +16,7 @@ using ComponentTypeID = uint32_t;
 struct ComponentData {
     std::vector<uint8_t> data;
     size_t elementSize = 0;
-};
+} // namespace Runtime::ECS;
 
 class World {
 public:
@@ -73,6 +73,6 @@ private:
 
     // Component storage: entity -> (type -> data)
     std::unordered_map<EntityID, std::unordered_map<std::type_index, std::any>> m_components;
-};
+} // namespace Runtime::ECS;
 
-}
+} // namespace Runtime::ECS

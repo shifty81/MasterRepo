@@ -5,7 +5,7 @@
 #include <memory>
 #include <unordered_map>
 
-namespace atlas::animation {
+namespace Engine::Animation {
 
 enum class AnimPinType : uint8_t {
     Float,       // Scalar (time, weight, blend factor)
@@ -13,17 +13,17 @@ enum class AnimPinType : uint8_t {
     Modifier,    // Animation modifier (limp, recoil, tremor)
     Trigger,     // State transition trigger
     Mask         // Bone mask for partial blending
-};
+} // namespace Engine::Animation;
 
 struct AnimValue {
     AnimPinType type;
     std::vector<float> data;
-};
+} // namespace Engine::Animation;
 
 struct AnimPort {
     std::string name;
     AnimPinType type;
-};
+} // namespace Engine::Animation;
 
 using AnimNodeID = uint32_t;
 using AnimPortID = uint16_t;
@@ -33,7 +33,7 @@ struct AnimEdge {
     AnimPortID fromPort;
     AnimNodeID toNode;
     AnimPortID toPort;
-};
+} // namespace Engine::Animation;
 
 struct AnimContext {
     float deltaTime;
@@ -41,7 +41,7 @@ struct AnimContext {
     float fatigue;
     float damageLevel;
     uint32_t tick;
-};
+} // namespace Engine::Animation;
 
 class AnimNode {
 public:
@@ -53,7 +53,7 @@ public:
     virtual void Evaluate(const AnimContext& ctx,
                           const std::vector<AnimValue>& inputs,
                           std::vector<AnimValue>& outputs) const = 0;
-};
+} // namespace Engine::Animation;
 
 class AnimationGraph {
 public:
@@ -80,6 +80,6 @@ private:
 
     bool HasCycle() const;
     bool ValidateEdgeTypes() const;
-};
+} // namespace Engine::Animation;
 
-}
+} // namespace Engine::Animation

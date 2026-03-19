@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-namespace atlas::ecs {
+namespace Runtime::ECS {
 
 class World;
 
@@ -98,4 +98,4 @@ private:
     bool m_sorted = false;
 };
 
-} // namespace atlas::ecs
+} // namespace Runtime::ECS

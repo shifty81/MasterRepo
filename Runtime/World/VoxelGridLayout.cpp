@@ -1,13 +1,13 @@
-#include "VoxelGridLayout.h"
+#include "Runtime/World/VoxelGridLayout.h"
 
-namespace atlas::world {
+namespace Runtime::World {
 
 ChunkCoord VoxelGridLayout::WorldToChunk(const WorldPos& pos, int /*lod*/) const {
     int cx = static_cast<int>(std::floor(pos.x / chunkSize));
     int cy = static_cast<int>(std::floor(pos.y / chunkSize));
     int cz = static_cast<int>(std::floor(pos.z / chunkSize));
     return {cx, cy, cz, 0};
-}
+} // namespace Runtime::World
 
 WorldPos VoxelGridLayout::ChunkToWorld(const ChunkCoord& chunk) const {
     return {
@@ -15,7 +15,7 @@ WorldPos VoxelGridLayout::ChunkToWorld(const ChunkCoord& chunk) const {
         static_cast<double>(chunk.y * chunkSize + chunkSize / 2),
         static_cast<double>(chunk.z * chunkSize + chunkSize / 2)
     };
-}
+} // namespace Runtime::World
 
 ChunkID VoxelGridLayout::MakeChunkID(const ChunkCoord& chunk) const {
     uint64_t id = 0;
@@ -23,7 +23,7 @@ ChunkID VoxelGridLayout::MakeChunkID(const ChunkCoord& chunk) const {
     id |= static_cast<uint64_t>(static_cast<uint16_t>(chunk.y)) << 16;
     id |= static_cast<uint64_t>(static_cast<uint16_t>(chunk.z));
     return {id};
-}
+} // namespace Runtime::World
 
 void VoxelGridLayout::GetNeighbors(const ChunkCoord& chunk, std::vector<ChunkCoord>& out) const {
     out.clear();
@@ -34,10 +34,10 @@ void VoxelGridLayout::GetNeighbors(const ChunkCoord& chunk, std::vector<ChunkCoo
     for (int i = 0; i < 6; ++i) {
         out.push_back({chunk.x + dx[i], chunk.y + dy[i], chunk.z + dz[i], 0});
     }
-}
+} // namespace Runtime::World
 
 float VoxelGridLayout::ChunkWorldSize(int /*lod*/) const {
     return static_cast<float>(chunkSize);
-}
+} // namespace Runtime::World
 
-}
+} // namespace Runtime::World

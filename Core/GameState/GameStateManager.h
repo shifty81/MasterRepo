@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-namespace atlas {
+namespace Core::GameState {
 
 /** High-level game phase. */
 enum class GamePhase : uint8_t {
@@ -107,4 +107,4 @@ private:
     std::vector<PhaseCallback> m_phaseCallbacks;
 };
 
-} // namespace atlas
+} // namespace Core::GameState

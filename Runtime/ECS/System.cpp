@@ -1,8 +1,8 @@
-#include "System.h"
+#include "Runtime/ECS/System.h"
 #include <algorithm>
 #include <cstring>
 
-namespace atlas::ecs {
+namespace Runtime::ECS {
 
 void SystemRegistry::Register(std::unique_ptr<ISystem> system) {
     if (!system) return;
@@ -66,4 +66,4 @@ void SystemRegistry::SortByPriority() {
     m_sorted = true;
 }
 
-} // namespace atlas::ecs
+} // namespace Runtime::ECS

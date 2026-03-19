@@ -3,7 +3,7 @@
 #include <vector>
 #include <cmath>
 
-namespace atlas::physics {
+namespace Engine::Physics {
 
 struct Vec3 {
     float x = 0.0f, y = 0.0f, z = 0.0f;
@@ -11,7 +11,7 @@ struct Vec3 {
     Vec3 operator-(const Vec3& o) const { return {x - o.x, y - o.y, z - o.z}; }
     Vec3 operator*(float s) const { return {x * s, y * s, z * s}; }
     float Length() const { return std::sqrt(x * x + y * y + z * z); }
-};
+} // namespace Engine::Physics;
 
 using BodyID = uint32_t;
 
@@ -24,17 +24,17 @@ struct RigidBody {
     float restitution = 0.5f;
     bool isStatic = false;
     bool active = true;
-};
+} // namespace Engine::Physics;
 
 struct AABB {
     Vec3 min;
     Vec3 max;
-};
+} // namespace Engine::Physics;
 
 struct CollisionPair {
     BodyID a = 0;
     BodyID b = 0;
-};
+} // namespace Engine::Physics;
 
 class PhysicsWorld {
 public:
@@ -64,6 +64,6 @@ private:
     Vec3 m_gravity = {0.0f, -9.81f, 0.0f};
     BodyID m_nextId = 1;
     bool m_initialized = false;
-};
+} // namespace Engine::Physics;
 
-}
+} // namespace Engine::Physics

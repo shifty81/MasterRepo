@@ -3,20 +3,20 @@
 #include <cstdint>
 #include <cmath>
 
-namespace atlas::world {
+namespace Runtime::World {
 
 struct ChunkID {
     uint64_t value = 0;
-};
+} // namespace Runtime::World;
 
 struct WorldPos {
     double x = 0.0, y = 0.0, z = 0.0;
-};
+} // namespace Runtime::World;
 
 struct ChunkCoord {
     int x = 0, y = 0, z = 0;
     int lod = 0;
-};
+} // namespace Runtime::World;
 
 class WorldLayout {
 public:
@@ -41,6 +41,6 @@ public:
 
     // Streaming hints
     virtual float ChunkWorldSize(int lod) const = 0;
-};
+} // namespace Runtime::World;
 
-}
+} // namespace Runtime::World

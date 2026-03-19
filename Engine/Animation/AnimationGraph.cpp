@@ -1,15 +1,15 @@
-#include "AnimationGraph.h"
+#include "Engine/Animation/AnimationGraph.h"
 #include <algorithm>
 #include <queue>
 
-namespace atlas::animation {
+namespace Engine::Animation {
 
 AnimNodeID AnimationGraph::AddNode(std::unique_ptr<AnimNode> node) {
     AnimNodeID id = m_nextID++;
     m_nodes[id] = std::move(node);
     m_compiled = false;
     return id;
-}
+} // namespace Engine::Animation
 
 void AnimationGraph::RemoveNode(AnimNodeID id) {
     m_nodes.erase(id);
@@ -21,12 +21,12 @@ void AnimationGraph::RemoveNode(AnimNodeID id) {
         m_edges.end()
     );
     m_compiled = false;
-}
+} // namespace Engine::Animation
 
 void AnimationGraph::AddEdge(const AnimEdge& edge) {
     m_edges.push_back(edge);
     m_compiled = false;
-}
+} // namespace Engine::Animation
 
 void AnimationGraph::RemoveEdge(const AnimEdge& edge) {
     m_edges.erase(
@@ -40,7 +40,7 @@ void AnimationGraph::RemoveEdge(const AnimEdge& edge) {
         m_edges.end()
     );
     m_compiled = false;
-}
+} // namespace Engine::Animation
 
 bool AnimationGraph::HasCycle() const {
     std::unordered_map<AnimNodeID, int> inDegree;
@@ -73,7 +73,7 @@ bool AnimationGraph::HasCycle() const {
     }
 
     return visited != static_cast<int>(m_nodes.size());
-}
+} // namespace Engine::Animation
 
 bool AnimationGraph::ValidateEdgeTypes() const {
     for (auto& e : m_edges) {
@@ -90,7 +90,7 @@ bool AnimationGraph::ValidateEdgeTypes() const {
         if (fromOutputs[e.fromPort].type != toInputs[e.toPort].type) return false;
     }
     return true;
-}
+} // namespace Engine::Animation
 
 bool AnimationGraph::Compile() {
     m_compiled = false;
@@ -127,7 +127,7 @@ bool AnimationGraph::Compile() {
 
     m_compiled = (m_executionOrder.size() == m_nodes.size());
     return m_compiled;
-}
+} // namespace Engine::Animation
 
 bool AnimationGraph::Execute(const AnimContext& ctx) {
     if (!m_compiled) return false;
@@ -163,21 +163,21 @@ bool AnimationGraph::Execute(const AnimContext& ctx) {
     }
 
     return true;
-}
+} // namespace Engine::Animation
 
 const AnimValue* AnimationGraph::GetOutput(AnimNodeID node, AnimPortID port) const {
     uint64_t key = (static_cast<uint64_t>(node) << 32) | port;
     auto it = m_outputs.find(key);
     if (it != m_outputs.end()) return &it->second;
     return nullptr;
-}
+} // namespace Engine::Animation
 
 size_t AnimationGraph::NodeCount() const {
     return m_nodes.size();
-}
+} // namespace Engine::Animation
 
 bool AnimationGraph::IsCompiled() const {
     return m_compiled;
-}
+} // namespace Engine::Animation
 
-}
+} // namespace Engine::Animation

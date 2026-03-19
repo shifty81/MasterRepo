@@ -1,19 +1,19 @@
 #pragma once
-#include "WorldLayout.h"
+#include "Runtime/World/WorldLayout.h"
 
-namespace atlas::world {
+namespace Runtime::World {
 
 enum CubeFace {
     POS_X, NEG_X,
     POS_Y, NEG_Y,
     POS_Z, NEG_Z
-};
+} // namespace Runtime::World;
 
 struct CubeSphereCoord {
     CubeFace face;
     int x, y;
     int lod;
-};
+} // namespace Runtime::World;
 
 class CubeSphereLayout : public WorldLayout {
 public:
@@ -29,6 +29,6 @@ public:
     float ChunkWorldSize(int lod) const override;
 
     static WorldPos CubeToSphere(CubeFace face, double u, double v, double radius);
-};
+} // namespace Runtime::World;
 
-}
+} // namespace Runtime::World

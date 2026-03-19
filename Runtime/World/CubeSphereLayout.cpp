@@ -1,6 +1,6 @@
-#include "CubeSphereLayout.h"
+#include "Runtime/World/CubeSphereLayout.h"
 
-namespace atlas::world {
+namespace Runtime::World {
 
 WorldPos CubeSphereLayout::CubeToSphere(CubeFace face, double u, double v, double radius) {
     double x = 0, y = 0, z = 0;
@@ -19,7 +19,7 @@ WorldPos CubeSphereLayout::CubeToSphere(CubeFace face, double u, double v, doubl
         return {radius * x / len, radius * y / len, radius * z / len};
     }
     return {0, 0, 0};
-}
+} // namespace Runtime::World
 
 ChunkCoord CubeSphereLayout::WorldToChunk(const WorldPos& pos, int lod) const {
     int gridSize = 1 << lod;
@@ -53,14 +53,14 @@ ChunkCoord CubeSphereLayout::WorldToChunk(const WorldPos& pos, int lod) const {
     cy = std::max(0, std::min(cy, gridSize - 1));
 
     return {cx, cy, face, lod};
-}
+} // namespace Runtime::World
 
 WorldPos CubeSphereLayout::ChunkToWorld(const ChunkCoord& chunk) const {
     int gridSize = 1 << chunk.lod;
     double u = (static_cast<double>(chunk.x) + 0.5) / gridSize * 2.0 - 1.0;
     double v = (static_cast<double>(chunk.y) + 0.5) / gridSize * 2.0 - 1.0;
     return CubeToSphere(static_cast<CubeFace>(chunk.z), u, v, radius);
-}
+} // namespace Runtime::World
 
 ChunkID CubeSphereLayout::MakeChunkID(const ChunkCoord& chunk) const {
     uint64_t id = 0;
@@ -69,7 +69,7 @@ ChunkID CubeSphereLayout::MakeChunkID(const ChunkCoord& chunk) const {
     id |= static_cast<uint64_t>(chunk.x & 0xFFFFF) << 22;
     id |= static_cast<uint64_t>(chunk.y & 0x3FFFFF);
     return {id};
-}
+} // namespace Runtime::World
 
 void CubeSphereLayout::GetNeighbors(const ChunkCoord& chunk, std::vector<ChunkCoord>& out) const {
     out.clear();
@@ -84,11 +84,11 @@ void CubeSphereLayout::GetNeighbors(const ChunkCoord& chunk, std::vector<ChunkCo
             out.push_back({nx, ny, chunk.z, chunk.lod});
         }
     }
-}
+} // namespace Runtime::World
 
 float CubeSphereLayout::ChunkWorldSize(int lod) const {
     int gridSize = 1 << lod;
     return static_cast<float>(2.0 * radius / gridSize);
-}
+} // namespace Runtime::World
 
-}
+} // namespace Runtime::World

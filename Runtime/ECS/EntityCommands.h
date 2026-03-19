@@ -8,16 +8,18 @@
  * and modify entities in a decoupled, undoable fashion.
  */
 
-#include "ECS.h"
-#include "../cpp_client/include/editor/editor_command_bus.h"
-#include "../cpp_client/include/editor/undoable_command_bus.h"
+#include "Runtime/ECS/ECS.h"
+// TODO: #include "Editor/EditorCommandBus.h" // Not yet imported
+// TODO: #include "Editor/UndoableCommandBus.h" // Not yet imported
 #include <any>
 #include <functional>
 #include <string>
 #include <typeindex>
 #include <unordered_map>
 
-namespace atlas::ecs {
+namespace Runtime::ECS {
+
+#if 0 // TODO: Enable when Editor/EditorCommandBus.h is imported
 
 /**
  * Create a new entity in the World.
@@ -25,7 +27,7 @@ namespace atlas::ecs {
  * On Execute: creates the entity and stores the ID.
  * The optional onCreated callback receives the new EntityID.
  */
-class CreateEntityCommand : public atlas::editor::ICommand {
+class CreateEntityCommand : public Editor::ICommand {
 public:
     explicit CreateEntityCommand(World& world,
                                  std::function<void(EntityID)> onCreated = nullptr)
@@ -52,7 +54,7 @@ private:
  *
  * On Execute: destroys the entity.
  */
-class DestroyEntityCommand : public atlas::editor::ICommand {
+class DestroyEntityCommand : public Editor::ICommand {
 public:
     DestroyEntityCommand(World& world, EntityID id)
         : m_world(world), m_entityID(id) {}
@@ -84,7 +86,7 @@ private:
  * Stores the previous value (if any) so callers can wire undo.
  */
 template<typename T>
-class SetComponentCommand : public atlas::editor::ICommand {
+class SetComponentCommand : public Editor::ICommand {
 public:
     SetComponentCommand(World& world, EntityID id, const T& value)
         : m_world(world), m_entityID(id), m_newValue(value) {}
@@ -119,7 +121,7 @@ private:
  * Stores the previous value (if any) so callers can wire undo.
  */
 template<typename T>
-class RemoveComponentCommand : public atlas::editor::ICommand {
+class RemoveComponentCommand : public Editor::ICommand {
 public:
     RemoveComponentCommand(World& world, EntityID id)
         : m_world(world), m_entityID(id) {}
@@ -146,23 +148,17 @@ private:
     bool m_hadPrevious = false;
 };
 
+#endif // TODO: Enable when Editor/EditorCommandBus.h is imported
+
+#if 0 // TODO: Enable when Editor/UndoableCommandBus.h is imported
+
 // ── Undoable Entity Commands ────────────────────────────────────────
-//
-// These extend IUndoableCommand so the UndoableCommandBus records them
-// in the undo/redo history automatically.
-//
-// Thread safety: Like all ECS commands, these assume single-threaded
-// access to the World.  The ECS World is not thread-safe.
-// ────────────────────────────────────────────────────────────────────
 
 /**
  * Undoable version of SetComponentCommand.
- *
- * On Execute: adds/replaces the component and records the previous value.
- * On Undo:    restores the previous component (or removes it if new).
  */
 template<typename T>
-class UndoableSetComponentCommand : public atlas::editor::IUndoableCommand {
+class UndoableSetComponentCommand : public Editor::IUndoableCommand {
 public:
     UndoableSetComponentCommand(World& world, EntityID id, const T& value)
         : m_world(world), m_entityID(id), m_newValue(value) {}
@@ -200,12 +196,9 @@ private:
 
 /**
  * Undoable version of RemoveComponentCommand.
- *
- * On Execute: removes the component and records its value.
- * On Undo:    re-adds the component with the recorded value.
  */
 template<typename T>
-class UndoableRemoveComponentCommand : public atlas::editor::IUndoableCommand {
+class UndoableRemoveComponentCommand : public Editor::IUndoableCommand {
 public:
     UndoableRemoveComponentCommand(World& world, EntityID id)
         : m_world(world), m_entityID(id) {}
@@ -238,4 +231,6 @@ private:
     bool m_hadPrevious = false;
 };
 
-} // namespace atlas::ecs
+#endif // TODO: Enable when Editor/UndoableCommandBus.h is imported
+
+} // namespace Runtime::ECS

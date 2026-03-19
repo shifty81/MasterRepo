@@ -1,8 +1,8 @@
-#include "AnimationNodes.h"
+#include "Engine/Animation/AnimationNodes.h"
 #include <algorithm>
 #include <cmath>
 
-namespace atlas::animation {
+namespace Engine::Animation {
 
 static constexpr float kPi = 3.14159265358979323846f;
 
@@ -10,11 +10,11 @@ static constexpr float kPi = 3.14159265358979323846f;
 
 std::vector<AnimPort> ClipNode::Inputs() const {
     return {{"Time", AnimPinType::Float}};
-}
+} // namespace Engine::Animation
 
 std::vector<AnimPort> ClipNode::Outputs() const {
     return {{"Pose", AnimPinType::Pose}};
-}
+} // namespace Engine::Animation
 
 void ClipNode::Evaluate(const AnimContext& /*ctx*/, const std::vector<AnimValue>& inputs, std::vector<AnimValue>& outputs) const {
     float time = 0.0f;
@@ -39,7 +39,7 @@ void ClipNode::Evaluate(const AnimContext& /*ctx*/, const std::vector<AnimValue>
         0.0f,                                            // bone 1 z
         normalizedTime * 180.0f                          // bone 1 rotation
     };
-}
+} // namespace Engine::Animation
 
 // --- BlendNode ---
 
@@ -49,11 +49,11 @@ std::vector<AnimPort> BlendNode::Inputs() const {
         {"PoseB", AnimPinType::Pose},
         {"Weight", AnimPinType::Float}
     };
-}
+} // namespace Engine::Animation
 
 std::vector<AnimPort> BlendNode::Outputs() const {
     return {{"Pose", AnimPinType::Pose}};
-}
+} // namespace Engine::Animation
 
 void BlendNode::Evaluate(const AnimContext& /*ctx*/, const std::vector<AnimValue>& inputs, std::vector<AnimValue>& outputs) const {
     float weight = 0.5f;
@@ -75,7 +75,7 @@ void BlendNode::Evaluate(const AnimContext& /*ctx*/, const std::vector<AnimValue
         float b = (i < poseB.size()) ? poseB[i] : 0.0f;
         outputs[0].data[i] = a * (1.0f - weight) + b * weight;
     }
-}
+} // namespace Engine::Animation
 
 // --- ModifierNode ---
 
@@ -84,11 +84,11 @@ std::vector<AnimPort> ModifierNode::Inputs() const {
         {"Pose", AnimPinType::Pose},
         {"Modifier", AnimPinType::Modifier}
     };
-}
+} // namespace Engine::Animation
 
 std::vector<AnimPort> ModifierNode::Outputs() const {
     return {{"Pose", AnimPinType::Pose}};
-}
+} // namespace Engine::Animation
 
 void ModifierNode::Evaluate(const AnimContext& ctx, const std::vector<AnimValue>& inputs, std::vector<AnimValue>& outputs) const {
     outputs.resize(1);
@@ -128,7 +128,7 @@ void ModifierNode::Evaluate(const AnimContext& ctx, const std::vector<AnimValue>
             }
             break;
     }
-}
+} // namespace Engine::Animation
 
 // --- StateMachineNode ---
 
@@ -137,11 +137,11 @@ std::vector<AnimPort> StateMachineNode::Inputs() const {
         {"Trigger", AnimPinType::Trigger},
         {"BlendTime", AnimPinType::Float}
     };
-}
+} // namespace Engine::Animation
 
 std::vector<AnimPort> StateMachineNode::Outputs() const {
     return {{"Pose", AnimPinType::Pose}};
-}
+} // namespace Engine::Animation
 
 void StateMachineNode::Evaluate(const AnimContext& ctx, const std::vector<AnimValue>& inputs, std::vector<AnimValue>& outputs) const {
     float trigger = 0.0f;
@@ -166,6 +166,6 @@ void StateMachineNode::Evaluate(const AnimContext& ctx, const std::vector<AnimVa
         0.0f,
         phase * 90.0f * (stateIndex + 1)
     };
-}
+} // namespace Engine::Animation
 
-}
+} // namespace Engine::Animation

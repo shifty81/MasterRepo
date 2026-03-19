@@ -5,7 +5,7 @@
 #include <vector>
 #include <functional>
 
-namespace atlas::input {
+namespace Engine::Input {
 
 enum class InputAction : uint32_t {
     None = 0,
@@ -79,4 +79,4 @@ private:
     bool m_initialized = false;
 };
 
-}
+} // namespace Engine::Input

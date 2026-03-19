@@ -1,7 +1,7 @@
 #pragma once
-#include "AnimationGraph.h"
+#include "Engine/Animation/AnimationGraph.h"
 
-namespace atlas::animation {
+namespace Engine::Animation {
 
 // Outputs a base pose from a time parameter
 class ClipNode : public AnimNode {
@@ -13,7 +13,7 @@ public:
     std::vector<AnimPort> Inputs() const override;
     std::vector<AnimPort> Outputs() const override;
     void Evaluate(const AnimContext& ctx, const std::vector<AnimValue>& inputs, std::vector<AnimValue>& outputs) const override;
-};
+} // namespace Engine::Animation;
 
 // Blends two poses by weight
 class BlendNode : public AnimNode {
@@ -23,13 +23,13 @@ public:
     std::vector<AnimPort> Inputs() const override;
     std::vector<AnimPort> Outputs() const override;
     void Evaluate(const AnimContext& ctx, const std::vector<AnimValue>& inputs, std::vector<AnimValue>& outputs) const override;
-};
+} // namespace Engine::Animation;
 
 enum class ModifierType : uint8_t {
     Damage,
     Skill,
     Emotion
-};
+} // namespace Engine::Animation;
 
 // Applies a modifier (e.g. limp, recoil, tremor) to a pose
 class ModifierNode : public AnimNode {
@@ -41,7 +41,7 @@ public:
     std::vector<AnimPort> Inputs() const override;
     std::vector<AnimPort> Outputs() const override;
     void Evaluate(const AnimContext& ctx, const std::vector<AnimValue>& inputs, std::vector<AnimValue>& outputs) const override;
-};
+} // namespace Engine::Animation;
 
 // Simple state transition node
 class StateMachineNode : public AnimNode {
@@ -51,6 +51,6 @@ public:
     std::vector<AnimPort> Inputs() const override;
     std::vector<AnimPort> Outputs() const override;
     void Evaluate(const AnimContext& ctx, const std::vector<AnimValue>& inputs, std::vector<AnimValue>& outputs) const override;
-};
+} // namespace Engine::Animation;
 
-}
+} // namespace Engine::Animation

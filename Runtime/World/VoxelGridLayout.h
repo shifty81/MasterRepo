@@ -1,7 +1,7 @@
 #pragma once
-#include "WorldLayout.h"
+#include "Runtime/World/WorldLayout.h"
 
-namespace atlas::world {
+namespace Runtime::World {
 
 class VoxelGridLayout : public WorldLayout {
 public:
@@ -15,6 +15,6 @@ public:
     int MaxLOD() const override { return 0; }
     bool IsValidLOD(int lod) const override { return lod == 0; }
     float ChunkWorldSize(int lod) const override;
-};
+} // namespace Runtime::World;
 
-}
+} // namespace Runtime::World

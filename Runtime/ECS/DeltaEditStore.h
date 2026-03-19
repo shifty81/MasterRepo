@@ -21,7 +21,7 @@
 #include <string>
 #include <vector>
 
-namespace atlas::ecs {
+namespace Runtime::ECS {
 
 /** Types of structured edits the store can record. */
 enum class DeltaEditType : uint8_t {
@@ -95,4 +95,4 @@ private:
     std::vector<DeltaEdit> m_edits;
 };
 
-} // namespace atlas::ecs
+} // namespace Runtime::ECS

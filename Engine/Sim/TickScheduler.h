@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <functional>
 
-namespace atlas::sim {
+namespace Engine::Sim {
 
 class TickScheduler {
 public:
@@ -17,6 +17,6 @@ public:
 private:
     uint32_t m_tickRate = 30;
     uint64_t m_currentTick = 0;
-};
+} // namespace Engine::Sim;
 
-}
+} // namespace Engine::Sim

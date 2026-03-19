@@ -1,7 +1,7 @@
-#include "GameStateManager.h"
+#include "Core/GameState/GameStateManager.h"
 #include <algorithm>
 
-namespace atlas {
+namespace Core::GameState {
 
 const char* GamePhaseName(GamePhase phase) {
     switch (phase) {
@@ -61,4 +61,4 @@ void GameStateManager::Reset() {
     // Note: callbacks are preserved across reset.
 }
 
-} // namespace atlas
+} // namespace Core::GameState

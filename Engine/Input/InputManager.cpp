@@ -1,6 +1,6 @@
-#include "InputManager.h"
+#include "Engine/Input/InputManager.h"
 
-namespace atlas::input {
+namespace Engine::Input {
 
 void InputManager::Init() {
     m_bindings.clear();
@@ -122,4 +122,4 @@ void InputManager::SetCallback(InputAction action, std::function<void(const Inpu
     m_callbacks[static_cast<uint32_t>(action)] = callback;
 }
 
-}
+} // namespace Engine::Input

@@ -1,9 +1,9 @@
-#include "DeltaEditStore.h"
+#include "Runtime/ECS/DeltaEditStore.h"
 #include <fstream>
 #include <filesystem>
 #include <sstream>
 
-namespace atlas::ecs {
+namespace Runtime::ECS {
 
 const char* DeltaEditTypeName(DeltaEditType type) {
     switch (type) {
@@ -243,4 +243,4 @@ bool DeltaEditStore::LoadFromFile(const std::string& path) {
     return DeserializeFromJSON(json);
 }
 
-} // namespace atlas::ecs
+} // namespace Runtime::ECS
