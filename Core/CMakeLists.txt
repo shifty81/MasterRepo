@@ -18,6 +18,8 @@ add_library(CoreLib STATIC
     LocalCIPipeline/LocalCIPipeline.cpp
     PackageManager/PackageManager.cpp
     NetworkProtocolGen/NetworkProtocolGen.cpp
+    JobSystem/JobSystem.cpp
+    CodeIntelligence/CodeIntelligence.cpp
 )
 
 target_compile_features(CoreLib PUBLIC cxx_std_20)

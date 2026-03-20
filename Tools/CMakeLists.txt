@@ -11,6 +11,8 @@ set(TOOLS_SOURCES
     ServerManager/ServerManager.cpp
     ReplayTimeline/ReplayTimeline.cpp
     GitPanel/GitPanel.cpp
+    AnalyticsDashboard/AnalyticsDashboard.cpp
+    SimulationPlayback/SimulationPlayback.cpp
 )
 
 add_library(ToolsLib STATIC ${TOOLS_SOURCES})
