@@ -66,15 +66,13 @@ endif()
 add_subdirectory(Builder)
 
 # Phase 7: PCG
-# add_subdirectory(PCG)
+add_subdirectory(PCG)
 
 # Phase 8: IDE integration
-# add_subdirectory(IDE)
+add_subdirectory(IDE)
 
 # Phase 9: Tools
-# if(BUILD_TOOLS)
-#     add_subdirectory(Tools)
-# endif()
+add_subdirectory(Tools)
 
 # Phase 10: Game projects
 # add_subdirectory(Projects/NovaForge)
