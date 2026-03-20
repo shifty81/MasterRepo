@@ -1,0 +1,14 @@
+{
+  "version": "1.0",
+  "assets": [
+    { "id": "mesh_hull_starter",   "type": "Mesh",     "path": "Assets/Meshes/hull_starter.glb",         "tags": ["hull","starter"] },
+    { "id": "mesh_thruster_basic", "type": "Mesh",     "path": "Assets/Meshes/thruster_basic.glb",       "tags": ["thruster","engine"] },
+    { "id": "mesh_cockpit_mk1",    "type": "Mesh",     "path": "Assets/Meshes/cockpit_mk1.glb",          "tags": ["cockpit","pilot"] },
+    { "id": "mesh_engine_module",  "type": "Mesh",     "path": "Assets/Meshes/engine_module.glb",        "tags": ["engine","module"] },
+    { "id": "skybox_space_01",     "type": "Texture",  "path": "Assets/Skyboxes/space_01.hdr",           "tags": ["skybox","space"] },
+    { "id": "sfx_thruster_loop",   "type": "Audio",    "path": "Assets/Audio/thruster_loop.ogg",         "tags": ["sfx","engine"] },
+    { "id": "sfx_weapon_fire",     "type": "Audio",    "path": "Assets/Audio/weapon_fire.ogg",           "tags": ["sfx","weapon"] },
+    { "id": "mat_hull_metal",      "type": "Material", "path": "Assets/Materials/hull_metal.mat",        "tags": ["hull","metal"] },
+    { "id": "mat_cockpit_glass",   "type": "Material", "path": "Assets/Materials/cockpit_glass.mat",     "tags": ["cockpit","glass"] }
+  ]
+}

@@ -43,6 +43,9 @@ include_directories(${CMAKE_SOURCE_DIR})
 # Phase 1: Core systems (everything depends on this)
 add_subdirectory(Core)
 
+# Phase 9.7: Version management (no dependencies)
+add_subdirectory(Versions)
+
 # Phase 2: Engine foundation
 add_subdirectory(Engine)
 
