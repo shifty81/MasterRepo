@@ -11,6 +11,7 @@ add_library(UILib STATIC
     Animation/UIAnimation.cpp
     Localization/Localization.cpp
     Accessibility/Accessibility.cpp
+    GUISystem/GUISystem.cpp
 )
 
 target_include_directories(UILib PUBLIC ${CMAKE_SOURCE_DIR})

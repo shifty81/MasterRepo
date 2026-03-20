@@ -839,7 +839,8 @@ These phases expand the system beyond the core 0–10 roadmap, adding advanced c
 ### Phase 12 — GUI Systems (Advanced)
 
 - In-game GUI system (beyond HUD)
-- GUI editor/designer tool
+- ✅ In-game GUI system — element factory, screens, input routing (`UI/GUISystem/GUISystem.h`)
+- ✅ GUI editor/designer tool (`Editor/GUIEditor/GUIEditor.h`)
 - ✅ Animation system for UI transitions (`UI/Animation/UIAnimation.h`)
 - ✅ Accessibility features (`UI/Accessibility/Accessibility.h`)
 - ✅ Localization support (`UI/Localization/Localization.h`)
@@ -854,19 +855,19 @@ These phases expand the system beyond the core 0–10 roadmap, adding advanced c
 
 ### Phase 14 — AI-Driven Testing, Simulation & Analytics
 
-- AI generates test cases from code
-- Automated regression testing
-- Simulation playback and comparison
-- Performance analytics dashboard
-- AI-assisted bug triage
+- ✅ AI generates test cases from code (`AI/TestGen/TestGen.h`)
+- ✅ Automated regression testing (`AI/RegressionTest/RegressionTest.h`)
+- ✅ Simulation playback and comparison (`Tools/SimulationPlayback/SimulationPlayback.h`)
+- ✅ Performance analytics dashboard (`Tools/AnalyticsDashboard/AnalyticsDashboard.h`)
+- ✅ AI-assisted bug triage (`AI/BugTriage/BugTriage.h`)
 
 ### Phase 15 — Onboard Natural Language AI Assistant
 
 - ✅ Natural language command interface in editor (`IDE/NLAssistant/NLAssistant.h`)
-- Voice-to-action pipeline (optional)
+- Voice-to-action pipeline (optional / future)
 - ✅ Context-aware help system (`AI/ContextHelp/ContextHelp.h`)
-- AI tutorials and walkthroughs
-- Interactive documentation
+- ✅ AI tutorials and walkthroughs (`AI/Tutorial/Tutorial.h`)
+- ✅ Interactive documentation (`IDE/InteractiveDocs/InteractiveDocs.h`)
 
 ### Phase 16 — Core Systems Expansion
 
@@ -878,8 +879,8 @@ Additional core systems for production use:
 | ✅ Local CI Pipeline | Automated build/test on file save (`Core/LocalCIPipeline/`) |
 | ✅ Package Manager | Dependency management for plugins (`Core/PackageManager/`) |
 | ✅ Crash Report System | Crash dumps, telemetry, log analysis |
-| Multi-Thread Job System | Advanced GPU/CPU task scheduling |
-| Code Intelligence | LSP-like symbol index, go-to-definition |
+| ✅ Multi-Thread Job System | Advanced CPU task scheduling with priorities and dependencies (`Core/JobSystem/`) |
+| ✅ Code Intelligence | LSP-like symbol index, go-to-definition, completion (`Core/CodeIntelligence/`) |
 | ✅ Database Support | SQLite/custom for asset DB, save data |
 | ✅ Network Protocol Gen | Auto-generate serialization for multiplayer (`Core/NetworkProtocolGen/`) |
 

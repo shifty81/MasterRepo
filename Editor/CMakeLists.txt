@@ -23,6 +23,7 @@ set(EDITOR_SOURCES
     PCGEditor/PCGEditor.cpp
     Panels/Profiler/ProfilerPanel.cpp
     Panels/ErrorPanel/ErrorPanel.cpp
+    GUIEditor/GUIEditor.cpp
     ${CMAKE_SOURCE_DIR}/WorkspaceState/WorkspaceState.cpp
 )
 

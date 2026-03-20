@@ -15,6 +15,9 @@ add_library(AILib STATIC
     Models/ModelCatalog.cpp
     TestGen/TestGen.cpp
     ContextHelp/ContextHelp.cpp
+    RegressionTest/RegressionTest.cpp
+    BugTriage/BugTriage.cpp
+    Tutorial/Tutorial.cpp
 )
 target_include_directories(AILib PUBLIC ${CMAKE_SOURCE_DIR})
 target_compile_features(AILib PUBLIC cxx_std_20)

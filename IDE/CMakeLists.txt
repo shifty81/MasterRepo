@@ -11,6 +11,7 @@ set(IDE_SOURCES
     Debugger/Debugger.cpp
     LSP/LSPClient.cpp
     NLAssistant/NLAssistant.cpp
+    InteractiveDocs/InteractiveDocs.cpp
 )
 
 add_library(IDELib STATIC ${IDE_SOURCES})
