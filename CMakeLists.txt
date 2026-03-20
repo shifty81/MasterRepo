@@ -20,7 +20,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # ==============================================================================
 option(BUILD_EDITOR     "Build the editor application"          ON)
 option(BUILD_RUNTIME    "Build the runtime / game application"  ON)
-option(BUILD_AI         "Build AI agent system"                 OFF)
+option(BUILD_AI         "Build AI agent system"                 ON)
 option(BUILD_TOOLS      "Build standalone tools"                OFF)
 option(BUILD_TESTS      "Build unit tests"                      OFF)
 
@@ -47,9 +47,9 @@ add_subdirectory(Core)
 add_subdirectory(Engine)
 
 # Phase 3: Editor framework
-# if(BUILD_EDITOR)
-#     add_subdirectory(Editor)
-# endif()
+if(BUILD_EDITOR)
+    add_subdirectory(Editor)
+endif()
 
 # Phase 4: Runtime / gameplay
 if(BUILD_RUNTIME)
@@ -57,24 +57,22 @@ if(BUILD_RUNTIME)
 endif()
 
 # Phase 5: AI agent system
-# if(BUILD_AI)
-#     add_subdirectory(AI)
-#     add_subdirectory(Agents)
-# endif()
+if(BUILD_AI)
+    add_subdirectory(AI)
+    add_subdirectory(Agents)
+endif()
 
 # Phase 6: Builder system
-# add_subdirectory(Builder)
+add_subdirectory(Builder)
 
 # Phase 7: PCG
-# add_subdirectory(PCG)
+add_subdirectory(PCG)
 
 # Phase 8: IDE integration
-# add_subdirectory(IDE)
+add_subdirectory(IDE)
 
 # Phase 9: Tools
-# if(BUILD_TOOLS)
-#     add_subdirectory(Tools)
-# endif()
+add_subdirectory(Tools)
 
 # Phase 10: Game projects
 # add_subdirectory(Projects/NovaForge)
