@@ -75,7 +75,7 @@ add_subdirectory(IDE)
 add_subdirectory(Tools)
 
 # Phase 10: Game projects
-# add_subdirectory(Projects/NovaForge)
+add_subdirectory(Projects/NovaForge)
 
 # ==============================================================================
 # Status
