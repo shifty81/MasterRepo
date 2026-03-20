@@ -127,7 +127,7 @@ void EditorAgent::RegisterDefaultIntents() {
             auto lineIt = req.parameters.find("line");
             if (lineIt != req.parameters.end()) line = std::stoi(lineIt->second);
             resp.success = OpenFile(it->second, line);
-            resp.result  = "Opened: " + it->second + (line ? " at line " + lineIt->second : "");
+            resp.result  = "Opened: " + it->second + (line ? " at line " + std::to_string(line) : "");
             return resp;
         }
     });
