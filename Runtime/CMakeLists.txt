@@ -13,6 +13,9 @@ add_library(RuntimeLib STATIC
     Spawn/Spawn.cpp
     SaveLoad/SaveLoad.cpp
     UI/HUD.cpp
+    BuilderRuntime/BuilderRuntime.cpp
+    Collision/Collision.cpp
+    Gameplay/Prefabs/PrefabSystem.cpp
 )
 
 target_include_directories(RuntimeLib PUBLIC ${CMAKE_SOURCE_DIR})

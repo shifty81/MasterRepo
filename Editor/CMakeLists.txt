@@ -17,6 +17,10 @@ set(EDITOR_SOURCES
     Modes/EditorModes.cpp
     NodeEditors/NodeEditor.cpp
     UI/EditorLayout.cpp
+    Overlay/OverlaySystem.cpp
+    BuilderEditor/BuilderEditor.cpp
+    MaterialEditor/MaterialEditor.cpp
+    PCGEditor/PCGEditor.cpp
 )
 
 add_library(EditorLib STATIC ${EDITOR_SOURCES})
