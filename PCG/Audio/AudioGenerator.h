@@ -82,7 +82,6 @@ public:
     // Normalise peak amplitude to targetPeak (0–1)
     static void Normalize(AudioClip& clip, float targetPeak = 0.9f);
 
-private:
     static int16_t FloatToInt16(float v);
     static bool    WriteWAVHeader(std::ostream& out,
                                   int32_t sampleRate,

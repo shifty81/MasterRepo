@@ -47,9 +47,9 @@ add_subdirectory(Core)
 add_subdirectory(Engine)
 
 # Phase 3: Editor framework
-# if(BUILD_EDITOR)
-#     add_subdirectory(Editor)
-# endif()
+if(BUILD_EDITOR)
+    add_subdirectory(Editor)
+endif()
 
 # Phase 4: Runtime / gameplay
 if(BUILD_RUNTIME)

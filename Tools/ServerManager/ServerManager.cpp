@@ -5,8 +5,23 @@
 #include <ctime>
 #include <iomanip>
 #include <filesystem>
+#include <deque>
+#include <stdexcept>
 
 namespace Tools {
+
+// Reject strings containing shell metacharacters to prevent command injection.
+static bool IsSafeArg(const std::string& s) {
+    for (char c : s) {
+        if (c == ';' || c == '&' || c == '|' || c == '`' || c == '$' ||
+            c == '(' || c == ')' || c == '<' || c == '>' || c == '\n' ||
+            c == '\r' || c == '*' || c == '?' || c == '[' || c == ']' ||
+            c == '{' || c == '}' || c == '!' || c == '~' || c == '\'' ||
+            c == '"' || static_cast<unsigned char>(c) < 0x20)
+            return false;
+    }
+    return !s.empty();
+}
 
 // ──────────────────────────────────────────────────────────────
 // ServerConfig — migrated from atlas::ServerConfig
@@ -140,8 +155,17 @@ bool ServerManager::Start(uint32_t id, const std::string& executable) {
     changeStatus(*inst, ServerStatus::Starting);
     std::filesystem::create_directories(inst->config.logPath);
 
-    // Build launch command
+    // Build launch command — validate all user-supplied fragments first
     std::string exe = executable.empty() ? "MasterRepoServer" : executable;
+    if (!IsSafeArg(exe)) {
+        changeStatus(*inst, ServerStatus::Error);
+        return false;
+    }
+    if (!IsSafeArg(inst->config.host) || !IsSafeArg(inst->logFile)) {
+        changeStatus(*inst, ServerStatus::Error);
+        return false;
+    }
+
     std::string cmd = exe
         + " --host " + inst->config.host
         + " --port " + std::to_string(inst->config.port)
