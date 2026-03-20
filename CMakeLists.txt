@@ -46,6 +46,9 @@ add_subdirectory(Core)
 # Phase 2: Engine foundation
 add_subdirectory(Engine)
 
+# UI framework (no ImGui — Atlas Rule; Editor depends on UILib)
+add_subdirectory(UI)
+
 # Phase 3: Editor framework
 if(BUILD_EDITOR)
     add_subdirectory(Editor)
