@@ -9,6 +9,7 @@ set(IDE_SOURCES
     AIChat/AIChat.cpp
     Console/IDEConsole.cpp
     Debugger/Debugger.cpp
+    LSP/LSPClient.cpp
 )
 
 add_library(IDELib STATIC ${IDE_SOURCES})

@@ -1,0 +1,14 @@
+{
+  "name": "StarterShip",
+  "parts": [
+    { "defId": 1001, "instanceId": 0, "pos": [0, 0, 0],    "rot": [0, 0, 0, 1] },
+    { "defId": 1003, "instanceId": 1, "pos": [0, 0, 2.5],  "rot": [0, 0, 0, 1] },
+    { "defId": 1002, "instanceId": 2, "pos": [0, 0, -2.5], "rot": [0, 0, 0, 1] },
+    { "defId": 1002, "instanceId": 3, "pos": [1.5, 0, -3.0], "rot": [0, 0, 0, 1] }
+  ],
+  "welds": [
+    { "a": 0, "snapA": 0, "b": 1, "snapB": 1 },
+    { "a": 0, "snapA": 1, "b": 2, "snapB": 0 },
+    { "a": 0, "snapA": 2, "b": 3, "snapB": 0 }
+  ]
+}

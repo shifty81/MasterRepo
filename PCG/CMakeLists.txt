@@ -27,6 +27,9 @@ set(PCG_SOURCES
 
     # Validation
     Validation/PCGValidator.cpp
+
+    # Noise
+    Noise/NoiseGenerator.cpp
 )
 
 add_library(PCGLib STATIC ${PCG_SOURCES})

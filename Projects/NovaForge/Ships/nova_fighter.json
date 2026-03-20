@@ -1,0 +1,24 @@
+{
+  "id": 3001,
+  "name": "Nova Fighter",
+  "class": "light",
+  "description": "Fast, agile single-seat fighter",
+  "prefab": "Prefabs/starter_ship.json",
+  "stats": {
+    "maxSpeed": 250.0,
+    "acceleration": 45.0,
+    "agility": 0.9,
+    "hull_hp": 1500,
+    "shield_hp": 500,
+    "cargo_units": 10,
+    "crew_min": 1,
+    "crew_max": 1
+  },
+  "hardpoints": [
+    { "id": 0, "type": "weapon", "pos": [0.5,  0.0, 0.8], "size": "small" },
+    { "id": 1, "type": "weapon", "pos": [-0.5, 0.0, 0.8], "size": "small" }
+  ],
+  "defaultLoadout": {
+    "weapons": ["pulse_laser_mk1", "pulse_laser_mk1"]
+  }
+}

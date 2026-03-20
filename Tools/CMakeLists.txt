@@ -9,6 +9,8 @@ set(TOOLS_SOURCES
     AssetTools/AssetProcessor.cpp
     BuildTools/BuildAutomation.cpp
     ServerManager/ServerManager.cpp
+    ReplayTimeline/ReplayTimeline.cpp
+    GitPanel/GitPanel.cpp
 )
 
 add_library(ToolsLib STATIC ${TOOLS_SOURCES})

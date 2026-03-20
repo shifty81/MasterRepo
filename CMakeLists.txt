@@ -43,8 +43,14 @@ include_directories(${CMAKE_SOURCE_DIR})
 # Phase 1: Core systems (everything depends on this)
 add_subdirectory(Core)
 
+# Phase 9.7: Version management (no dependencies)
+add_subdirectory(Versions)
+
 # Phase 2: Engine foundation
 add_subdirectory(Engine)
+
+# UI framework (no ImGui — Atlas Rule; Editor depends on UILib)
+add_subdirectory(UI)
 
 # Phase 3: Editor framework
 if(BUILD_EDITOR)

@@ -12,6 +12,9 @@ add_library(CoreLib STATIC
     PluginSystem/PluginSystem.cpp
     ArchiveSystem/ArchiveSystem.cpp
     VersionSystem/VersionSystem.cpp
+    HotReload/HotReload.cpp
+    CrashReport/CrashReport.cpp
+    Database/Database.cpp
 )
 
 target_compile_features(CoreLib PUBLIC cxx_std_20)

@@ -1,0 +1,35 @@
+{
+  "player": {
+    "name": "Pilot",
+    "callsign": "Nova-1"
+  },
+  "keybinds": {
+    "throttleUp":   "W",
+    "throttleDown": "S",
+    "yawLeft":      "A",
+    "yawRight":     "D",
+    "pitchUp":      "ArrowUp",
+    "pitchDown":    "ArrowDown",
+    "rollLeft":     "Q",
+    "rollRight":    "E",
+    "fire":         "Space",
+    "interact":     "F",
+    "inventory":    "I",
+    "map":          "M",
+    "pause":        "Escape"
+  },
+  "sensitivity": {
+    "mouse": 0.3,
+    "joystick": 0.5
+  },
+  "fov_override": 0.0,
+  "invertPitch": false,
+  "invertYaw": false,
+  "hud": {
+    "enabled": true,
+    "scale": 1.0,
+    "showSpeed": true,
+    "showShields": true,
+    "showTargetInfo": true
+  }
+}

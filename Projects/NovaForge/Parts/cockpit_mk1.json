@@ -1,0 +1,17 @@
+{
+  "id": 1003,
+  "name": "Cockpit Mk1",
+  "category": "cockpit",
+  "mesh": "Assets/Meshes/cockpit_mk1.glb",
+  "mass": 250.0,
+  "hp": 500,
+  "snapPoints": [
+    { "id": 0, "pos": [0, 0, 1.2],  "dir": [0, 0, 1],  "type": "hull" },
+    { "id": 1, "pos": [0, -0.8, 0], "dir": [0, -1, 0], "type": "hull" }
+  ],
+  "stats": {
+    "power_draw": 10,
+    "crew_seats": 1,
+    "sensor_range": 500.0
+  }
+}

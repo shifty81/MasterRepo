@@ -17,11 +17,19 @@ set(EDITOR_SOURCES
     Modes/EditorModes.cpp
     NodeEditors/NodeEditor.cpp
     UI/EditorLayout.cpp
+    Overlay/OverlaySystem.cpp
+    BuilderEditor/BuilderEditor.cpp
+    MaterialEditor/MaterialEditor.cpp
+    PCGEditor/PCGEditor.cpp
+    Panels/Profiler/ProfilerPanel.cpp
+    Panels/ErrorPanel/ErrorPanel.cpp
+    ${CMAKE_SOURCE_DIR}/WorkspaceState/WorkspaceState.cpp
 )
 
 add_library(EditorLib STATIC ${EDITOR_SOURCES})
 target_include_directories(EditorLib PUBLIC ${CMAKE_SOURCE_DIR})
 target_compile_features(EditorLib PUBLIC cxx_std_20)
+target_link_libraries(EditorLib PUBLIC UILib)
 
 # AtlasEditor executable
 add_executable(AtlasEditor main.cpp)

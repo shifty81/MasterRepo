@@ -1,0 +1,15 @@
+{
+  "id": 1001,
+  "name": "Starter Hull",
+  "category": "hull",
+  "mesh": "Assets/Meshes/hull_starter.glb",
+  "mass": 500.0,
+  "hp": 1000,
+  "snapPoints": [
+    { "id": 0, "pos": [0, 0, 2.5],  "dir": [0, 0, 1],  "type": "hull" },
+    { "id": 1, "pos": [0, 0, -2.5], "dir": [0, 0, -1], "type": "hull" },
+    { "id": 2, "pos": [2.5, 0, 0],  "dir": [1, 0, 0],  "type": "hull" },
+    { "id": 3, "pos": [-2.5, 0, 0], "dir": [-1, 0, 0], "type": "hull" }
+  ],
+  "stats": { "armor": 200, "power_draw": 0 }
+}

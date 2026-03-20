@@ -1,0 +1,28 @@
+{
+  "title": "NovaForge",
+  "version": "0.1.0",
+  "startScene": "Scenes/main_scene.json",
+  "defaultPlayer": "Prefabs/starter_ship.json",
+  "physics": {
+    "gravity": 0.0,
+    "timeStep": 0.016667,
+    "substeps": 2
+  },
+  "render": {
+    "fov": 75.0,
+    "nearClip": 0.1,
+    "farClip": 100000.0,
+    "msaa": 4,
+    "vsync": true
+  },
+  "audio": {
+    "masterVolume": 1.0,
+    "musicVolume": 0.7,
+    "sfxVolume": 1.0
+  },
+  "ai": {
+    "enabled": true,
+    "model": "llama3",
+    "endpoint": "http://localhost:11434"
+  }
+}
