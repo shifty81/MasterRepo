@@ -23,7 +23,8 @@ void GUISystem::Shutdown() {
     m_screens.clear();
 }
 
-void GUISystem::Update(float /*deltaTime*/) {
+void GUISystem::Update(float deltaTime) {
+    (void)deltaTime;
     // Future: run animations, update data-bindings
 }
 

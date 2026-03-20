@@ -162,11 +162,16 @@ void JobSystem::WorkerLoop() {
         // Skip cancelled jobs
         if (job->status.load() == JobStatus::Cancelled) continue;
 
-        // Check dependencies (re-queue if not met yet)
+        // If dependencies are not yet met, defer to a short sleep then re-enqueue.
+        // The job is placed back without holding m_queueMutex during the sleep,
+        // which avoids blocking the main queue while waiting.
         if (!AreDependenciesMet(*job)) {
-            std::lock_guard<std::mutex> lk(m_queueMutex);
-            m_queue.push(job);
-            std::this_thread::yield();
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            {
+                std::lock_guard<std::mutex> lk(m_queueMutex);
+                m_queue.push(job);
+            }
+            m_cv.notify_one();
             continue;
         }
 

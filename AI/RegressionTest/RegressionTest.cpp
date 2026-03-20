@@ -94,6 +94,9 @@ RegressionTestResult RegressionTest::Execute(const RegressionTestCase& tc) {
 
     auto t0 = std::chrono::steady_clock::now();
 
+    // Validate command is not empty (already checked above)
+    // NOTE: tc.command should be a trusted, pre-validated shell command.
+    // User-provided input must be sanitised before being assigned to tc.command.
     std::string cmd = tc.command + " 2>&1";
     std::string output;
     FILE* pipe = popen(cmd.c_str(), "r");

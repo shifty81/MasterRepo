@@ -88,7 +88,7 @@ void SimulationPlayback::SeekToTime(double seconds) {
             return;
         }
     }
-    m_currentFrame = frames.size() > 0 ? frames.size() - 1 : 0;
+    m_currentFrame = !frames.empty() ? frames.size() - 1 : 0;
 }
 
 // ── Comparison ────────────────────────────────────────────────

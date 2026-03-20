@@ -35,7 +35,6 @@ TriageResult BugTriage::Triage(const BugReport& report) {
 
     // Duplicate detection
     result.similarBugIds = FindDuplicates(report);
-
     m_triaged.push_back(result);
     if (m_onComplete) m_onComplete(result);
     return result;
@@ -83,12 +82,13 @@ std::vector<TriageResult> BugTriage::TriageDirectory(const std::string& logDir) 
 // ── Duplicate detection ────────────────────────────────────────
 
 std::vector<std::string> BugTriage::FindDuplicates(const BugReport& report) const {
+    constexpr size_t kSimilarityPrefixLength = 20;
     std::vector<std::string> dupes;
     for (const auto& t : m_triaged) {
         if (t.reportId == report.id) continue;
-        // Simple similarity: shared words in summary
+        // Simple similarity: shared title prefix in summary
         if (!t.summary.empty() && !report.title.empty() &&
-            t.summary.find(report.title.substr(0, std::min<size_t>(20, report.title.size())))
+            t.summary.find(report.title.substr(0, std::min(kSimilarityPrefixLength, report.title.size())))
                 != std::string::npos) {
             dupes.push_back(t.reportId);
         }

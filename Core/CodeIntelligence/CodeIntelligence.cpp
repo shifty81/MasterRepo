@@ -145,6 +145,7 @@ void CodeIntelligence::ParseFile(const std::string& path) {
     entry.path = path;
 
     // Simple regex-based extraction of class/struct/function definitions
+    // Regex patterns are `static` so they are compiled only once per process lifetime
     static const std::regex rClass(R"(^\s*(?:class|struct)\s+(\w+))");
     static const std::regex rFunc(R"(^\s*(?:\w[\w\s\*&:<>]*)\s+(\w+)\s*\()");
     static const std::regex rNamespace(R"(^\s*namespace\s+(\w+))");
