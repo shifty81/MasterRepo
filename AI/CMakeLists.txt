@@ -12,6 +12,8 @@ add_library(AILib STATIC
     ArchiveLearning/ArchiveLearning.cpp
     AssetLearning/AssetLearning.cpp
     Training/TrainingPipeline.cpp
+    Models/ModelCatalog.cpp
+    TestGen/TestGen.cpp
 )
 target_include_directories(AILib PUBLIC ${CMAKE_SOURCE_DIR})
 target_compile_features(AILib PUBLIC cxx_std_20)
