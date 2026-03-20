@@ -1,5 +1,6 @@
 #include "AI/ModelManager/LLMBackend.h"
 #include <algorithm>
+#include <cstdio>
 #include <cstdlib>
 
 namespace AI {
@@ -109,13 +110,20 @@ uint64_t HttpLLMBackend::FailureCount() const { return m_failureCount; }
 std::string HttpLLMBackend::BuildRequestBody(const LLMRequest& request) const {
     auto escape = [](const std::string& s) -> std::string {
         std::string out; out.reserve(s.size());
-        for (char c : s) {
-            if (c == '"') out += "\\\"";
+        for (unsigned char c : s) {
+            if (c == '"')       out += "\\\"";
             else if (c == '\\') out += "\\\\";
             else if (c == '\n') out += "\\n";
             else if (c == '\r') out += "\\r";
             else if (c == '\t') out += "\\t";
-            else out += c;
+            else if (c < 0x20) {
+                // Escape other control characters as \uXXXX
+                char buf[8];
+                snprintf(buf, sizeof(buf), "\\u%04x", static_cast<unsigned>(c));
+                out += buf;
+            } else {
+                out += static_cast<char>(c);
+            }
         }
         return out;
     };

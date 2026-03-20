@@ -1,6 +1,7 @@
 #include "AI/Memory/MemoryStore.h"
 #include <algorithm>
 #include <chrono>
+#include <cstdio>
 #include <fstream>
 
 namespace AI {
@@ -77,16 +78,37 @@ std::vector<MemoryEntry> MemoryStore::GetAll() const { return m_entries; }
 size_t MemoryStore::Count() const { return m_entries.size(); }
 void MemoryStore::Clear() { m_entries.clear(); m_keyIndex.clear(); }
 
+static std::string JsonEscapeStr(const std::string& s) {
+    std::string out;
+    out.reserve(s.size());
+    for (unsigned char c : s) {
+        if (c == '"')       out += "\\\"";
+        else if (c == '\\') out += "\\\\";
+        else if (c == '\n') out += "\\n";
+        else if (c == '\r') out += "\\r";
+        else if (c == '\t') out += "\\t";
+        else if (c < 0x20) {
+            char buf[8];
+            snprintf(buf, sizeof(buf), "\\u%04x", static_cast<unsigned>(c));
+            out += buf;
+        } else {
+            out += static_cast<char>(c);
+        }
+    }
+    return out;
+}
+
 bool MemoryStore::SaveToFile(const std::string& path) const {
     std::ofstream f(path);
     if (!f) return false;
     f << "[\n";
     for (size_t i = 0; i < m_entries.size(); ++i) {
         const auto& e = m_entries[i];
-        f << "{\"id\":" << e.id << ",\"key\":\"" << e.key << "\","
-          << "\"value\":\"" << e.value << "\","
-          << "\"importance\":" << e.importance << ","
-          << "\"timestamp\":" << e.timestamp << "}";
+        f << "{\"id\":" << e.id
+          << ",\"key\":\"" << JsonEscapeStr(e.key) << "\""
+          << ",\"value\":\"" << JsonEscapeStr(e.value) << "\""
+          << ",\"importance\":" << e.importance
+          << ",\"timestamp\":" << e.timestamp << "}";
         if (i + 1 < m_entries.size()) f << ",";
         f << "\n";
     }
@@ -97,7 +119,8 @@ bool MemoryStore::SaveToFile(const std::string& path) const {
 bool MemoryStore::LoadFromFile(const std::string& path) {
     std::ifstream f(path);
     if (!f) return false;
-    // Minimal stub — full JSON parsing omitted
+    // TODO: implement full JSON parsing for MemoryEntry deserialization.
+    // Currently a stub — returns false to indicate load is not yet supported.
     return false;
 }
 

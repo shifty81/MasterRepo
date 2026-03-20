@@ -62,16 +62,21 @@ size_t Sandbox::Count() const { return m_pending.size(); }
 void Sandbox::Clear() { m_pending.clear(); }
 
 bool Sandbox::applyChange(const SandboxChange& change) {
+    // Guard against path traversal by requiring a canonical path
+    // with no ".." components that could escape a known root.
+    const std::string& p = change.path;
+    if (p.empty() || p.find("..") != std::string::npos) return false;
+
     switch (change.action) {
         case SandboxAction::CreateFile:
         case SandboxAction::ModifyFile: {
-            std::ofstream f(change.path);
+            std::ofstream f(p);
             if (!f) return false;
             f << change.newContent;
             return true;
         }
         case SandboxAction::DeleteFile:
-            return std::remove(change.path.c_str()) == 0;
+            return std::remove(p.c_str()) == 0;
         case SandboxAction::RunCommand:
             // Commands are not auto-executed for safety
             return false;

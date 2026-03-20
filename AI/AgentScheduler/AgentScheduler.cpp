@@ -50,11 +50,13 @@ void AgentScheduler::Tick() {
             ++m_completedCount;
             continue;
         }
+        // Count as running before dispatching so we don't over-issue tasks
+        // when maxConcurrent > 1 and tasks complete synchronously.
+        ++running;
         taskPtr->status = TaskStatus::Running;
         taskPtr->result = it->second->ProcessRequest(taskPtr->request);
         taskPtr->status = taskPtr->result.success ? TaskStatus::Completed : TaskStatus::Failed;
         ++m_completedCount;
-        ++running;
     }
 }
 

@@ -6,14 +6,18 @@
 
 namespace Agents {
 
-// Reject strings containing shell metacharacters to prevent command injection
+// Reject strings containing shell metacharacters to prevent command injection.
+// Blocks a broad set of characters that could be used in shell injection attacks.
 static bool IsSafePath(const std::string& s) {
     for (char c : s) {
         if (c == ';' || c == '&' || c == '|' || c == '`' || c == '$' ||
-            c == '(' || c == ')' || c == '<' || c == '>' || c == '\n' || c == '\r')
+            c == '(' || c == ')' || c == '<' || c == '>' || c == '\n' ||
+            c == '\r' || c == '*' || c == '?' || c == '[' || c == ']' ||
+            c == '{' || c == '}' || c == '!' || c == '~' || c == '\'' ||
+            c == '"' || static_cast<unsigned char>(c) < 0x20)
             return false;
     }
-    return true;
+    return !s.empty();
 }
 
 // ReadFileTool
