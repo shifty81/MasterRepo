@@ -20,7 +20,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # ==============================================================================
 option(BUILD_EDITOR     "Build the editor application"          ON)
 option(BUILD_RUNTIME    "Build the runtime / game application"  ON)
-option(BUILD_AI         "Build AI agent system"                 OFF)
+option(BUILD_AI         "Build AI agent system"                 ON)
 option(BUILD_TOOLS      "Build standalone tools"                OFF)
 option(BUILD_TESTS      "Build unit tests"                      OFF)
 
@@ -57,10 +57,10 @@ if(BUILD_RUNTIME)
 endif()
 
 # Phase 5: AI agent system
-# if(BUILD_AI)
-#     add_subdirectory(AI)
-#     add_subdirectory(Agents)
-# endif()
+if(BUILD_AI)
+    add_subdirectory(AI)
+    add_subdirectory(Agents)
+endif()
 
 # Phase 6: Builder system
 # add_subdirectory(Builder)
