@@ -4,6 +4,7 @@ add_library(RuntimeLib STATIC
     ECS/DeltaEditStore.cpp
     World/CubeSphereLayout.cpp
     World/VoxelGridLayout.cpp
+    World/SceneManager.cpp
     Systems/Systems.cpp
     Player/PlayerController.cpp
     Inventory/Inventory.cpp

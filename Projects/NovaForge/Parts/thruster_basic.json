@@ -1,0 +1,17 @@
+{
+  "id": 1002,
+  "name": "Basic Thruster",
+  "category": "thruster",
+  "mesh": "Assets/Meshes/thruster_basic.glb",
+  "mass": 120.0,
+  "hp": 250,
+  "snapPoints": [
+    { "id": 0, "pos": [0, 0, 0.5], "dir": [0, 0, 1], "type": "hull" }
+  ],
+  "stats": {
+    "thrust": 800.0,
+    "power_draw": 20,
+    "exhaust_velocity": 3500.0,
+    "fuel_type": "hydrazine"
+  }
+}

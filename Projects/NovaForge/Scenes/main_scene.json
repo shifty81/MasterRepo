@@ -1,0 +1,26 @@
+{
+  "name": "MainScene",
+  "skybox": "Assets/Skyboxes/space_01.hdr",
+  "entities": [
+    {
+      "id": 1,
+      "name": "PlayerSpawn",
+      "components": {
+        "Transform": { "pos": [0, 0, 0], "rot": [0, 0, 0, 1], "scale": [1, 1, 1] },
+        "PlayerSpawnPoint": { "isDefault": true }
+      }
+    },
+    {
+      "id": 2,
+      "name": "SpaceStation_Alpha",
+      "components": {
+        "Transform": { "pos": [500, 0, 0], "rot": [0, 0, 0, 1], "scale": [1, 1, 1] },
+        "Prefab": { "ref": "Prefabs/starter_ship.json" }
+      }
+    }
+  ],
+  "settings": {
+    "gravity": 0.0,
+    "ambientLight": [0.05, 0.05, 0.1, 1.0]
+  }
+}

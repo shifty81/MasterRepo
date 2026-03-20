@@ -22,6 +22,7 @@ set(EDITOR_SOURCES
     MaterialEditor/MaterialEditor.cpp
     PCGEditor/PCGEditor.cpp
     Panels/Profiler/ProfilerPanel.cpp
+    Panels/ErrorPanel/ErrorPanel.cpp
 )
 
 add_library(EditorLib STATIC ${EDITOR_SOURCES})

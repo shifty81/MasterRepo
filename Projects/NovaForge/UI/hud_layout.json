@@ -1,0 +1,94 @@
+{
+  "elements": [
+    {
+      "id": "health_bar",
+      "type": "bar",
+      "anchorX": 0.0, "anchorY": 1.0,
+      "offsetX": 20,  "offsetY": -30,
+      "width": 200,   "height": 20,
+      "visible": true,
+      "properties": { "color": [0.8, 0.1, 0.1, 1.0], "label": "HP" }
+    },
+    {
+      "id": "energy_bar",
+      "type": "bar",
+      "anchorX": 0.0, "anchorY": 1.0,
+      "offsetX": 20,  "offsetY": -58,
+      "width": 200,   "height": 20,
+      "visible": true,
+      "properties": { "color": [0.1, 0.4, 0.9, 1.0], "label": "EN" }
+    },
+    {
+      "id": "crosshair",
+      "type": "crosshair",
+      "anchorX": 0.5, "anchorY": 0.5,
+      "offsetX": 0,   "offsetY": 0,
+      "width": 24,    "height": 24,
+      "visible": true,
+      "properties": { "style": "dot" }
+    },
+    {
+      "id": "hotbar_slot_1",
+      "type": "hotbar_slot",
+      "anchorX": 0.5, "anchorY": 0.0,
+      "offsetX": -150, "offsetY": 10,
+      "width": 48,    "height": 48,
+      "visible": true,
+      "properties": { "slot": 1, "keybind": "1" }
+    },
+    {
+      "id": "hotbar_slot_2",
+      "type": "hotbar_slot",
+      "anchorX": 0.5, "anchorY": 0.0,
+      "offsetX": -96, "offsetY": 10,
+      "width": 48,    "height": 48,
+      "visible": true,
+      "properties": { "slot": 2, "keybind": "2" }
+    },
+    {
+      "id": "hotbar_slot_3",
+      "type": "hotbar_slot",
+      "anchorX": 0.5, "anchorY": 0.0,
+      "offsetX": -42, "offsetY": 10,
+      "width": 48,    "height": 48,
+      "visible": true,
+      "properties": { "slot": 3, "keybind": "3" }
+    },
+    {
+      "id": "hotbar_slot_4",
+      "type": "hotbar_slot",
+      "anchorX": 0.5, "anchorY": 0.0,
+      "offsetX": 12,  "offsetY": 10,
+      "width": 48,    "height": 48,
+      "visible": true,
+      "properties": { "slot": 4, "keybind": "4" }
+    },
+    {
+      "id": "hotbar_slot_5",
+      "type": "hotbar_slot",
+      "anchorX": 0.5, "anchorY": 0.0,
+      "offsetX": 66,  "offsetY": 10,
+      "width": 48,    "height": 48,
+      "visible": true,
+      "properties": { "slot": 5, "keybind": "5" }
+    },
+    {
+      "id": "hotbar_slot_6",
+      "type": "hotbar_slot",
+      "anchorX": 0.5, "anchorY": 0.0,
+      "offsetX": 120, "offsetY": 10,
+      "width": 48,    "height": 48,
+      "visible": true,
+      "properties": { "slot": 6, "keybind": "6" }
+    },
+    {
+      "id": "minimap",
+      "type": "minimap",
+      "anchorX": 1.0, "anchorY": 1.0,
+      "offsetX": -20, "offsetY": -20,
+      "width": 160,   "height": 160,
+      "visible": true,
+      "properties": { "zoom": 1.0, "placeholder": true }
+    }
+  ]
+}
