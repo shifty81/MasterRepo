@@ -63,7 +63,7 @@ if(BUILD_AI)
 endif()
 
 # Phase 6: Builder system
-# add_subdirectory(Builder)
+add_subdirectory(Builder)
 
 # Phase 7: PCG
 # add_subdirectory(PCG)
