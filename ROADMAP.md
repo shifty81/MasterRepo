@@ -840,9 +840,9 @@ These phases expand the system beyond the core 0–10 roadmap, adding advanced c
 
 - In-game GUI system (beyond HUD)
 - GUI editor/designer tool
-- Animation system for UI transitions
-- Accessibility features
-- Localization support
+- ✅ Animation system for UI transitions (`UI/Animation/UIAnimation.h`)
+- ✅ Accessibility features (`UI/Accessibility/Accessibility.h`)
+- ✅ Localization support (`UI/Localization/Localization.h`)
 
 ### Phase 13 — Blender Addon Integration (Deep)
 
@@ -862,9 +862,9 @@ These phases expand the system beyond the core 0–10 roadmap, adding advanced c
 
 ### Phase 15 — Onboard Natural Language AI Assistant
 
-- Natural language command interface in editor
+- ✅ Natural language command interface in editor (`IDE/NLAssistant/NLAssistant.h`)
 - Voice-to-action pipeline (optional)
-- Context-aware help system
+- ✅ Context-aware help system (`AI/ContextHelp/ContextHelp.h`)
 - AI tutorials and walkthroughs
 - Interactive documentation
 
@@ -874,14 +874,14 @@ Additional core systems for production use:
 
 | System | Description |
 |--------|-------------|
-| Hot Reload | Live code/asset reload without restart |
-| Local CI Pipeline | Automated build/test on file save |
-| Package Manager | Dependency management for plugins |
-| Crash Report System | Crash dumps, telemetry, log analysis |
+| ✅ Hot Reload | Live code/asset reload without restart |
+| ✅ Local CI Pipeline | Automated build/test on file save (`Core/LocalCIPipeline/`) |
+| ✅ Package Manager | Dependency management for plugins (`Core/PackageManager/`) |
+| ✅ Crash Report System | Crash dumps, telemetry, log analysis |
 | Multi-Thread Job System | Advanced GPU/CPU task scheduling |
 | Code Intelligence | LSP-like symbol index, go-to-definition |
-| Database Support | SQLite/custom for asset DB, save data |
-| Network Protocol Gen | Auto-generate serialization for multiplayer |
+| ✅ Database Support | SQLite/custom for asset DB, save data |
+| ✅ Network Protocol Gen | Auto-generate serialization for multiplayer (`Core/NetworkProtocolGen/`) |
 
 ### Phase 17 — Offline Self-Build Automation
 
@@ -893,6 +893,8 @@ The ultimate goal: AI can expand the project semi-autonomously.
 4. AI stores iterations in `Archive/`
 5. User reviews and approves/merges best iteration
 6. Repeat
+
+✅ `Agents/SelfBuildAgent/SelfBuildAgent.h` — agent scaffolding implemented.
 
 This is the "self-building" mode described in implement3.md, where the AI uses scaffolds, archive templates, and procedural rules to progressively build out the project offline.
 

@@ -10,6 +10,7 @@ add_library(AgentsLib STATIC
     AssetAgent/AssetAgent.cpp
     PCGAgent/PCGAgent.cpp
     VersionAgent/VersionAgent.cpp
+    SelfBuildAgent/SelfBuildAgent.cpp
 )
 target_include_directories(AgentsLib PUBLIC ${CMAKE_SOURCE_DIR})
 target_compile_features(AgentsLib PUBLIC cxx_std_20)

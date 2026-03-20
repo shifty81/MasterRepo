@@ -15,6 +15,9 @@ add_library(CoreLib STATIC
     HotReload/HotReload.cpp
     CrashReport/CrashReport.cpp
     Database/Database.cpp
+    LocalCIPipeline/LocalCIPipeline.cpp
+    PackageManager/PackageManager.cpp
+    NetworkProtocolGen/NetworkProtocolGen.cpp
 )
 
 target_compile_features(CoreLib PUBLIC cxx_std_20)
