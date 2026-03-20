@@ -1,4 +1,5 @@
 #include "Editor/Modes/EditorModes.h"
+#include <iterator>
 
 namespace Editor {
 
@@ -7,7 +8,8 @@ static const std::string& modeToString(EditorModeType m) {
         "Select", "Place", "Paint", "Sculpt", "Inspect", "Build"
     };
     auto idx = static_cast<int>(m);
-    if (idx < 0 || idx >= 6) {
+    static const int kModeCount = static_cast<int>(std::size(names));
+    if (idx < 0 || idx >= kModeCount) {
         static const std::string unknown = "Unknown";
         return unknown;
     }

@@ -41,18 +41,26 @@ int main() {
     Editor::NodeEditor nodeEditor;
 
     // ── Gizmos & overlays ───────────────────────────────────────────────────
-    Editor::GizmoSystem  gizmos;
-    Editor::OverlaySystem overlay;
+    Editor::GizmoSystem   gizmos;
+    Editor::OverlaySystem overlaySystem;
 
     gizmos.SetGizmoType(Editor::GizmoType::Translate);
     viewport.SetGizmoMode(Editor::GizmoMode::Translate);
 
+    // Stats overlays for in-editor diagnostics
+    overlaySystem.SetFPS(0.0f);
+    overlaySystem.SetEntityCount(0);
+
     // ── Command bus ─────────────────────────────────────────────────────────
     Editor::EditorCommandBus cmdBus;
+    // SelectEntity: forward the entity ID into the gizmo system so it
+    // tracks the selected object's transform.
     cmdBus.RegisterHandler(Editor::EditorCommandType::SelectEntity,
-        [&viewport](const Editor::EditorCommand& cmd) {
-            (void)cmd;
-            // Selection is handled via viewport
+        [&gizmos](const Editor::EditorCommand& cmd) {
+            float pos[3] = {0.f, 0.f, 0.f};
+            float rot[4] = {0.f, 0.f, 0.f, 1.f};
+            float scl[3] = {1.f, 1.f, 1.f};
+            gizmos.SelectEntity(cmd.entityId, pos, rot, scl);
         });
 
     // ── Layer / tag system ──────────────────────────────────────────────────
