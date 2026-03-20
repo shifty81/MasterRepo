@@ -8,6 +8,9 @@ add_library(UILib STATIC
     Widgets/Widget.cpp
     Themes/Theme.cpp
     Layouts/Layout.cpp
+    Animation/UIAnimation.cpp
+    Localization/Localization.cpp
+    Accessibility/Accessibility.cpp
 )
 
 target_include_directories(UILib PUBLIC ${CMAKE_SOURCE_DIR})
