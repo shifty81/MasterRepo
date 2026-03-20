@@ -93,8 +93,15 @@ bool RefactorAgent::RenameSymbol(const std::string& filePath, const std::string&
     std::string content((std::istreambuf_iterator<char>(in)),
                          std::istreambuf_iterator<char>());
     in.close();
-    // Replace whole-word occurrences of oldName with newName
-    std::regex re("\\b" + std::regex_replace(oldName, std::regex(R"([\.\^\$\*\+\?\{\}\[\]\\\|\(\)])"), R"(\$&)") + "\\b");
+    // Escape any regex metacharacters in oldName, then match whole-word boundaries
+    static const std::string kMeta = R"delim(\.^$*+?{}[]|())delim";
+    std::string escaped;
+    for (char c : oldName) {
+        if (kMeta.find(c) != std::string::npos)
+            escaped += '\\';
+        escaped += c;
+    }
+    std::regex re("\\b" + escaped + "\\b");
     std::string updated = std::regex_replace(content, re, newName);
     if (updated == content) return true; // nothing to change
     std::ofstream out(filePath);

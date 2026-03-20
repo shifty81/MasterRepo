@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <sstream>
 #include <regex>
+#include <stdexcept>
 
 namespace Agents {
 
@@ -173,11 +174,12 @@ void CleanupAgent::RegisterDefaultIntents() {
             std::string dir = ".";
             auto it = req.parameters.find("dir");
             if (it != req.parameters.end()) dir = it->second;
-            // Add a temporary rule for common temp extensions
+            // Add a temporary rule for common temp extensions; remove it even if RunCleanup throws
             CleanupRule tmpRule{ R"(\.(tmp|bak|o|obj|pdb)$)", CleanupAction::Delete, "" };
             AddRule(tmpRule);
-            CleanupReport report = RunCleanup(dir);
-            m_rules.pop_back(); // remove temporary rule
+            CleanupReport report;
+            try { report = RunCleanup(dir); } catch (...) { m_rules.pop_back(); throw; }
+            m_rules.pop_back();
             resp.success = true;
             std::ostringstream oss;
             oss << "Deleted " << report.deleted.size() << " temp file(s)";
@@ -200,7 +202,8 @@ void CleanupAgent::RegisterDefaultIntents() {
             if (it != req.parameters.end()) target = it->second;
             CleanupRule rule{ R"(\.(log|bak)$)", CleanupAction::Archive, target };
             AddRule(rule);
-            CleanupReport report = RunCleanup(dir);
+            CleanupReport report;
+            try { report = RunCleanup(dir); } catch (...) { m_rules.pop_back(); throw; }
             m_rules.pop_back();
             resp.success = true;
             std::ostringstream oss;

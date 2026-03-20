@@ -71,10 +71,13 @@ bool WorkspaceState::Load(const std::string& path) {
         } else if (line.substr(0, 5) == "file=") {
             std::string val = line.substr(5);
             auto p1 = val.find('|');
-            auto p2 = val.rfind('|');
+            auto p2 = (p1 != std::string::npos) ? val.find('|', p1 + 1) : std::string::npos;
             FileEntry entry;
             entry.path         = val.substr(0, p1);
-            entry.isDirty      = (p1 != std::string::npos && p2 > p1) ? val.substr(p1 + 1, p2 - p1 - 1) == "1" : false;
+            if (p1 != std::string::npos && p2 != std::string::npos && p2 > p1 + 1)
+                entry.isDirty = val.substr(p1 + 1, p2 - p1 - 1) == "1";
+            else if (p1 != std::string::npos && p2 == std::string::npos)
+                entry.isDirty = val.substr(p1 + 1) == "1";
             entry.lastModified = (p2 != std::string::npos) ? val.substr(p2 + 1) : "";
             m_openFiles.push_back(entry);
         } else if (line.substr(0, 6) == "error=") {

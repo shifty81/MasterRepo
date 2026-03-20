@@ -90,7 +90,7 @@ void BuildAgent::Reset() {
 BuildResult BuildAgent::Compile(const std::string& target) {
     auto start = std::chrono::steady_clock::now();
     BuildResult result;
-    std::string cmd = "cmake --build /tmp/build";
+    std::string cmd = "cmake --build ${BUILD_DIR:-/tmp/build}";
     if (!target.empty()) cmd += " --target " + target;
     result.output = "Build started: " + cmd;
     result.success = true;
@@ -112,7 +112,7 @@ BuildResult BuildAgent::RunCMake(const std::string& buildDir, const std::string&
 BuildResult BuildAgent::RunTests(const std::string& filter) {
     auto start = std::chrono::steady_clock::now();
     BuildResult result;
-    std::string cmd = "ctest --test-dir /tmp/build";
+    std::string cmd = "ctest --test-dir ${BUILD_DIR:-/tmp/build}";
     if (!filter.empty()) cmd += " -R " + filter;
     result.output = "Tests run: " + cmd;
     result.success = true;

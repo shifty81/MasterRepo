@@ -10,8 +10,14 @@ namespace Agents {
 static std::string CurrentTimestamp() {
     auto now = std::chrono::system_clock::now();
     auto t   = std::chrono::system_clock::to_time_t(now);
+    struct tm buf{};
+#if defined(_WIN32)
+    gmtime_s(&buf, &t);
+#else
+    gmtime_r(&t, &buf);
+#endif
     std::ostringstream oss;
-    oss << std::put_time(std::gmtime(&t), "%Y-%m-%dT%H:%M:%SZ");
+    oss << std::put_time(&buf, "%Y-%m-%dT%H:%M:%SZ");
     return oss.str();
 }
 
