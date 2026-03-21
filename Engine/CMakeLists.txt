@@ -12,6 +12,8 @@ add_library(AtlasEngine STATIC
     Window/Window.cpp
     Platform/Platform.cpp
     Render/Renderer.cpp
+    # Phase Blueprint — Advanced Rendering Pipeline
+    Render/RenderPipeline.cpp
 )
 
 target_include_directories(AtlasEngine PUBLIC ${CMAKE_SOURCE_DIR})

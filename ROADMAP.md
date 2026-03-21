@@ -576,8 +576,8 @@ MasterRepo/
 | ✅ 10.5 | Doc Generator | Generate docs from code + AI | `Tools/DocGenerator/`, `Docs/` |
 | ✅ 10.6 | PDF Manual | Editor-integrated manual with chapters | `Docs/Manual/MANUAL.md` |
 | ✅ 10.7 | CI/CD Pipeline | Automated build, test, package | `Scripts/Tools/ci_pipeline.sh` |
-| 10.8 | Cloud Backup | Optional cloud sync for projects | `Scripts/Tools/` |
-| 10.9 | Desktop/Mobile/Web Builds | Cross-platform export | `Builds/` |
+| ✅ 10.8 | Cloud Backup | Optional cloud sync for projects | `Scripts/Tools/cloud_backup.sh` |
+| ✅ 10.9 | Desktop/Mobile/Web Builds | Cross-platform export | `CMakePresets.json`, `Scripts/Tools/export_builds.sh` |
 | ✅ 10.10 | VR/AR Preview | VR/AR preview mode in editor (OpenXR stub) | `Editor/Viewport/VRPreview.h` |
 | ✅ 10.11 | Plugin Marketplace | Import/export plugin packs | `Plugins/Marketplace/` |
 
@@ -912,7 +912,7 @@ MasterRepo (v10.7 Ultra Blueprint)
 │   ├── engine_core (physics, GPU compute, serialization)
 │   ├── editor (Custom GUI, Code/Script, NodeGraph, Shader, PCG Rule, AI Chat, Metrics)
 │   ├── plugins (procedural mesh, AI tools, asset importers, VR/AR)
-│   ├── rendering_pipeline (LOD, GI, RayTracing, Volumetrics, Particles)
+│   ├── rendering_pipeline — ✅ `Engine/Render/RenderPipeline.h` (LOD, GI, RayTracing, Volumetrics, Particles)
 │   ├── pcg_pipeline (Starbase generators, constraint solver, sandbox sim, validation)
 │   ├── audio_pipeline (procedural audio, SuperCollider, FluidSynth)
 │   └── animation_pipeline (rigging, mocap, procedural animation)
@@ -925,11 +925,11 @@ MasterRepo (v10.7 Ultra Blueprint)
 ├── AI (Intelligence Layer)
 │   ├── models (LLaMA, MPT, ONNX, DeepSpeed, GPT4All)
 │   ├── orchestrator (pipeline scheduler, priority/dependency management)
-│   ├── validator (automated debugging, pull-request reports)
+│   ├── validator — ✅ `AI/Validator/Validator.h` (automated debugging, pull-request reports)
 │   ├── rules_engine (constraint checking)
 │   ├── metrics_dashboard (PCG, rendering, gameplay metrics)
-│   ├── rendering_optimizer (visual optimization suggestions)
-│   └── meta_learning_layer (cross-project knowledge transfer)
+│   ├── rendering_optimizer — ✅ `AI/RenderingOptimizer/RenderingOptimizer.h` (visual optimization suggestions)
+│   └── meta_learning_layer — ✅ `AI/MetaLearning/MetaLearning.h` (cross-project knowledge transfer)
 │
 ├── Server (optional multiplayer)
 │   ├── engine_runtime, networking, pcg_pipeline, ai_integration

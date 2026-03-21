@@ -1,0 +1,238 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": { "major": 3, "minor": 20, "patch": 0 },
+
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/Builds/${presetName}",
+      "installDir": "${sourceDir}/Builds/${presetName}/install",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+
+    {
+      "name": "debug",
+      "displayName": "Debug (native)",
+      "description": "Debug build for local development",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "BUILD_TESTS": "ON"
+      }
+    },
+
+    {
+      "name": "release",
+      "displayName": "Release (native)",
+      "description": "Optimised release build",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+
+    {
+      "name": "release-with-debug",
+      "displayName": "RelWithDebInfo (native)",
+      "description": "Optimised build with debug symbols",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+
+    {
+      "name": "linux-x64",
+      "displayName": "Linux x86-64 Release",
+      "description": "Linux desktop release (x86-64)",
+      "inherits": "base",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_SYSTEM_NAME": "Linux",
+        "CMAKE_CXX_FLAGS": "-march=x86-64 -mtune=generic"
+      }
+    },
+
+    {
+      "name": "linux-arm64",
+      "displayName": "Linux ARM64 Release",
+      "description": "Linux ARM64 (Raspberry Pi 4 / server / Tegra)",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_SYSTEM_NAME": "Linux",
+        "CMAKE_CXX_FLAGS": "-march=armv8-a"
+      }
+    },
+
+    {
+      "name": "windows-x64",
+      "displayName": "Windows x86-64 Release",
+      "description": "Windows 10/11 (64-bit) release build",
+      "inherits": "base",
+      "generator": "Visual Studio 17 2022",
+      "architecture": {
+        "value": "x64",
+        "strategy": "set"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_SYSTEM_NAME": "Windows"
+      }
+    },
+
+    {
+      "name": "macos-universal",
+      "displayName": "macOS Universal (x64 + arm64)",
+      "description": "macOS fat binary — Intel + Apple Silicon",
+      "inherits": "base",
+      "generator": "Xcode",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_SYSTEM_NAME": "Darwin",
+        "CMAKE_OSX_ARCHITECTURES": "x86_64;arm64",
+        "CMAKE_OSX_DEPLOYMENT_TARGET": "11.0"
+      }
+    },
+
+    {
+      "name": "web-wasm",
+      "displayName": "WebAssembly (Emscripten)",
+      "description": "Browser WASM build via Emscripten",
+      "inherits": "base",
+      "toolchainFile": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_SYSTEM_NAME": "Emscripten",
+        "CMAKE_CROSSCOMPILING": "ON",
+        "ATLAS_PLATFORM_WEB": "ON"
+      }
+    },
+
+    {
+      "name": "android-arm64",
+      "displayName": "Android ARM64-v8a",
+      "description": "Android NDK cross-compile for arm64-v8a",
+      "inherits": "base",
+      "toolchainFile": "$env{ANDROID_NDK}/build/cmake/android.toolchain.cmake",
+      "cacheVariables": {
+        "ANDROID_ABI": "arm64-v8a",
+        "ANDROID_PLATFORM": "android-26",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_SYSTEM_NAME": "Android"
+      }
+    },
+
+    {
+      "name": "headless-server",
+      "displayName": "Headless Server Build",
+      "description": "Server-only build without GUI, editor, or audio",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ATLAS_BUILD_EDITOR": "OFF",
+        "ATLAS_BUILD_AUDIO": "OFF",
+        "ATLAS_HEADLESS": "ON"
+      }
+    },
+
+    {
+      "name": "ci-debug",
+      "displayName": "CI Debug",
+      "description": "Used by ci_pipeline.sh — debug + tests",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "BUILD_TESTS": "ON",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+
+    {
+      "name": "ci-release",
+      "displayName": "CI Release",
+      "description": "Used by ci_pipeline.sh — release package",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    }
+  ],
+
+  "buildPresets": [
+    {
+      "name": "debug",
+      "configurePreset": "debug",
+      "jobs": 0
+    },
+    {
+      "name": "release",
+      "configurePreset": "release",
+      "jobs": 0
+    },
+    {
+      "name": "linux-x64",
+      "configurePreset": "linux-x64",
+      "jobs": 0
+    },
+    {
+      "name": "windows-x64",
+      "configurePreset": "windows-x64",
+      "configuration": "Release"
+    },
+    {
+      "name": "macos-universal",
+      "configurePreset": "macos-universal",
+      "configuration": "Release"
+    },
+    {
+      "name": "web-wasm",
+      "configurePreset": "web-wasm",
+      "jobs": 0
+    },
+    {
+      "name": "android-arm64",
+      "configurePreset": "android-arm64",
+      "jobs": 0
+    },
+    {
+      "name": "headless-server",
+      "configurePreset": "headless-server",
+      "jobs": 0
+    },
+    {
+      "name": "ci-debug",
+      "configurePreset": "ci-debug",
+      "jobs": 0
+    },
+    {
+      "name": "ci-release",
+      "configurePreset": "ci-release",
+      "jobs": 0
+    }
+  ],
+
+  "testPresets": [
+    {
+      "name": "debug",
+      "configurePreset": "debug",
+      "output": { "outputOnFailure": true },
+      "execution": { "jobs": 4 }
+    },
+    {
+      "name": "ci-debug",
+      "configurePreset": "ci-debug",
+      "output": { "outputOnFailure": true },
+      "execution": { "jobs": 4 }
+    }
+  ]
+}
