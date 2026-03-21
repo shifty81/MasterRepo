@@ -47,7 +47,18 @@ inline void ForEachProperty(std::string_view typeName,
             Core::TypeInfo info;                                                \
             info.Name = #ClassName;                                             \
             info.Size = sizeof(T);                                              \
-            info.ID   = Core::HashType(#ClassName);
+            info.ID   = Core::HashType(#ClassName);                            \
+            info.BaseID = 0;
+
+#define REFLECT_BEGIN_DERIVED(ClassName, BaseClassName)                         \
+    namespace {                                                                 \
+    inline const bool ClassName##_registered = [] {                             \
+            using T = ClassName;                                                \
+            Core::TypeInfo info;                                                \
+            info.Name = #ClassName;                                             \
+            info.Size = sizeof(T);                                              \
+            info.ID   = Core::HashType(#ClassName);                            \
+            info.BaseID = Core::HashType(#BaseClassName);
 
 #define REFLECT_PROPERTY(propName, propType)                                     \
             {                                                                   \
