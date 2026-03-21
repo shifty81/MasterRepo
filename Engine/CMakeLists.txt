@@ -6,13 +6,17 @@ add_library(AtlasEngine STATIC
     Physics/PhysicsWorld.cpp
     Camera/Camera.cpp
     Audio/AudioEngine.cpp
+    # Blueprint — audio_pipeline
+    Audio/AudioPipeline.cpp
     Animation/AnimationGraph.cpp
     Animation/AnimationNodes.cpp
+    # Blueprint — animation_pipeline
+    Animation/AnimationPipeline.cpp
     Sim/TickScheduler.cpp
     Window/Window.cpp
     Platform/Platform.cpp
     Render/Renderer.cpp
-    # Phase Blueprint — Advanced Rendering Pipeline
+    # Blueprint — rendering_pipeline
     Render/RenderPipeline.cpp
 )
 

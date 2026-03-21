@@ -22,6 +22,10 @@ add_library(AILib STATIC
     MetaLearning/MetaLearning.cpp
     RenderingOptimizer/RenderingOptimizer.cpp
     Validator/Validator.cpp
+    # Blueprint — orchestrator, rules engine, metrics dashboard
+    Orchestrator/Orchestrator.cpp
+    RulesEngine/RulesEngine.cpp
+    MetricsDashboard/MetricsDashboard.cpp
 )
 target_include_directories(AILib PUBLIC ${CMAKE_SOURCE_DIR})
 target_compile_features(AILib PUBLIC cxx_std_20)
