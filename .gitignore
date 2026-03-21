@@ -58,3 +58,4 @@ CMakeCache.txt
 cmake_install.cmake
 Makefile
 Scripts/Tools/New Rich Text Document.rtf
+*.pdf
