@@ -22,6 +22,8 @@ set(IDE_SOURCES
     TaskPanel/TaskPanel.cpp
     # Phase 27 — variable watch list panel
     WatchPanel/WatchPanel.cpp
+    # Phase 28 — build/run output log panel
+    OutputPanel/OutputPanel/OutputPanel.cpp
 )
 
 add_library(IDELib STATIC ${IDE_SOURCES})

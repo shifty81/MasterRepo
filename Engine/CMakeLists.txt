@@ -48,6 +48,8 @@ add_library(AtlasEngine STATIC
     Terrain/TerrainSystem.cpp
     # Phase 27 — chunk-based voxel world
     Voxel/VoxelWorld.cpp
+    # Phase 28 — cascaded shadow map manager
+    Shadows/ShadowMapper/ShadowMapper.cpp
 )
 
 target_include_directories(AtlasEngine PUBLIC ${CMAKE_SOURCE_DIR})

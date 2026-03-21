@@ -36,6 +36,8 @@ add_library(CoreLib STATIC
     Signal/Signal.cpp
     # Phase 27 — fixed-capacity ring buffer (header-only, compiled stub)
     RingBuffer/RingBuffer.cpp
+    # Phase 28 — fixed-size pool allocator (header-only, compiled stub)
+    Allocator/PoolAllocator/PoolAllocator.cpp
 )
 
 target_compile_features(CoreLib PUBLIC cxx_std_20)

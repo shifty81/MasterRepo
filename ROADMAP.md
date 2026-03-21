@@ -1040,6 +1040,19 @@ This is the "self-building" mode described in implement3.md, where the AI uses s
 
 ---
 
+### Phase 28 — PhysicsWorld, ShadowMapper, CaveGenerator, SymbolLocator, OutputPanel & PoolAllocator
+
+**Goal:** Add AABB physics simulation, CSM shadow mapping data layer, cellular-automata caves, fast symbol search, build output panel, and O(1) pool allocator.
+
+- ✅ `Runtime/Physics/PhysicsWorld/PhysicsWorld.h/.cpp` — AABB rigid-body simulation: `BodyType` (Static/Kinematic/Dynamic); uniform spatial grid broad-phase; impulse-based narrow-phase with restitution + friction; `Step(dt)` with configurable substeps; `ApplyForce()`/`ApplyImpulse()`/`SetVelocity()`; `QueryAABB()` overlap query; DDA `RayCast()`; `OnCollision()` callback; sleep threshold; `CollisionCount()` stat
+- ✅ `Engine/Shadows/ShadowMapper/ShadowMapper.h/.cpp` — `CascadeConfig` (resolution, splitLambda, depthBias, normalBias, lightBleedReduction); `PCFConfig` (kernelSize, samples, radius); practical split scheme λ-blend (log+uniform); `ComputeCascades(camVP, lightDir, near, far)` → per-cascade `LightSpaceMatrix`; `ExtractFrustumCorners()` via inverse VP; `FrustumToLightSpace()` tight ortho projection; light registry with `ShadowMap` handles
+- ✅ `PCG/Cave/CaveGenerator/CaveGenerator.h/.cpp` — `CaveConfig` (size, fillDensity, automataSteps, birth/survive rules, minIslandSize, vault count/size); random fill → cellular-automata iterations; flood-fill island removal below `minIslandSize`; vault placement with L-corridor connection to entrance; `CaveMap::IsFullyConnected()` BFS validation; typed vaults (treasure/boss/spawn/rest/armory); entrance+exit placement
+- ✅ `Tools/Locator/SymbolLocator/SymbolLocator.h/.cpp` — Recursive source tree scan; regex patterns for Function/Class/Struct/Enum/Define/Namespace; `fuzzyScore()` (exact→prefix→substring→subsequence); `Search(query, maxResults)` with score-sorted results; `GoToDefinition(name)` best-match; `SymbolsInFile()` / `ByKind()`; `IncrementalReindex(file)`; `OnIndexReady()` + `OnProgress()` callbacks; `SymbolIndexStats` (filesIndexed, symbolCount, indexTimeMs)
+- ✅ `IDE/OutputPanel/OutputPanel/OutputPanel.h/.cpp` — `OutputLine` with id, text, severity (Debug/Info/Warning/Error), category, timestampMs, lineNumber; `deque`-based bounded buffer; `Append()`/`AppendBatch()`; `Filter(severity, category)`; `Search(query, caseSensitive)`; `TailMode(N)` for GetLines(); `ErrorCount()`/`WarningCount()` running totals; `ExportText(filter)` + `ExportCSV()`; `OnNewLine()` callback
+- ✅ `Core/Allocator/PoolAllocator/PoolAllocator.h` — Header-only `PoolAllocator<T,N>` (stack-allocated, zero heap); singly-linked free-list for O(1) `Allocate()`/`Deallocate()`; `New<Args...>()`/`Delete()` RAII pair (placement-new + destructor call); `IsFull()`/`IsEmpty()`/`InUse()`/`Free()`/`Capacity()`; `owns(ptr)` range check; `Reset()` for trivial types; `PoolStats` (capacity, inUse, totalAllocs, totalFrees, peakInUse)
+
+---
+
 ## Appendix C: v10.7 Ultra Blueprint Systems Map
 
 The final comprehensive systems map from implement3.md showing all subsystems and their relationships:

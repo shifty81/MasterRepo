@@ -32,6 +32,8 @@ set(TOOLS_SOURCES
     ScriptRunner/ScriptRunner.cpp
     # Phase 27 — include dependency graph analyzer
     DependencyAnalyzer/DependencyAnalyzer.cpp
+    # Phase 28 — in-project symbol locator / fuzzy search
+    Locator/SymbolLocator/SymbolLocator.cpp
 )
 
 add_library(ToolsLib STATIC ${TOOLS_SOURCES})

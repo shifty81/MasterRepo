@@ -35,6 +35,8 @@ add_library(RuntimeLib STATIC
     Multiplayer/LobbySystem/LobbySystem.cpp
     # Phase 27 — action-map input layer
     Input/InputMapper/InputMapper.cpp
+    # Phase 28 — AABB rigid-body physics simulation
+    Physics/PhysicsWorld/PhysicsWorld.cpp
 )
 
 target_include_directories(RuntimeLib PUBLIC ${CMAKE_SOURCE_DIR})

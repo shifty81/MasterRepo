@@ -47,6 +47,8 @@ set(PCG_SOURCES
     Cities/CityGenerator.cpp
     # Phase 27 — space station interior layout
     SpaceLayout/SpaceLayoutGenerator.cpp
+    # Phase 28 — cellular-automata cave generator
+    Cave/CaveGenerator/CaveGenerator.cpp
 )
 
 add_library(PCGLib STATIC ${PCG_SOURCES})
