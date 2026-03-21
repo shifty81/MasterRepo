@@ -31,6 +31,10 @@ set(EDITOR_SOURCES
     ${CMAKE_SOURCE_DIR}/Plugins/Marketplace/PluginMarketplace.cpp
     # GUI renderer (OpenGL + GLFW)
     Render/EditorRenderer.cpp
+    # Phase 20 — anomaly/constraint visual overlay
+    Overlay/AnomalyOverlay.cpp
+    # Phase 22 — undoable command bus (undo/redo stack)
+    UndoableCommandBus.cpp
 )
 
 add_library(EditorLib STATIC ${EDITOR_SOURCES})

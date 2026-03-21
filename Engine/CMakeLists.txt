@@ -29,6 +29,27 @@ add_library(AtlasEngine STATIC
     Render/Renderer.cpp
     # Blueprint — rendering_pipeline
     Render/RenderPipeline.cpp
+    # Phase 19 — networking core
+    Network/NetworkManager.cpp
+    # Phase 20 — scene graph implementation
+    Scene/SceneGraph.cpp
+    # Phase 21 — net context + shader manager
+    Net/NetContext.cpp
+    Shader/ShaderManager.cpp
+    # Phase 22 — camera controller
+    Camera/CameraController.cpp
+    # Phase 23 — level-of-detail manager
+    Lod/LODSystem.cpp
+    # Phase 24 — CPU particle system
+    Particles/ParticleSystem.cpp
+    # Phase 25 — post-process pipeline
+    PostProcess/PostProcessPipeline.cpp
+    # Phase 26 — heightmap terrain system
+    Terrain/TerrainSystem.cpp
+    # Phase 27 — chunk-based voxel world
+    Voxel/VoxelWorld.cpp
+    # Phase 28 — cascaded shadow map manager
+    Shadows/ShadowMapper/ShadowMapper.cpp
 )
 
 target_include_directories(AtlasEngine PUBLIC ${CMAKE_SOURCE_DIR})

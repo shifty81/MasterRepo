@@ -20,6 +20,20 @@ set(TOOLS_SOURCES
     Scaffolding/CodeScaffolder.cpp
     TestPipeline/TestPipeline.cpp
     MetricsReporting/MetricsReporter.cpp
+    # Phase 21 — performance profiler
+    Profiler/PerformanceProfiler.cpp
+    # Phase 23 — micro-benchmark runner
+    BenchmarkRunner/BenchmarkRunner.cpp
+    # Phase 24 — unified asset import/process/export pipeline
+    AssetPipeline/AssetPipeline.cpp
+    # Phase 25 — memory allocation profiler
+    MemoryProfiler/MemoryProfiler.cpp
+    # Phase 26 — script execution runner
+    ScriptRunner/ScriptRunner.cpp
+    # Phase 27 — include dependency graph analyzer
+    DependencyAnalyzer/DependencyAnalyzer.cpp
+    # Phase 28 — in-project symbol locator / fuzzy search
+    Locator/SymbolLocator/SymbolLocator.cpp
 )
 
 add_library(ToolsLib STATIC ${TOOLS_SOURCES})

@@ -864,7 +864,7 @@ These phases expand the system beyond the core 0–10 roadmap, adding advanced c
 ### Phase 15 — Onboard Natural Language AI Assistant
 
 - ✅ Natural language command interface in editor (`IDE/NLAssistant/NLAssistant.h`)
-- Voice-to-action pipeline (optional / future)
+- ✅ Voice-to-action pipeline (`IDE/VoiceInput/VoiceInput.h`) — implemented in Phase 19
 - ✅ Context-aware help system (`AI/ContextHelp/ContextHelp.h`)
 - ✅ AI tutorials and walkthroughs (`AI/Tutorial/Tutorial.h`)
 - ✅ Interactive documentation (`IDE/InteractiveDocs/InteractiveDocs.h`)
@@ -920,6 +920,136 @@ This is the "self-building" mode described in implement3.md, where the AI uses s
 - ✅ `Editor/CMakeLists.txt` — EditorRenderer added to EditorLib
 
 **Rules followed:** No ImGui (Atlas Rule) — UI drawn entirely with custom OpenGL primitives.
+
+---
+
+### Phase 19 — Networking Core, Voice Input & AI Decision Visualiser
+
+**Goal:** Add multiplayer networking foundations, complete the voice-to-action pipeline from Phase 15, introduce a deterministic PCG seed manager, multiplayer state-sync with desync detection, and an AI reasoning visualiser for editor overlays.
+
+- ✅ `Engine/Network/NetworkManager.h/.cpp` — Lightweight ENet-style session manager; supports host/connect/broadcast; stub-ready for ENet / LiteNetLib / asio
+- ✅ `IDE/VoiceInput/VoiceInput.h/.cpp` — Voice-to-action pipeline (completes Phase 15); keyword → action mapping; stub-ready for Whisper / Vosk offline STT backends
+- ✅ `AI/DecisionVisualizer/DecisionVisualizer.h/.cpp` — Records AI reasoning chains (BeginTrace / AddStep / CommitTrace); editor overlays query this to show "why the AI made this choice"
+- ✅ `Core/DeterministicSeed/DeterministicSeed.h/.cpp` — Global singleton seed registry; `Derive(domain)` / `Derive(domain, index)` give every PCG subsystem reproducible seeds; serialise/deserialise for save-files
+- ✅ `Runtime/StateSync/StateSync.h/.cpp` — World-snapshot ring buffer with deterministic diff-based desync detection and rollback; fires conflict callbacks for resolution strategies
+- ✅ Windows build fix: `Agents/CodeAgent/ToolSystem.cpp` and `Agents/SelfBuildAgent/SelfBuildAgent.cpp` now include `<stdio.h>` inside `#ifdef _WIN32` so `_popen` / `_pclose` are properly declared on MSVC
+
+---
+
+### Phase 20 — AI Safety, Conflict Resolution & Performance Monitoring
+
+**Goal:** Complete the v10.7 Ultra Blueprint remaining enhancements: transaction-safe AI suggestion staging, multi-model conflict resolution, resource monitoring, NPC behaviour controller, viewport anomaly overlays, and the SceneGraph implementation.
+
+- ✅ `Engine/Scene/SceneGraph.cpp` — Implements the existing `SceneGraph.h`; add/remove/find/traverse/count operations on the node tree
+- ✅ `AI/ConflictResolver/ConflictResolver.h/.cpp` — Arbitrates competing AI suggestions from PCG, Shader, and Gameplay pipelines; priority × pipeline-weight scoring; cyclic dependency detection and breaking
+- ✅ `AI/ResourceMonitor/ResourceMonitor.h/.cpp` — Samples CPU/RAM/GPU usage during AI sessions; configurable thresholds fire alert callbacks so the orchestrator can throttle; 1-hour session limit enforced
+- ✅ `Core/TransactionManager/TransactionManager.h/.cpp` — Transaction-safe AI suggestion staging; `Begin`/`Stage`/`Commit`/`Rollback` with nested savepoints; nothing touches live project until committed
+- ✅ `Editor/Overlay/AnomalyOverlay.h/.cpp` — Manages `OverlayAnnotation` objects (info/warning/error) for in-viewport PCG constraint violations, AI feedback, and anomaly highlights; per-source visibility toggling
+- ✅ `Runtime/NPC/NPCController.h/.cpp` — Runtime NPC behaviour controller; supports `Idle/Patrol/Guard/Aggressive/Friendly/Fleeing` archetypes; AI Chat can call `TuneParams()` mid-session for interactive behaviour adjustment
+
+---
+
+### Phase 21 — Engine Integration, Dialogue, Biomes & Profiling
+
+**Goal:** Wire the long-pending `Engine/Net/NetContext` TODO into the engine core, add a biome-aware world generator, NPC dialogue system, persistent event audit log, shader asset manager, and a frame-time profiler.
+
+- ✅ `Engine/Net/NetContext.h/.cpp` — Adapter that wires `NetworkManager` into `Engine::Core::Engine`; role-aware `Start()`/`Stop()`/`Poll()` helpers; resolves all `#if 0 TODO` stubs in `Engine/Core/Engine.h` and `Engine.cpp`
+- ✅ `Engine/Shader/ShaderManager.h/.cpp` — Shader asset loader/cache; `LoadFromFiles`, `LoadFromSource`, `Reload` (hot-reload), `Bind`/`Unbind`; GPU stub-ready for OpenGL / Vulkan backends
+- ✅ `Runtime/Dialogue/DialogueSystem.h/.cpp` — Dialogue-tree engine for NPC conversations; `StartDialogue` / `Advance` / `SelectChoice` / `End`; branches, conditions, and action tags; complements `NPCController`
+- ✅ `PCG/Biomes/BiomeGenerator.h/.cpp` — Biome-aware world generation; classifies each cell by moisture × temperature into registered `BiomeDef` ranges; deterministic noise seeding; vegetation/rock asset spawn lists per cell
+- ✅ `Core/EventLog/EventLog.h/.cpp` — Persistent rolling audit log (default 10 000 entries); severity/source/type filters; `FlushToDisk()` writes JSONL for AI training-data collection; bridges `EventBus` and AI meta-learning
+- ✅ `Tools/Profiler/PerformanceProfiler.h/.cpp` — Frame-time and subsystem profiler; `BeginScope`/`EndScope` with RAII `ProfileScope` helper; rolling frame-time history; `GetAllStats()` feeds `AnalyticsDashboard`
+
+---
+
+### Phase 22 — Editor Undo Stack, Animation Controller, Dungeon Generator & Camera Controller
+
+**Goal:** Unblock the long-standing `EntityCommands.h` TODO blocks by implementing the undoable command bus; add runtime per-entity animation control, a BSP dungeon generator for PCG, a smooth multi-mode camera controller, and complete the `MemoryStore` JSON persistence stub.
+
+- ✅ `Editor/UndoableCommandBus.h/.cpp` — `IUndoableCommand` / `ICommand` interfaces + thread-safe `Execute`/`Undo`/`Redo` stack (max-depth capped, callbacks fired on history change)
+- ✅ `Runtime/ECS/EntityCommands.h` — All `#if 0 TODO` blocks removed; `CreateEntityCommand`, `DestroyEntityCommand`, `SetComponentCommand<T>`, `RemoveComponentCommand<T>`, `UndoableSetComponentCommand<T>`, `UndoableRemoveComponentCommand<T>` now live code
+- ✅ `Runtime/Animation/AnimationController.h/.cpp` — Per-entity animation state manager; supports multiple layers; `Once`/`Loop`/`PingPong`/`Hold` modes; fires `AnimEvent` on loop/finish; `Update(dt)` integrates with engine tick
+- ✅ `PCG/Dungeon/DungeonGenerator.h/.cpp` — BSP dungeon generator; configurable depth / room sizes / split ratio; deterministic LCG seed; L-shaped corridor connection; tags start/boss rooms; streaming `GenerateWithCallback()`
+- ✅ `Engine/Camera/CameraController.h/.cpp` — Three-mode camera driver: `Orbit` (editor/third-person), `Fly` (free-flight), `Follow` (smooth-lag entity tracking); per-mode smooth damping; `TargetQuery` callback for Follow mode
+- ✅ `AI/Memory/MemoryStore::LoadFromFile()` — Completed hand-rolled JSON deserialization matching `SaveToFile()` output; round-trip save/load now fully functional
+
+---
+
+### Phase 23 — Game Session, LOD System, Config System, Goal Planner, Story Generator & Benchmark Runner
+
+**Goal:** Cover the remaining Blueprint gaps: multiplayer session bookkeeping, distance-driven LOD for the render pipeline, hierarchical project configuration, GOAP AI decision-making for NPCs/agents, procedural narrative generation, and a benchmark framework for CI performance regression.
+
+- ✅ `Runtime/Gameplay/GameSession/GameSession.h/.cpp` — Session state machine (`Lobby → Active → Paused → Ended`); `AddPlayer`/`RemovePlayer`; per-player score/kills/deaths/ping/play-time; time-limit and score-limit end conditions; `Tick(dt)` advances clock; `Leaderboard()` sorted view; session event callbacks
+- ✅ `Engine/Lod/LODSystem.h/.cpp` — Distance-driven LOD manager; per-object `LODBand` array; hysteresis margin to prevent band ping-pong; configurable hard-cull distance; `Evaluate()` returns sorted `LODResult` list; `OnLODChanged` callbacks
+- ✅ `Core/Config/ConfigSystem.h/.cpp` — Multi-layer hierarchical config (defaults → base → platform → user); INI and flat-JSON parsers; typed `Get*`/`Set*` API; file-system `PollReload()` live-reload via `std::filesystem::last_write_time`; `SaveLayer()` export; `OnChanged` callbacks
+- ✅ `AI/GoalPlanner/GoalPlanner.h/.cpp` — GOAP goal-oriented action planner; forward-chaining BFS search with cycle avoidance (string-hash visited set); `WorldState` as flat `unordered_map`; `PlanFor(goal)` and `PlanBest()` (highest-priority achievable); `CanExecute`/`ApplyAction` helpers
+- ✅ `PCG/Story/StoryGenerator.h/.cpp` — Procedural narrative arc generator; 7-beat story template (`Intro → Climax → Resolution`); deterministic LCG seed; quest-weaving from `WorldContext`; `CompleteBeat()`/`NextBeat()` for runtime progression; optional side-quest beat
+- ✅ `Tools/BenchmarkRunner/BenchmarkRunner.h/.cpp` — Micro-benchmark runner; warmup + timed iteration loop; per-run stats (min/max/mean/median/stddev/total); CSV/JSON/Markdown export; `RunFilter()` by name substring; `Compare()` diff table for regression CI
+
+---
+
+### Phase 24 — Behavior Tree, Particle System, Lua Binding, Vegetation Generator, Asset Pipeline & Project Explorer
+
+**Goal:** Fill the remaining high-value Blueprint gaps: NPC BT-based decision-making, visual effects particles, script engine binding, biome-driven foliage, unified asset pipeline orchestration, and the IDE project tree.
+
+- ✅ `Runtime/AI/BehaviorTree/BehaviorTree.h/.cpp` — Complete BT system: `ActionNode`, `ConditionNode`, `SequenceNode` (AND), `SelectorNode` (OR), `ParallelNode` (RequireAll/RequireOne), `InvertNode`, `RepeatNode` (N times or infinite), `LimitNode` (max runs); `Blackboard` typed key-value context; `BehaviorTree` owner drives tick; auto-reset on completion
+- ✅ `Engine/Particles/ParticleSystem.h/.cpp` — CPU particle system; `EmitterConfig` with cone spread, speed range, gravity, drag, lifetime, color gradient, size-over-life; `ParticleEmitter` pool-based allocation; `ParticleSystem` multi-emitter manager; `CollectDrawData()` feeds renderer; render callback decouples from GPU
+- ✅ `Core/Scripting/LuaBinding.h/.cpp` — Dependency-free script binding registry; `ScriptValue` variant (nil/bool/int64/double/string); `ScriptModule` namespaced function map; `LuaBinding` global+namespaced dispatch; `Call("ns.fn", args)`, `CanCall()`, `AllFunctions()`, `Dump()` introspection; designed for drop-in Lua/wasm backend
+- ✅ `PCG/Vegetation/VegetationGenerator.h/.cpp` — Biome-aware foliage placement; per-biome `BiomeVegetationConfig` with asset weight table, density, maxSlope; 2D value noise for cluster modulation; `VegetationInstance` with world pos/rotY/scale; streaming `GenerateWithCallback()`; `GlobalDensityScale` tuning knob
+- ✅ `Tools/AssetPipeline/AssetPipeline.h/.cpp` — Unified import→process→export pipeline; wraps static `AssetImporter::Import` + `AssetProcessor::Process`; job queue with `Enqueue`/`Cancel`/`RunAll`/`RunNext`; `PipelineProgressFn` + `PipelineCompleteFn` callbacks; `History()` of all results; `Process()` one-shot convenience
+- ✅ `IDE/ProjectExplorer/ProjectExplorer.h/.cpp` — Virtual project file tree; `Refresh()` recursive directory scan; `ExplorerFilter` (extensions/showHidden/nameContains); expand/collapse/ExpandAll; selection with `OnSelectionChanged`; `PollChanges()` file-watch via `last_write_time`; `GetExpandedPaths()`/`RestoreExpandedPaths()` state persistence
+
+---
+
+### Phase 25 — Achievement System, Post-Process Pipeline, Weather System, Memory Profiler, Snippet Manager & Event Dispatcher
+
+**Goal:** Fill remaining gameplay, rendering, world-simulation, developer-tooling, and IDE gaps with polished, fully-wired subsystems.
+
+- ✅ `Runtime/Gameplay/AchievementSystem/AchievementSystem.h/.cpp` — Achievement definitions with four condition types (Cumulative, SingleEvent, Streak, TimedAccumulation); `Update(eventKey, delta)` drives all matching achievements in one call; `ForceUnlock()`, `ResetStreak()`; `ExportState()`/`ImportState()` for save/load; `OnUnlock`/`OnProgress` callbacks; rewardXP + rewardItemId per def
+- ✅ `Engine/PostProcess/PostProcessPipeline.h/.cpp` — Seven configurable post-process passes: Bloom (threshold/blur), Tonemapping (ACES/Reinhard/Uncharted2), Vignette, SSAO (hemisphere kernel), Chromatic Aberration, ColorGrading (lift/gamma/gain/saturation/contrast), FXAA; `Execute(fbo, w, h)` runs enabled passes in correct order; `PassResult` timing per pass; `EnablePass()` per-name override
+- ✅ `PCG/Weather/WeatherSystem.h/.cpp` — Seven built-in presets (Clear/Cloudy/Rain/Storm/Fog/Snow/Blizzard); full `WeatherState` (cloud/rain/snow/fog/wind/temp/humidity/lightning/visibility/fog-colour); smooth `Lerp()` blending between presets; auto-transition with weighted random selection after hold duration; time-of-day temperature modulation; `OnWeatherChange`/`OnTick` callbacks
+- ✅ `Tools/MemoryProfiler/MemoryProfiler.h/.cpp` — Explicit `Track(tag,bytes,callsite)`/`Untrack(id)` instrumentation; per-tag `TagStats` (live/count/peak/totalAlloc/totalFreed); RAII `ScopeTracker`; `Snapshot()` capture; `DiffSnapshots()` for leak detection; `Report()` aligned text + `ReportCSV()`; `ResetPeaks()` for per-frame high-water tracking
+- ✅ `IDE/SnippetManager/SnippetManager.h/.cpp` — Snippet library with `${VAR}` placeholder substitution; `ExpandByPrefix()` for trigger-based expansion (e.g. "forr<tab>"); search by tag/language/substring; `LoadFromFile()`/`SaveToFile()` in pipe-delimited format; seven built-in C++/Lua/Python snippets; `useCount` tracking for MRU sorting
+- ✅ `Core/EventDispatcher/EventDispatcher.h/.cpp` — Typed `Subscribe<T>(event, fn, priority, oneShot)`; `Dispatch<T>` synchronous sorted-by-priority dispatch; `Defer<T>` + `FlushDeferred()` for deferred queue; `Unsubscribe(ListenerID)`/`UnsubscribeAll(event)`; thread-safe ID generation with `std::atomic`; copy-before-dispatch avoids iterator invalidation from recursive unsubscribe
+
+---
+
+### Phase 26 — LobbySystem, TerrainSystem, CityGenerator, ScriptRunner, TaskPanel & Signal
+
+**Goal:** Add multiplayer foundation, open-world terrain, procedural urbanism, script tooling, IDE productivity, and a lightweight signal/slot primitive.
+
+- ✅ `Runtime/Multiplayer/LobbySystem/LobbySystem.h/.cpp` — Named rooms with `LobbyRoomConfig` (maxPlayers, password, gameMode, observers); `PlayerSlot` state machine (Open/Occupied/Closed/Observer); `JoinRoom()` with password check + observer mode; `KickPlayer()`/`SetReady()`/`CloseSlot()`/`OpenSlot()`; automatic host migration (oldest player promoted); `StartGame()` countdown; `Update(dt)` countdown timer; `LobbyEvent` callbacks (PlayerJoined/Left/Kicked/Ready/HostChanged/GameStarting/GameStarted/RoomClosed)
+- ✅ `Engine/Terrain/TerrainSystem.h/.cpp` — `TerrainChunk` with bilinear `SampleHeight()`, per-vertex normal `ComputeNormals()`; `LODPolicy` distance-threshold selection; chunk streaming `UpdateStreaming(viewX, viewZ)` with configurable radius; `RayCast()` linear step-refine intersection; `Sculpt()` weighted-paint height delta; `HeightmapSourceCb` for noise/file-based height fill; `ChunkCoordHash` for O(1) chunk lookup
+- ✅ `PCG/Cities/CityGenerator.h/.cpp` — Grid intersection lattice; road segment graph (Highway/Arterial/Secondary/Residential/Alley); block polygon extraction; lot subdivision with configurable `minLotWidth`/`maxLotWidth`; land-use zoning (Residential/Commercial/Industrial/Park/Civic/Empty) weighted by distance-from-centre + `commercialCoreBias`; step-by-step `GenerateStep()` API; `OnProgress()` callback per phase
+- ✅ `Tools/ScriptRunner/ScriptRunner.h/.cpp` — `DetectLang()` by file extension; `FindInterpreter()` auto-discovery (lua5.4/python3/sh); `Run()` synchronous + `RunStreaming()` line-callback variant; `RunFile()` / `RunString()` convenience wrappers; `ValidateScript()` pre-flight check; temp-file based `RunString()`; POSIX/Windows `popen`/`_popen` portability; wall-time measurement; timeout detection
+- ✅ `IDE/TaskPanel/TaskPanel.h/.cpp` — Recursive directory scan for TODO/FIXME/HACK/NOTE/OPTIMIZE/REVIEW/BUG comment markers; configurable extensions and keywords; `TaskItem` with file/line/column/author; `GetFiltered(TaskFilter)` with marker/priority/file/message filters; four `SortBy` options (File/Line/Priority/Marker); `JumpTo()` with IDE navigation callback; `ExportText()` + `ExportCSV()`; `RefreshFile()` incremental update
+- ✅ `Core/Signal/Signal.h` — Header-only typed `Signal<Args...>` template; `Connect(fn)`→`ConnectionID`; `ConnectScoped(fn)`→`ScopedConnection` RAII handle (auto-disconnects on destruction); `Disconnect(id)`, `DisconnectAll()`; deferred tombstone erase during `Emit()` (prevents iterator invalidation from self-disconnect); `operator()` functor shorthand; move-only `ScopedConnection`
+
+---
+
+### Phase 27 — InputMapper, VoxelWorld, SpaceLayoutGenerator, DependencyAnalyzer, WatchPanel & RingBuffer
+
+**Goal:** Add rebindable input abstraction, voxel world foundation, procedural interior layout, include-graph analysis, IDE variable watching, and a lock-free ring buffer primitive.
+
+- ✅ `Runtime/Input/InputMapper/InputMapper.h/.cpp` — Typed `ActionDef` with `Binding` list (Digital/AnalogAxis/CompositeAxis); deadzone, scale, invert per binding; `Update(RawInputFrame)` processes all bindings and fires change callbacks; `IsHeld()`/`IsJustPressed()`/`IsJustReleased()`/`AxisValue()` query API; `RebindAction()`/`AddBinding()`/`RemoveBinding()` at runtime; `MapKey()`/`MapAxis()` convenience factories; `Serialize()`/`Deserialize()` for config persistence
+- ✅ `Engine/Voxel/VoxelWorld.h/.cpp` — `VoxelChunk` (16³ grid, dirty flag); `SetVoxel()`/`GetVoxel()` with world→chunk coordinate mapping; streaming `UpdateStreaming(viewX,Y,Z)` with configurable radius; greedy per-face mesh builder → `VoxelMesh` (vertex+index list); DDA `RayCast()` for pick/place; BFS `FloodFill()` for cavity detection; `FillSphere()` paint brush; `OnMeshReady()` callback
+- ✅ `PCG/SpaceLayout/SpaceLayoutGenerator.h/.cpp` — Seed rooms (Bridge/Engineering); BSP-style grid room placement with randomized room types (Quarters/Cargo/Lab/MedBay/Airlock/Utility); nearest-unconnected corridor chain with L-shaped corridor segments; `SLDoor` with airlock tag; `SpaceLayout::IsConnected()` BFS validation; fallback direct corridor if Engineering unreachable; `OnProgress()` callback
+- ✅ `Tools/DependencyAnalyzer/DependencyAnalyzer.h/.cpp` — Recursive directory scan + `#include` regex parsing; `resolve()` for include path lookup; `fanout`/`fanin` computation; DFS cycle detection with white/gray/black coloring → `IncludeCycle` chains; `FindDependents()`/`FindDependencies()` BFS traversal; `ExportText()` with top-fanout/fanin summary; `ExportDOT()` for Graphviz; incremental `AnalyseFile()`
+- ✅ `IDE/WatchPanel/WatchPanel.h/.cpp` — `WatchEntry` with current/previous value, changed flag, snapshotCount, author note; `Snapshot(EvalCb)` evaluates all enabled entries and tracks deltas; `GetChanged()` for changed-only query; per-entry `deque` value history with configurable depth; `OnChange()` callback; `ExportText()` + `ExportCSV()`; `SetEnabled()`/`SetNote()` for individual entry control
+- ✅ `Core/RingBuffer/RingBuffer.h` — Header-only `RingBuffer<T,N,Policy>` (stack-allocated, zero heap); `OverflowPolicy::Reject` (Push returns false when full) and `OverflowPolicy::Overwrite` (wraps oldest); `Push()`/`Pop()` → `optional<T>`; `Peek()` (oldest) + `PeekBack()` (newest); `operator[]` by age-index; forward iterator for range-for; `Clear()`, `IsFull()`, `IsEmpty()`, `Size()`, `Capacity()`
+
+---
+
+### Phase 28 — PhysicsWorld, ShadowMapper, CaveGenerator, SymbolLocator, OutputPanel & PoolAllocator
+
+**Goal:** Add AABB physics simulation, CSM shadow mapping data layer, cellular-automata caves, fast symbol search, build output panel, and O(1) pool allocator.
+
+- ✅ `Runtime/Physics/PhysicsWorld/PhysicsWorld.h/.cpp` — AABB rigid-body simulation: `BodyType` (Static/Kinematic/Dynamic); uniform spatial grid broad-phase; impulse-based narrow-phase with restitution + friction; `Step(dt)` with configurable substeps; `ApplyForce()`/`ApplyImpulse()`/`SetVelocity()`; `QueryAABB()` overlap query; DDA `RayCast()`; `OnCollision()` callback; sleep threshold; `CollisionCount()` stat
+- ✅ `Engine/Shadows/ShadowMapper/ShadowMapper.h/.cpp` — `CascadeConfig` (resolution, splitLambda, depthBias, normalBias, lightBleedReduction); `PCFConfig` (kernelSize, samples, radius); practical split scheme λ-blend (log+uniform); `ComputeCascades(camVP, lightDir, near, far)` → per-cascade `LightSpaceMatrix`; `ExtractFrustumCorners()` via inverse VP; `FrustumToLightSpace()` tight ortho projection; light registry with `ShadowMap` handles
+- ✅ `PCG/Cave/CaveGenerator/CaveGenerator.h/.cpp` — `CaveConfig` (size, fillDensity, automataSteps, birth/survive rules, minIslandSize, vault count/size); random fill → cellular-automata iterations; flood-fill island removal below `minIslandSize`; vault placement with L-corridor connection to entrance; `CaveMap::IsFullyConnected()` BFS validation; typed vaults (treasure/boss/spawn/rest/armory); entrance+exit placement
+- ✅ `Tools/Locator/SymbolLocator/SymbolLocator.h/.cpp` — Recursive source tree scan; regex patterns for Function/Class/Struct/Enum/Define/Namespace; `fuzzyScore()` (exact→prefix→substring→subsequence); `Search(query, maxResults)` with score-sorted results; `GoToDefinition(name)` best-match; `SymbolsInFile()` / `ByKind()`; `IncrementalReindex(file)`; `OnIndexReady()` + `OnProgress()` callbacks; `SymbolIndexStats` (filesIndexed, symbolCount, indexTimeMs)
+- ✅ `IDE/OutputPanel/OutputPanel/OutputPanel.h/.cpp` — `OutputLine` with id, text, severity (Debug/Info/Warning/Error), category, timestampMs, lineNumber; `deque`-based bounded buffer; `Append()`/`AppendBatch()`; `Filter(severity, category)`; `Search(query, caseSensitive)`; `TailMode(N)` for GetLines(); `ErrorCount()`/`WarningCount()` running totals; `ExportText(filter)` + `ExportCSV()`; `OnNewLine()` callback
+- ✅ `Core/Allocator/PoolAllocator/PoolAllocator.h` — Header-only `PoolAllocator<T,N>` (stack-allocated, zero heap); singly-linked free-list for O(1) `Allocate()`/`Deallocate()`; `New<Args...>()`/`Delete()` RAII pair (placement-new + destructor call); `IsFull()`/`IsEmpty()`/`InUse()`/`Free()`/`Capacity()`; `owns(ptr)` range check; `Reset()` for trivial types; `PoolStats` (capacity, inUse, totalAllocs, totalFrees, peakInUse)
 
 ---
 

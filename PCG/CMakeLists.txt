@@ -33,6 +33,22 @@ set(PCG_SOURCES
 
     # Blueprint — pcg_pipeline
     Pipeline/PCGPipeline.cpp
+    # Phase 21 — biome-aware world generation
+    Biomes/BiomeGenerator.cpp
+    # Phase 22 — BSP dungeon generator
+    Dungeon/DungeonGenerator.cpp
+    # Phase 23 — procedural story/narrative generator
+    Story/StoryGenerator.cpp
+    # Phase 24 — biome-aware vegetation placement
+    Vegetation/VegetationGenerator.cpp
+    # Phase 25 — dynamic weather simulation
+    Weather/WeatherSystem.cpp
+    # Phase 26 — procedural city generator
+    Cities/CityGenerator.cpp
+    # Phase 27 — space station interior layout
+    SpaceLayout/SpaceLayoutGenerator.cpp
+    # Phase 28 — cellular-automata cave generator
+    Cave/CaveGenerator/CaveGenerator.cpp
 )
 
 add_library(PCGLib STATIC ${PCG_SOURCES})

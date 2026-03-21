@@ -12,6 +12,18 @@ set(IDE_SOURCES
     LSP/LSPClient.cpp
     NLAssistant/NLAssistant.cpp
     InteractiveDocs/InteractiveDocs.cpp
+    # Phase 19 — voice-to-action pipeline
+    VoiceInput/VoiceInput.cpp
+    # Phase 24 — project file tree explorer
+    ProjectExplorer/ProjectExplorer.cpp
+    # Phase 25 — code snippet library
+    SnippetManager/SnippetManager.cpp
+    # Phase 26 — TODO/FIXME task panel
+    TaskPanel/TaskPanel.cpp
+    # Phase 27 — variable watch list panel
+    WatchPanel/WatchPanel.cpp
+    # Phase 28 — build/run output log panel
+    OutputPanel/OutputPanel/OutputPanel.cpp
 )
 
 add_library(IDELib STATIC ${IDE_SOURCES})

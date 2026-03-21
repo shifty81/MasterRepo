@@ -17,6 +17,26 @@ add_library(RuntimeLib STATIC
     BuilderRuntime/BuilderRuntime.cpp
     Collision/Collision.cpp
     Gameplay/Prefabs/PrefabSystem.cpp
+    # Phase 19 — multiplayer state synchronisation
+    StateSync/StateSync.cpp
+    # Phase 20 — NPC behaviour controller
+    NPC/NPCController.cpp
+    # Phase 21 — dialogue tree system
+    Dialogue/DialogueSystem.cpp
+    # Phase 22 — runtime animation controller
+    Animation/AnimationController.cpp
+    # Phase 23 — game session state machine
+    Gameplay/GameSession/GameSession.cpp
+    # Phase 24 — behavior tree for NPC AI
+    AI/BehaviorTree/BehaviorTree.cpp
+    # Phase 25 — achievement tracking system
+    Gameplay/AchievementSystem/AchievementSystem.cpp
+    # Phase 26 — multiplayer lobby management
+    Multiplayer/LobbySystem/LobbySystem.cpp
+    # Phase 27 — action-map input layer
+    Input/InputMapper/InputMapper.cpp
+    # Phase 28 — AABB rigid-body physics simulation
+    Physics/PhysicsWorld/PhysicsWorld.cpp
 )
 
 target_include_directories(RuntimeLib PUBLIC ${CMAKE_SOURCE_DIR})

@@ -20,6 +20,24 @@ add_library(CoreLib STATIC
     NetworkProtocolGen/NetworkProtocolGen.cpp
     JobSystem/JobSystem.cpp
     CodeIntelligence/CodeIntelligence.cpp
+    # Phase 19 — deterministic PCG seed manager
+    DeterministicSeed/DeterministicSeed.cpp
+    # Phase 20 — transaction-safe AI suggestion staging
+    TransactionManager/TransactionManager.cpp
+    # Phase 21 — persistent event/audit log
+    EventLog/EventLog.cpp
+    # Phase 23 — hierarchical config system
+    Config/ConfigSystem.cpp
+    # Phase 24 — script engine binding registry
+    Scripting/LuaBinding.cpp
+    # Phase 25 — typed event dispatcher
+    EventDispatcher/EventDispatcher.cpp
+    # Phase 26 — typed signal/slot (header-only, compiled stub)
+    Signal/Signal.cpp
+    # Phase 27 — fixed-capacity ring buffer (header-only, compiled stub)
+    RingBuffer/RingBuffer.cpp
+    # Phase 28 — fixed-size pool allocator (header-only, compiled stub)
+    Allocator/PoolAllocator/PoolAllocator.cpp
 )
 
 target_compile_features(CoreLib PUBLIC cxx_std_20)

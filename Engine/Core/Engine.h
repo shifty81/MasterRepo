@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <functional>
 #include "Runtime/ECS/ECS.h"
-// TODO: #include "Engine/Net/NetContext.h" // Not yet imported
+#include "Engine/Net/NetContext.h"
 #include "Engine/Sim/TickScheduler.h"
 
 namespace Engine::Core {
@@ -71,9 +71,7 @@ public:
     const EngineConfig& Config() const { return m_config; }
 
     ::Runtime::ECS::World& GetWorld() { return m_world; }
-#if 0 // TODO: Enable when Engine/Net/NetContext.h is imported
     net::NetContext& GetNet() { return m_net; }
-#endif
     Sim::TickScheduler& GetScheduler() { return m_scheduler; }
 
 private:
@@ -81,9 +79,7 @@ private:
     bool m_running = false;
     uint64_t m_tickCount = 0;
     ::Runtime::ECS::World m_world;
-#if 0 // TODO: Enable when Engine/Net/NetContext.h is imported
     net::NetContext m_net;
-#endif
     Sim::TickScheduler m_scheduler;
     FrameCallback m_frameCallback;
 };

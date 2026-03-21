@@ -37,15 +37,14 @@ void Engine::InitECS() {
 }
 
 void Engine::InitNetworking() {
-#if 0 // TODO: Enable when Engine/Net/NetContext.h is imported
-    net::NetMode netMode = net::NetMode::Standalone;
+    net::NetRole role = net::NetRole::None;
     if (m_config.mode == EngineMode::Server) {
-        netMode = net::NetMode::Server;
+        role = net::NetRole::DedicatedServer;
     } else if (m_config.mode == EngineMode::Client) {
-        netMode = net::NetMode::Client;
+        role = net::NetRole::Client;
     }
-    m_net.Init(netMode);
-#endif
+    m_net.SetRole(role);
+    if (role != net::NetRole::None) m_net.Start();
     Logger::Info("Networking initialized");
 }
 
@@ -66,19 +65,12 @@ void Engine::Run() {
     }
 
     while (m_running) {
-#if 0 // TODO: Enable when Engine/Net/NetContext.h is imported
         m_net.Poll();
-#endif
         float dt = 1.0f / static_cast<float>(m_config.tickRate);
         m_scheduler.Tick([this](float d) {
             m_world.Update(d);
         });
         if (m_frameCallback) m_frameCallback(dt);
-#if 0 // TODO: Enable when Engine/Net/NetContext.h is imported
-        if (m_config.mode == EngineMode::Server) {
-            m_net.Flush();
-        }
-#endif
         m_tickCount++;
         if (m_config.maxTicks > 0 && m_tickCount >= m_config.maxTicks) {
             m_running = false;
@@ -105,9 +97,7 @@ bool Engine::Running() const {
 void Engine::Shutdown() {
     if (m_running) {
         Logger::Info("Engine shutting down");
-#if 0 // TODO: Enable when Engine/Net/NetContext.h is imported
-        m_net.Shutdown();
-#endif
+        m_net.Stop();
         m_running = false;
     }
 }
