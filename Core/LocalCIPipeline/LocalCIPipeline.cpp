@@ -1,6 +1,10 @@
 #include "Core/LocalCIPipeline/LocalCIPipeline.h"
 #include <sstream>
 #include <cstdio>
+#ifdef _WIN32
+#  define popen  _popen
+#  define pclose _pclose
+#endif
 #include <ctime>
 #include <random>
 #include <algorithm>

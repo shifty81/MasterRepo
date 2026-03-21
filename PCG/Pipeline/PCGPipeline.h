@@ -11,6 +11,7 @@
 // Each stage can be run independently or as part of the full pipeline.
 // Results are accumulated in a PCGPipelineResult.
 
+#include <array>
 #include <cstdint>
 #include <functional>
 #include <string>

@@ -4,6 +4,10 @@
 #include <chrono>
 #include <algorithm>
 #include <cstdio>
+#ifdef _WIN32
+#  define popen  _popen
+#  define pclose _pclose
+#endif
 
 namespace AI {
 
