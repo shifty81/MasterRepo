@@ -106,18 +106,33 @@ check_cmd() {
 }
 
 check_cmd cmake
-# Accept any C++ compiler (g++, clang++, c++, or MSVC cl)
-if command -v g++ &>/dev/null; then
+# Accept any C++ compiler: honour $CXX env var first, then probe common names
+_cxx_found=false
+if [[ -n "${CXX:-}" ]] && command -v "${CXX}" &>/dev/null; then
+    info "  c++ compiler: ${CXX} — $("${CXX}" --version 2>&1 | head -1)"
+    _cxx_found=true
+elif command -v g++ &>/dev/null; then
     info "  c++ compiler: $(g++ --version | head -1)"
+    _cxx_found=true
 elif command -v clang++ &>/dev/null; then
     info "  c++ compiler: $(clang++ --version | head -1)"
+    _cxx_found=true
 elif command -v c++ &>/dev/null; then
     info "  c++ compiler: $(c++ --version | head -1)"
+    _cxx_found=true
+elif command -v gcc &>/dev/null; then
+    info "  c++ compiler: gcc (via $(gcc --version | head -1))"
+    _cxx_found=true
+elif command -v cc &>/dev/null; then
+    info "  c++ compiler: cc (via $(cc --version 2>&1 | head -1))"
+    _cxx_found=true
 elif command -v cl &>/dev/null; then
     info "  c++ compiler: $(cl 2>&1 | head -1)"
-else
-    error "  No C++ compiler (g++ / clang++ / c++ / cl) found — aborting"
-    exit 1
+    _cxx_found=true
+fi
+if [[ "${_cxx_found}" == "false" ]]; then
+    warn "  No C++ compiler found in PATH (\$CXX / g++ / clang++ / c++ / gcc / cc / cl)."
+    warn "  CMake will attempt its own compiler detection — configure may fail if none is installed."
 fi
 
 # ── Clean ─────────────────────────────────────────────────────────────────────
