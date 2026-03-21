@@ -13,6 +13,7 @@ set(TOOLS_SOURCES
     GitPanel/GitPanel.cpp
     AnalyticsDashboard/AnalyticsDashboard.cpp
     SimulationPlayback/SimulationPlayback.cpp
+    DocGenerator/DocGenerator.cpp
 )
 
 add_library(ToolsLib STATIC ${TOOLS_SOURCES})

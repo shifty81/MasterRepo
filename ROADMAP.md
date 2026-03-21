@@ -573,7 +573,7 @@ MasterRepo/
 | 10.2 | Server Manager | Game server deployment (SteamCMD, config editor) | `Tools/ServerManager/` |
 | 10.3 | Performance Profiler | CPU/GPU/memory profiling panels | `Editor/Panels/Profiler` |
 | 10.4 | Replay Timeline | Record and replay simulations | `Tools/` |
-| 10.5 | Doc Generator | Generate docs from code + AI | `Docs/` |
+| 10.5 | Doc Generator | Generate docs from code + AI | `Tools/DocGenerator/`, `Docs/` |
 | 10.6 | PDF Manual | Editor-integrated manual with chapters | `Docs/` |
 | 10.7 | CI/CD Pipeline | Automated build, test, package | `Scripts/Tools/` |
 | 10.8 | Cloud Backup | Optional cloud sync for projects | `Scripts/Tools/` |
@@ -847,11 +847,11 @@ These phases expand the system beyond the core 0–10 roadmap, adding advanced c
 
 ### Phase 13 — Blender Addon Integration (Deep)
 
-- Full Blender addon for bidirectional asset pipeline
-- Procedural geometry generation via `bpy`
-- Rig/animation export pipeline
-- Material conversion (Blender → Engine)
-- Batch asset processing
+- ✅ Full Blender addon for bidirectional asset pipeline (`Scripts/Python/Blender/atlas_blender_addon.py`) — import + export for meshes, scenes, rigs, animations, materials, batch
+- ✅ Procedural geometry generation via `bpy` (`Scripts/Python/Blender/atlas_procedural_gen.py`) — hull plates, corridors, pipes, modular rooms
+- ✅ Rig/animation export pipeline — armature bones + action keyframe channels
+- ✅ Material conversion (Blender → Engine) (`Scripts/Python/Blender/atlas_material_converter.py`) — Principled BSDF → Atlas PBR JSON (interactive + CLI batch)
+- ✅ Batch asset processing — `BatchExportAtlas` operator exports all selected objects in one step
 
 ### Phase 14 — AI-Driven Testing, Simulation & Analytics
 
