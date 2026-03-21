@@ -49,6 +49,8 @@ set(PCG_SOURCES
     SpaceLayout/SpaceLayoutGenerator.cpp
     # Phase 28 — cellular-automata cave generator
     Cave/CaveGenerator/CaveGenerator.cpp
+    # Phase 29 — chunk-based procedural world generator
+    World/WorldChunkGen/WorldChunkGen.cpp
 )
 
 add_library(PCGLib STATIC ${PCG_SOURCES})

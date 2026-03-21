@@ -34,6 +34,8 @@ set(TOOLS_SOURCES
     DependencyAnalyzer/DependencyAnalyzer.cpp
     # Phase 28 — in-project symbol locator / fuzzy search
     Locator/SymbolLocator/SymbolLocator.cpp
+    # Phase 29 — git commit history browser
+    GitPanel/GitHistory/GitHistory.cpp
 )
 
 add_library(ToolsLib STATIC ${TOOLS_SOURCES})

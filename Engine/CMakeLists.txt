@@ -50,6 +50,8 @@ add_library(AtlasEngine STATIC
     Voxel/VoxelWorld.cpp
     # Phase 28 — cascaded shadow map manager
     Shadows/ShadowMapper/ShadowMapper.cpp
+    # Phase 29 — view-frustum + occlusion culling
+    Occlusion/OcclusionCuller/OcclusionCuller.cpp
 )
 
 target_include_directories(AtlasEngine PUBLIC ${CMAKE_SOURCE_DIR})
