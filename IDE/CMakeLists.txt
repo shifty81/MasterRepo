@@ -26,6 +26,8 @@ set(IDE_SOURCES
     OutputPanel/OutputPanel/OutputPanel.cpp
     # Phase 29 — IDE breakpoint management
     Debugger/BreakpointManager/BreakpointManager.cpp
+    # Phase 30 — LSP diagnostic message manager
+    LSP/LSPDiagnostics/LSPDiagnostics.cpp
 )
 
 add_library(IDELib STATIC ${IDE_SOURCES})

@@ -40,6 +40,8 @@ add_library(CoreLib STATIC
     Allocator/PoolAllocator/PoolAllocator.cpp
     # Phase 29 — fixed-thread-count thread pool with priority queue
     Threading/ThreadPool/ThreadPool.cpp
+    # Phase 30 — fast little-endian binary serialisation (header-only, compiled stub)
+    Serialization/BinarySerializer/BinarySerializer.cpp
 )
 
 target_compile_features(CoreLib PUBLIC cxx_std_20)

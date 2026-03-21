@@ -132,18 +132,43 @@ if ($pythonCmd) {
 }
 
 # ---------------------------
-# 4. Summary
+# 4. GLFW Dependency
+# ---------------------------
+Write-Host ""
+Write-Host "--- GLFW (required for Editor window) ---" -ForegroundColor Yellow
+Write-Host "  CMake will auto-download GLFW 3.4 via FetchContent if it is not"
+Write-Host "  found on your system. No manual install is required."
+Write-Host "  For faster builds or offline use you can pre-install GLFW via:"
+Write-Host "    Option A (vcpkg — recommended):"
+Write-Host "      git clone https://github.com/microsoft/vcpkg `$env:USERPROFILE\vcpkg"
+Write-Host "      `$env:USERPROFILE\vcpkg\bootstrap-vcpkg.bat"
+Write-Host "      `$env:USERPROFILE\vcpkg\vcpkg install glfw3:x64-windows"
+Write-Host "      Then pass: -DCMAKE_TOOLCHAIN_FILE=`$env:USERPROFILE\vcpkg\scripts\buildsystems\vcpkg.cmake"
+Write-Host "      (Or use C:\vcpkg if you prefer a system-wide install and have admin rights)"
+Write-Host "    Option B (manual): download glfw-3.4.bin.WIN64.zip from glfw.org"
+Write-Host "      and extract to C:\glfw; pass -DGLFW_LIB=C:\glfw\lib-vc2022\glfw3.lib"
+Write-Host ""
+
+# ---------------------------
+# 5. Summary
 # ---------------------------
 Write-Host ""
 Write-Host "=== Bootstrap Complete ===" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Next steps:"
-Write-Host "  1. Review ROADMAP.md for the full implementation plan"
-Write-Host "  2. Start with Phase 0 tasks (see ROADMAP.md)"
-Write-Host "  3. Build:"
-Write-Host "     mkdir Builds\Debug; cd Builds\Debug"
-Write-Host "     cmake ..\.. -G 'Visual Studio 17 2022'"
-Write-Host "     cmake --build . --config Debug"
+Write-Host "  1. Launch the editor (recommended):"
+Write-Host "     cmake --preset windows-x64-debug    # configure (downloads GLFW if needed)"
+Write-Host "     cmake --build Builds/windows-x64-debug --config Debug --target AtlasEditor"
+Write-Host "     .\Builds\windows-x64-debug\Debug\bin\AtlasEditor.exe"
+Write-Host ""
+Write-Host "  2. Full build via build_all.sh (Git Bash / MSYS2):"
+Write-Host "     bash Scripts/Tools/build_all.sh"
+Write-Host ""
+Write-Host "  3. Classic CMake workflow:"
+Write-Host "     mkdir Builds\Debug"
+Write-Host "     cd Builds\Debug"
+Write-Host "     cmake ..\.. -G 'Visual Studio 17 2022' -A x64"
+Write-Host "     cmake --build . --config Debug --target AtlasEditor"
 Write-Host ""
 Write-Host "Optional:"
 Write-Host "  - Install Ollama for local AI: https://ollama.ai/download"

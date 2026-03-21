@@ -36,6 +36,8 @@ set(TOOLS_SOURCES
     Locator/SymbolLocator/SymbolLocator.cpp
     # Phase 29 — git commit history browser
     GitPanel/GitHistory/GitHistory.cpp
+    # Phase 30 — gameplay replay recording and playback
+    ReplayTimeline/ReplayRecorder/ReplayRecorder.cpp
 )
 
 add_library(ToolsLib STATIC ${TOOLS_SOURCES})
