@@ -569,17 +569,17 @@ MasterRepo/
 
 | # | Task | Description | Output |
 |---|------|-------------|--------|
-| 10.1 | Build Targets | Debug, Release, Editor builds via CMake | `Builds/` |
-| 10.2 | Server Manager | Game server deployment (SteamCMD, config editor) | `Tools/ServerManager/` |
-| 10.3 | Performance Profiler | CPU/GPU/memory profiling panels | `Editor/Panels/Profiler` |
-| 10.4 | Replay Timeline | Record and replay simulations | `Tools/` |
-| 10.5 | Doc Generator | Generate docs from code + AI | `Tools/DocGenerator/`, `Docs/` |
-| 10.6 | PDF Manual | Editor-integrated manual with chapters | `Docs/` |
-| 10.7 | CI/CD Pipeline | Automated build, test, package | `Scripts/Tools/` |
+| ✅ 10.1 | Build Targets | Debug, Release, Editor builds via CMake | `Builds/` |
+| ✅ 10.2 | Server Manager | Game server deployment (SteamCMD, config editor) | `Tools/ServerManager/` |
+| ✅ 10.3 | Performance Profiler | CPU/GPU/memory profiling panels | `Editor/Panels/Profiler` |
+| ✅ 10.4 | Replay Timeline | Record and replay simulations | `Tools/` |
+| ✅ 10.5 | Doc Generator | Generate docs from code + AI | `Tools/DocGenerator/`, `Docs/` |
+| ✅ 10.6 | PDF Manual | Editor-integrated manual with chapters | `Docs/Manual/MANUAL.md` |
+| ✅ 10.7 | CI/CD Pipeline | Automated build, test, package | `Scripts/Tools/ci_pipeline.sh` |
 | 10.8 | Cloud Backup | Optional cloud sync for projects | `Scripts/Tools/` |
 | 10.9 | Desktop/Mobile/Web Builds | Cross-platform export | `Builds/` |
-| 10.10 | VR/AR Preview | VR/AR preview mode in editor (OpenXR) | `Editor/Viewport/` |
-| 10.11 | Plugin Marketplace | Import/export plugin packs | `Plugins/` |
+| ✅ 10.10 | VR/AR Preview | VR/AR preview mode in editor (OpenXR stub) | `Editor/Viewport/VRPreview.h` |
+| ✅ 10.11 | Plugin Marketplace | Import/export plugin packs | `Plugins/Marketplace/` |
 
 **Dependencies:** All previous phases
 
@@ -831,10 +831,10 @@ These phases expand the system beyond the core 0–10 roadmap, adding advanced c
 
 ### Phase 11 — Multi-Repo Reverse Engineering & Asset Extraction
 
-- Analyze external repos for reusable patterns
-- Extract and refactor usable systems into MasterRepo
-- AI-assisted code audit and merge suggestions
-- Automated conflict detection across repos
+- ✅ Analyse external repos for reusable patterns (`Tools/CodeAudit/CodeAudit.h`)
+- ✅ Extract and refactor usable systems into MasterRepo — `CodeAudit::GetMigrationCandidates()`
+- ✅ AI-assisted code audit and merge suggestions — `CodeAudit::BuildReport()` + `onMigrationCandidate` hook
+- ✅ Automated conflict detection across repos — `CodeAudit::DetectDuplicates()`
 
 ### Phase 12 — GUI Systems (Advanced)
 

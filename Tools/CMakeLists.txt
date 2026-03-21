@@ -14,6 +14,7 @@ set(TOOLS_SOURCES
     AnalyticsDashboard/AnalyticsDashboard.cpp
     SimulationPlayback/SimulationPlayback.cpp
     DocGenerator/DocGenerator.cpp
+    CodeAudit/CodeAudit.cpp
 )
 
 add_library(ToolsLib STATIC ${TOOLS_SOURCES})
