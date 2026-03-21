@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Atlas Engine — build.sh
+# MasterRepo — build.sh
 # Automates CMake configure + build for debug and release configurations.
+# Logs are written to Logs/Build/ inside the repository.
 # =============================================================================
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-BUILD_DEBUG="${TMPDIR:-/tmp}/atlas_build_debug"
-BUILD_RELEASE="${TMPDIR:-/tmp}/atlas_build_release"
+BUILD_DEBUG="${REPO_ROOT}/Builds/debug"
+BUILD_RELEASE="${REPO_ROOT}/Builds/release"
+LOG_DIR="${REPO_ROOT}/Logs/Build"
+TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
+JOBS="$(nproc 2>/dev/null || echo 4)"
 
 # ── Colours ──────────────────────────────────────────────────────────────────
 GREEN='\033[0;32m'
@@ -19,30 +23,43 @@ info()  { echo -e "${GREEN}[build]${NC} $*"; }
 warn()  { echo -e "${YELLOW}[warn]${NC}  $*"; }
 error() { echo -e "${RED}[error]${NC} $*" >&2; }
 
+# ── Ensure log directory exists ───────────────────────────────────────────────
+mkdir -p "${LOG_DIR}"
+
 # ── Individual build functions ────────────────────────────────────────────────
 
 build_debug() {
+    local log_file="${LOG_DIR}/build_debug_${TIMESTAMP}.log"
     info "Configuring Debug build → ${BUILD_DEBUG}"
-    cmake -B "${BUILD_DEBUG}" \
-          -DCMAKE_BUILD_TYPE=Debug \
-          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-          "${REPO_ROOT}"
-
-    info "Building Debug..."
-    cmake --build "${BUILD_DEBUG}" -- -j"$(nproc)"
-    info "Debug build complete."
+    info "Log: ${log_file}"
+    mkdir -p "${BUILD_DEBUG}"
+    {
+        cmake -B "${BUILD_DEBUG}" \
+              -DCMAKE_BUILD_TYPE=Debug \
+              -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+              "${REPO_ROOT}"
+        echo ""
+        info "Building Debug..."
+        cmake --build "${BUILD_DEBUG}" -- -j"${JOBS}"
+    } 2>&1 | tee "${log_file}"
+    info "Debug build complete. Log: ${log_file}"
 }
 
 build_release() {
+    local log_file="${LOG_DIR}/build_release_${TIMESTAMP}.log"
     info "Configuring Release build → ${BUILD_RELEASE}"
-    cmake -B "${BUILD_RELEASE}" \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-          "${REPO_ROOT}"
-
-    info "Building Release..."
-    cmake --build "${BUILD_RELEASE}" -- -j"$(nproc)"
-    info "Release build complete."
+    info "Log: ${log_file}"
+    mkdir -p "${BUILD_RELEASE}"
+    {
+        cmake -B "${BUILD_RELEASE}" \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+              "${REPO_ROOT}"
+        echo ""
+        info "Building Release..."
+        cmake --build "${BUILD_RELEASE}" -- -j"${JOBS}"
+    } 2>&1 | tee "${log_file}"
+    info "Release build complete. Log: ${log_file}"
 }
 
 build_all() {
@@ -66,12 +83,15 @@ Commands:
   debug      Configure and build Debug configuration
   release    Configure and build Release configuration
   all        Build both Debug and Release
-  clean      Remove all build directories
+  clean      Remove build directories
   --help     Show this help message
 
 Build directories:
   Debug:   ${BUILD_DEBUG}
   Release: ${BUILD_RELEASE}
+
+Logs directory:
+  ${LOG_DIR}
 EOF
 }
 
@@ -83,11 +103,11 @@ if [[ $# -eq 0 ]]; then
 fi
 
 case "$1" in
-    debug)   build_debug   ;;
-    release) build_release ;;
-    all)     build_all     ;;
-    clean)   clean         ;;
-    --help|-h) usage       ;;
+    debug)     build_debug   ;;
+    release)   build_release ;;
+    all)       build_all     ;;
+    clean)     clean         ;;
+    --help|-h) usage         ;;
     *)
         error "Unknown command: $1"
         usage
