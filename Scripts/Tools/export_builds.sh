@@ -110,7 +110,7 @@ build_preset() {
     # ── Build ─────────────────────────────────────────────────────────────────
     local build_log="${PACKAGE_DIR}/${preset}_build.log"
     if ! cmake --build --preset "${preset}" \
-               -- -j"${JOBS}" \
+               --parallel "${JOBS}" \
                2>&1 | tee "${build_log}"; then
         error "Build failed for preset '${preset}' — see ${build_log}"
         FAILED+=("${preset}")

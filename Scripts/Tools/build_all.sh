@@ -177,7 +177,7 @@ run_phase() {
     if [[ "${ok}" == "true" ]]; then
         info "CMake build → ${build_dir}"
         {
-            cmake --build "${build_dir}" -- -j"${JOBS}"
+            cmake --build "${build_dir}" --config "${build_type}" --parallel "${JOBS}"
         } 2>&1 | tee -a "${LOG_FILE}" "${config_log}" || ok=false
     fi
 
