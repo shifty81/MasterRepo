@@ -14,6 +14,8 @@ set(IDE_SOURCES
     InteractiveDocs/InteractiveDocs.cpp
     # Phase 19 — voice-to-action pipeline
     VoiceInput/VoiceInput.cpp
+    # Phase 24 — project file tree explorer
+    ProjectExplorer/ProjectExplorer.cpp
 )
 
 add_library(IDELib STATIC ${IDE_SOURCES})

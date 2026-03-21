@@ -24,6 +24,8 @@ set(TOOLS_SOURCES
     Profiler/PerformanceProfiler.cpp
     # Phase 23 — micro-benchmark runner
     BenchmarkRunner/BenchmarkRunner.cpp
+    # Phase 24 — unified asset import/process/export pipeline
+    AssetPipeline/AssetPipeline.cpp
 )
 
 add_library(ToolsLib STATIC ${TOOLS_SOURCES})

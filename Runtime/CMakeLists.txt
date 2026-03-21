@@ -27,6 +27,8 @@ add_library(RuntimeLib STATIC
     Animation/AnimationController.cpp
     # Phase 23 — game session state machine
     Gameplay/GameSession/GameSession.cpp
+    # Phase 24 — behavior tree for NPC AI
+    AI/BehaviorTree/BehaviorTree.cpp
 )
 
 target_include_directories(RuntimeLib PUBLIC ${CMAKE_SOURCE_DIR})

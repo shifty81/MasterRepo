@@ -28,6 +28,8 @@ add_library(CoreLib STATIC
     EventLog/EventLog.cpp
     # Phase 23 — hierarchical config system
     Config/ConfigSystem.cpp
+    # Phase 24 — script engine binding registry
+    Scripting/LuaBinding.cpp
 )
 
 target_compile_features(CoreLib PUBLIC cxx_std_20)

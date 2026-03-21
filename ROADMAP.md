@@ -988,6 +988,19 @@ This is the "self-building" mode described in implement3.md, where the AI uses s
 
 ---
 
+### Phase 24 — Behavior Tree, Particle System, Lua Binding, Vegetation Generator, Asset Pipeline & Project Explorer
+
+**Goal:** Fill the remaining high-value Blueprint gaps: NPC BT-based decision-making, visual effects particles, script engine binding, biome-driven foliage, unified asset pipeline orchestration, and the IDE project tree.
+
+- ✅ `Runtime/AI/BehaviorTree/BehaviorTree.h/.cpp` — Complete BT system: `ActionNode`, `ConditionNode`, `SequenceNode` (AND), `SelectorNode` (OR), `ParallelNode` (RequireAll/RequireOne), `InvertNode`, `RepeatNode` (N times or infinite), `LimitNode` (max runs); `Blackboard` typed key-value context; `BehaviorTree` owner drives tick; auto-reset on completion
+- ✅ `Engine/Particles/ParticleSystem.h/.cpp` — CPU particle system; `EmitterConfig` with cone spread, speed range, gravity, drag, lifetime, color gradient, size-over-life; `ParticleEmitter` pool-based allocation; `ParticleSystem` multi-emitter manager; `CollectDrawData()` feeds renderer; render callback decouples from GPU
+- ✅ `Core/Scripting/LuaBinding.h/.cpp` — Dependency-free script binding registry; `ScriptValue` variant (nil/bool/int64/double/string); `ScriptModule` namespaced function map; `LuaBinding` global+namespaced dispatch; `Call("ns.fn", args)`, `CanCall()`, `AllFunctions()`, `Dump()` introspection; designed for drop-in Lua/wasm backend
+- ✅ `PCG/Vegetation/VegetationGenerator.h/.cpp` — Biome-aware foliage placement; per-biome `BiomeVegetationConfig` with asset weight table, density, maxSlope; 2D value noise for cluster modulation; `VegetationInstance` with world pos/rotY/scale; streaming `GenerateWithCallback()`; `GlobalDensityScale` tuning knob
+- ✅ `Tools/AssetPipeline/AssetPipeline.h/.cpp` — Unified import→process→export pipeline; wraps static `AssetImporter::Import` + `AssetProcessor::Process`; job queue with `Enqueue`/`Cancel`/`RunAll`/`RunNext`; `PipelineProgressFn` + `PipelineCompleteFn` callbacks; `History()` of all results; `Process()` one-shot convenience
+- ✅ `IDE/ProjectExplorer/ProjectExplorer.h/.cpp` — Virtual project file tree; `Refresh()` recursive directory scan; `ExplorerFilter` (extensions/showHidden/nameContains); expand/collapse/ExpandAll; selection with `OnSelectionChanged`; `PollChanges()` file-watch via `last_write_time`; `GetExpandedPaths()`/`RestoreExpandedPaths()` state persistence
+
+---
+
 ## Appendix C: v10.7 Ultra Blueprint Systems Map
 
 The final comprehensive systems map from implement3.md showing all subsystems and their relationships:

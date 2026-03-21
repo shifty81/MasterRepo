@@ -39,6 +39,8 @@ set(PCG_SOURCES
     Dungeon/DungeonGenerator.cpp
     # Phase 23 — procedural story/narrative generator
     Story/StoryGenerator.cpp
+    # Phase 24 — biome-aware vegetation placement
+    Vegetation/VegetationGenerator.cpp
 )
 
 add_library(PCGLib STATIC ${PCG_SOURCES})

@@ -40,6 +40,8 @@ add_library(AtlasEngine STATIC
     Camera/CameraController.cpp
     # Phase 23 — level-of-detail manager
     Lod/LODSystem.cpp
+    # Phase 24 — CPU particle system
+    Particles/ParticleSystem.cpp
 )
 
 target_include_directories(AtlasEngine PUBLIC ${CMAKE_SOURCE_DIR})
