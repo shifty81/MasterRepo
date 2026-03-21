@@ -1,8 +1,14 @@
 #include "Agents/CodeAgent/ToolSystem.h"
+#include <cstdio>
 #include <fstream>
 #include <sstream>
 #include <filesystem>
 #include <algorithm>
+
+#ifdef _WIN32
+#  define popen  _popen
+#  define pclose _pclose
+#endif
 
 namespace Agents {
 

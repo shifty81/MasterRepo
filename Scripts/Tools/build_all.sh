@@ -151,10 +151,12 @@ fi
 
 # ── Build tracking ────────────────────────────────────────────────────────────
 PASS=(); FAIL=()
+declare -A PHASE_ERRORS   # stores extracted error lines per phase for the report
 
 run_phase() {
     local label="$1" build_dir="$2" build_type="$3"
-    local config_log="${LOG_DIR}/${label,,}_${TIMESTAMP}.log"
+    local phase_tmp
+    phase_tmp=$(mktemp)
 
     section "${label} (${build_type})"
     info "CMake configure → ${build_dir}"
@@ -172,20 +174,31 @@ run_phase() {
               -DBUILD_RUNTIME=ON \
               -DBUILD_AI=ON \
               -DBUILD_TOOLS=ON
-    } 2>&1 | tee -a "${LOG_FILE}" "${config_log}" || ok=false
+    } 2>&1 | tee -a "${LOG_FILE}" "${phase_tmp}" || ok=false
 
     if [[ "${ok}" == "true" ]]; then
         info "CMake build → ${build_dir}"
         {
             cmake --build "${build_dir}" --config "${build_type}" --parallel "${JOBS}"
-        } 2>&1 | tee -a "${LOG_FILE}" "${config_log}" || ok=false
+        } 2>&1 | tee -a "${LOG_FILE}" "${phase_tmp}" || ok=false
     fi
 
+    # Extract error lines from this phase's output for embedding in the report.
+    # Match MSVC (error C####:), GCC/Clang (error:), linker (FAILED), fatal errors.
+    # Exclude "0 error(s)" summary lines produced by MSVC.
+    PHASE_ERRORS["${label}"]=$(
+        grep -iE "(error[^(]*:|FAILED|fatal error)" "${phase_tmp}" \
+            | grep -v " 0 error" \
+            | head -60 \
+        || true
+    )
+    rm -f "${phase_tmp}"
+
     if [[ "${ok}" == "true" ]]; then
-        info "✅ ${label} complete. Log: ${config_log}"
+        info "✅ ${label} complete."
         PASS+=("${label}")
     else
-        error "❌ ${label} FAILED. Log: ${config_log}"
+        error "❌ ${label} FAILED."
         FAIL+=("${label}")
     fi
 }
@@ -234,6 +247,28 @@ section "Build Summary"
     for s in "${FAIL[@]:-}"; do [[ -n "${s}" ]] && echo "| ${s} | ❌ Fail |" && _has_rows=true; done
     [[ "${_has_rows}" == "false" ]] && echo "| (no builds run) | — |"
     echo ""
+    # ── Error details (only for failed phases) ────────────────────────────────
+    _any_errors=false
+    for s in "${FAIL[@]:-}"; do
+        [[ -n "${s}" ]] || continue
+        _any_errors=true
+    done
+    if [[ "${_any_errors}" == "true" ]]; then
+        echo "## Errors"
+        echo ""
+        for s in "${FAIL[@]:-}"; do
+            [[ -n "${s}" ]] || continue
+            echo "### ${s}"
+            echo '```'
+            if [[ -n "${PHASE_ERRORS[${s}]:-}" ]]; then
+                echo "${PHASE_ERRORS[${s}]}"
+            else
+                echo "(no error lines captured — see full log)"
+            fi
+            echo '```'
+            echo ""
+        done
+    fi
     echo "## Binaries"
     echo ""
     if [[ "${DO_DEBUG}" == "true" && -d "${BUILD_DEBUG}/bin" ]]; then
