@@ -901,6 +901,28 @@ This is the "self-building" mode described in implement3.md, where the AI uses s
 
 ---
 
+### Phase 18 — Real GUI Window (OpenGL + GLFW)
+
+**Goal:** Replace the console-only editor with a real graphical window.
+
+- ✅ `Engine/Window/Window.cpp` — Real GLFW 3 backend; creates an OpenGL 2.1 context, handles resize, mouse, and keyboard input via typed callbacks
+- ✅ `Editor/Render/EditorRenderer.h/.cpp` — Custom OpenGL immediate-mode renderer draws the full editor layout:
+  - Title bar (app name, window controls)
+  - Menu bar (File, Edit, View, Tools, Scene, AI, Build, Help) with hover highlights
+  - Viewport panel — dark background, perspective grid, dummy scene objects with colour-coded outlines, XYZ axis widget, FPS overlay
+  - Scene Outliner — entity list with icons, selection highlight, indent for child nodes
+  - Inspector — entity header, Transform / Mesh / RigidBody / Tags component sections, Add Component button
+  - Console — scrollable output log with colour-coded severity, command-input line
+  - Status bar — scene name, entity count, FPS
+- ✅ `External/stb/stb_easy_font.h` — embedded public-domain vector text (no texture atlas needed)
+- ✅ `Editor/main.cpp` — proper GLFW render loop with delta-time; ESC to quit
+- ✅ `Engine/CMakeLists.txt` — `find_package(OpenGL)` + GLFW linked into AtlasEngine
+- ✅ `Editor/CMakeLists.txt` — EditorRenderer added to EditorLib
+
+**Rules followed:** No ImGui (Atlas Rule) — UI drawn entirely with custom OpenGL primitives.
+
+---
+
 ## Appendix C: v10.7 Ultra Blueprint Systems Map
 
 The final comprehensive systems map from implement3.md showing all subsystems and their relationships:
