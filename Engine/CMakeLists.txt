@@ -38,6 +38,8 @@ add_library(AtlasEngine STATIC
     Shader/ShaderManager.cpp
     # Phase 22 — camera controller
     Camera/CameraController.cpp
+    # Phase 23 — level-of-detail manager
+    Lod/LODSystem.cpp
 )
 
 target_include_directories(AtlasEngine PUBLIC ${CMAKE_SOURCE_DIR})

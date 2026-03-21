@@ -37,6 +37,8 @@ set(PCG_SOURCES
     Biomes/BiomeGenerator.cpp
     # Phase 22 — BSP dungeon generator
     Dungeon/DungeonGenerator.cpp
+    # Phase 23 — procedural story/narrative generator
+    Story/StoryGenerator.cpp
 )
 
 add_library(PCGLib STATIC ${PCG_SOURCES})

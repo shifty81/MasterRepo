@@ -25,6 +25,8 @@ add_library(RuntimeLib STATIC
     Dialogue/DialogueSystem.cpp
     # Phase 22 — runtime animation controller
     Animation/AnimationController.cpp
+    # Phase 23 — game session state machine
+    Gameplay/GameSession/GameSession.cpp
 )
 
 target_include_directories(RuntimeLib PUBLIC ${CMAKE_SOURCE_DIR})

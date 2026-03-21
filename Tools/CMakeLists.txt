@@ -22,6 +22,8 @@ set(TOOLS_SOURCES
     MetricsReporting/MetricsReporter.cpp
     # Phase 21 — performance profiler
     Profiler/PerformanceProfiler.cpp
+    # Phase 23 — micro-benchmark runner
+    BenchmarkRunner/BenchmarkRunner.cpp
 )
 
 add_library(ToolsLib STATIC ${TOOLS_SOURCES})

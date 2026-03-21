@@ -26,6 +26,8 @@ add_library(CoreLib STATIC
     TransactionManager/TransactionManager.cpp
     # Phase 21 — persistent event/audit log
     EventLog/EventLog.cpp
+    # Phase 23 — hierarchical config system
+    Config/ConfigSystem.cpp
 )
 
 target_compile_features(CoreLib PUBLIC cxx_std_20)

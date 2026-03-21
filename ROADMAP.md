@@ -975,6 +975,19 @@ This is the "self-building" mode described in implement3.md, where the AI uses s
 
 ---
 
+### Phase 23 — Game Session, LOD System, Config System, Goal Planner, Story Generator & Benchmark Runner
+
+**Goal:** Cover the remaining Blueprint gaps: multiplayer session bookkeeping, distance-driven LOD for the render pipeline, hierarchical project configuration, GOAP AI decision-making for NPCs/agents, procedural narrative generation, and a benchmark framework for CI performance regression.
+
+- ✅ `Runtime/Gameplay/GameSession/GameSession.h/.cpp` — Session state machine (`Lobby → Active → Paused → Ended`); `AddPlayer`/`RemovePlayer`; per-player score/kills/deaths/ping/play-time; time-limit and score-limit end conditions; `Tick(dt)` advances clock; `Leaderboard()` sorted view; session event callbacks
+- ✅ `Engine/Lod/LODSystem.h/.cpp` — Distance-driven LOD manager; per-object `LODBand` array; hysteresis margin to prevent band ping-pong; configurable hard-cull distance; `Evaluate()` returns sorted `LODResult` list; `OnLODChanged` callbacks
+- ✅ `Core/Config/ConfigSystem.h/.cpp` — Multi-layer hierarchical config (defaults → base → platform → user); INI and flat-JSON parsers; typed `Get*`/`Set*` API; file-system `PollReload()` live-reload via `std::filesystem::last_write_time`; `SaveLayer()` export; `OnChanged` callbacks
+- ✅ `AI/GoalPlanner/GoalPlanner.h/.cpp` — GOAP goal-oriented action planner; forward-chaining BFS search with cycle avoidance (string-hash visited set); `WorldState` as flat `unordered_map`; `PlanFor(goal)` and `PlanBest()` (highest-priority achievable); `CanExecute`/`ApplyAction` helpers
+- ✅ `PCG/Story/StoryGenerator.h/.cpp` — Procedural narrative arc generator; 7-beat story template (`Intro → Climax → Resolution`); deterministic LCG seed; quest-weaving from `WorldContext`; `CompleteBeat()`/`NextBeat()` for runtime progression; optional side-quest beat
+- ✅ `Tools/BenchmarkRunner/BenchmarkRunner.h/.cpp` — Micro-benchmark runner; warmup + timed iteration loop; per-run stats (min/max/mean/median/stddev/total); CSV/JSON/Markdown export; `RunFilter()` by name substring; `Compare()` diff table for regression CI
+
+---
+
 ## Appendix C: v10.7 Ultra Blueprint Systems Map
 
 The final comprehensive systems map from implement3.md showing all subsystems and their relationships:
