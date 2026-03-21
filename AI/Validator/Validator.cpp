@@ -3,6 +3,11 @@
 #include <algorithm>
 #include <array>
 #include <chrono>
+#include <cstdio>
+#ifdef _WIN32
+#  define popen  _popen
+#  define pclose _pclose
+#endif
 #include <ctime>
 #include <filesystem>
 #include <fstream>

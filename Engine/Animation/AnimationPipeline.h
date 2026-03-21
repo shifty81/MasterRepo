@@ -237,6 +237,10 @@ private:
         float        blendTime   = 0.2f;
         bool         playing     = false;
         int          lodLevel    = 0;
+
+        SkeletonState() = default;
+        SkeletonState(SkeletonState&&) noexcept = default;
+        SkeletonState& operator=(SkeletonState&&) noexcept = default;
     };
 
     AnimationPipelineConfig                             m_cfg;
