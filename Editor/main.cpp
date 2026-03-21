@@ -1,90 +1,71 @@
-#include "Engine/Core/Engine.h"
+#include "Editor/Render/EditorRenderer.h"
+#include "Engine/Window/Window.h"
+#include "Engine/Core/Logger.h"
 #include "Editor/UI/EditorLayout.h"
-#include "Editor/Viewport/ViewportPanel.h"
 #include "Editor/Panels/Console/ConsolePanel.h"
-#include "Editor/Modes/EditorModes.h"
-#include "Editor/NodeEditors/NodeEditor.h"
-#include "Editor/Gizmos/GizmoSystem.h"
-#include "Editor/Commands/EditorCommandBus.h"
-#include "Editor/Panels/SceneOutliner/LayerTagSystem.h"
-#include "Editor/Panels/Inspector/InspectorTools.h"
-#include "Editor/Panels/ContentBrowser/ContentBrowser.h"
 #include <iostream>
-#include <memory>
 #include <filesystem>
+#include <GLFW/glfw3.h>  // for glfwGetTime
 
 int main() {
     std::cout << "[Editor] Working directory: "
               << std::filesystem::current_path().string() << "\n";
 
-    // ── Engine setup ────────────────────────────────────────────────────────
-    Engine::Core::EngineConfig cfg;
-    cfg.mode = Engine::Core::EngineMode::Editor;
+    Engine::Core::Logger::Init();
 
-    Engine::Core::Engine engine(cfg);
-    engine.InitCore();
-    engine.InitRender();
-    engine.InitUI();
-    engine.InitECS();
+    // ── Window ──────────────────────────────────────────────────────────────
+    Engine::Window::WindowConfig winCfg;
+    winCfg.title     = "AtlasEditor  v0.1";
+    winCfg.width     = 1280;
+    winCfg.height    = 720;
+    winCfg.vsync     = true;
+    winCfg.resizable = true;
 
-    // ── Viewport & console ──────────────────────────────────────────────────
-    Editor::ViewportPanel viewport;
-    Editor::ConsolePanel  console;
+    Engine::Window::Window window(winCfg);
 
-    // ── Editor mode controller ──────────────────────────────────────────────
-    Editor::EditorModeController modes;
-    modes.SetOnModeChanged([](Editor::EditorModeType prev, Editor::EditorModeType next) {
-        (void)prev; (void)next;
-    });
+    // ── Renderer ─────────────────────────────────────────────────────────────
+    Editor::EditorRenderer renderer;
 
-    // ── Node editor ─────────────────────────────────────────────────────────
-    Editor::NodeEditor nodeEditor;
+    // Wire up callbacks before Init so they're active from the first frame
+    window.onMouseMove   = [&](double x, double y) { renderer.OnMouseMove(x, y); };
+    window.onMouseButton = [&](int btn, bool pressed) { renderer.OnMouseButton(btn, pressed); };
+    window.onKey         = [&](int key, bool pressed) {
+        renderer.OnKey(key, pressed);
+        // ESC closes the editor
+        if (key == GLFW_KEY_ESCAPE && pressed)
+            glfwSetWindowShouldClose(window.GetGLFWHandle(), GLFW_TRUE);
+    };
+    window.onResize = [&](int w, int h) { renderer.Resize(w, h); };
 
-    // ── Gizmos & overlays ───────────────────────────────────────────────────
-    Editor::GizmoSystem   gizmos;
-    Editor::OverlaySystem overlaySystem;
+    if (!window.Init()) {
+        std::cerr << "[Editor] Failed to open window\n";
+        return 1;
+    }
 
-    gizmos.SetGizmoType(Editor::GizmoType::Translate);
-    viewport.SetGizmoMode(Editor::GizmoMode::Translate);
+    if (!renderer.Init(winCfg.width, winCfg.height)) {
+        std::cerr << "[Editor] Failed to init renderer\n";
+        return 1;
+    }
 
-    // Stats overlays for in-editor diagnostics
-    overlaySystem.SetFPS(0.0f);
-    overlaySystem.SetEntityCount(0);
+    renderer.AppendConsole("[Info]  All editor systems online");
 
-    // ── Command bus ─────────────────────────────────────────────────────────
-    Editor::EditorCommandBus cmdBus;
-    // SelectEntity: forward the entity ID into the gizmo system so it
-    // tracks the selected object's transform.
-    cmdBus.RegisterHandler(Editor::EditorCommandType::SelectEntity,
-        [&gizmos](const Editor::EditorCommand& cmd) {
-            float pos[3] = {0.f, 0.f, 0.f};
-            float rot[4] = {0.f, 0.f, 0.f, 1.f};
-            float scl[3] = {1.f, 1.f, 1.f};
-            gizmos.SelectEntity(cmd.entityId, pos, rot, scl);
-        });
+    Engine::Core::Logger::Info("AtlasEditor running — press ESC to quit");
 
-    // ── Layer / tag system ──────────────────────────────────────────────────
-    Editor::LayerTagSystem layers;
-    layers.CreateLayer("Default");
-    layers.CreateLayer("Background");
+    // ── Main render loop ─────────────────────────────────────────────────────
+    double prevTime = glfwGetTime();
+    while (!window.ShouldClose()) {
+        double now = glfwGetTime();
+        double dt  = now - prevTime;
+        prevTime   = now;
 
-    // ── Inspector & material override ────────────────────────────────────────
-    Editor::EntityInspectorTool inspector;
-    inspector.Activate();
+        window.PollEvents();
+        renderer.Render(dt);
+        window.SwapBuffers();
+    }
 
-    // ── Content browser ──────────────────────────────────────────────────────
-    Editor::ContentBrowser contentBrowser;
-    contentBrowser.SetRootPath("assets");
-
-    // ── Editor layout (dock tree, menu bar) ──────────────────────────────────
-    Editor::EditorLayout layout;
-    layout.GetMenuBar().onNewScene  = []{ std::cout << "[Editor] New scene\n"; };
-    layout.GetMenuBar().onSaveScene = []{ std::cout << "[Editor] Save scene\n"; };
-    layout.GetMenuBar().onOpenScene = []{ std::cout << "[Editor] Open scene\n"; };
-
-    console.AddLine("[Editor] initialized with all systems");
-    std::cout << "[Editor] initialized with all systems\n";
-
-    engine.Run();
+    renderer.Shutdown();
+    window.Shutdown();
+    Engine::Core::Logger::Info("AtlasEditor shutdown");
     return 0;
 }
+

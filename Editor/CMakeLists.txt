@@ -29,6 +29,8 @@ set(EDITOR_SOURCES
     Viewport/VRPreview.cpp
     # Phase 10.11 — Plugin Marketplace
     ${CMAKE_SOURCE_DIR}/Plugins/Marketplace/PluginMarketplace.cpp
+    # GUI renderer (OpenGL + GLFW)
+    Render/EditorRenderer.cpp
 )
 
 add_library(EditorLib STATIC ${EDITOR_SOURCES})

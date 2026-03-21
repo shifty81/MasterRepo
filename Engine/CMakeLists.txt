@@ -1,3 +1,14 @@
+find_package(OpenGL REQUIRED)
+
+# GLFW — prefer system package, fall back gracefully
+find_package(glfw3 3.3 QUIET)
+if(NOT glfw3_FOUND)
+    find_library(GLFW_LIB glfw REQUIRED)
+    set(GLFW_LIBS ${GLFW_LIB})
+else()
+    set(GLFW_LIBS glfw)
+endif()
+
 add_library(AtlasEngine STATIC
     Core/Engine.cpp
     Core/Logger.cpp
@@ -21,6 +32,9 @@ add_library(AtlasEngine STATIC
 )
 
 target_include_directories(AtlasEngine PUBLIC ${CMAKE_SOURCE_DIR})
+
+# Expose GLFW + OpenGL to anything that links AtlasEngine
+target_link_libraries(AtlasEngine PUBLIC OpenGL::GL ${GLFW_LIBS})
 
 # Prevent Windows.h min/max macros from interfering with std::min/std::max
 if(WIN32)
