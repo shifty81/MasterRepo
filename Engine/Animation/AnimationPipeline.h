@@ -239,7 +239,9 @@ private:
         int          lodLevel    = 0;
 
         SkeletonState() = default;
-        SkeletonState(SkeletonState&&) noexcept = default;
+        SkeletonState(const SkeletonState&)            = delete;
+        SkeletonState& operator=(const SkeletonState&) = delete;
+        SkeletonState(SkeletonState&&) noexcept        = default;
         SkeletonState& operator=(SkeletonState&&) noexcept = default;
     };
 
