@@ -111,8 +111,10 @@ if command -v g++ &>/dev/null; then
     info "  c++ compiler: $(g++ --version | head -1)"
 elif command -v clang++ &>/dev/null; then
     info "  c++ compiler: $(clang++ --version | head -1)"
+elif command -v c++ &>/dev/null; then
+    info "  c++ compiler: $(c++ --version | head -1)"
 else
-    error "  No C++ compiler (g++ or clang++) found — aborting"
+    error "  No C++ compiler (g++ / clang++ / c++) found — aborting"
     exit 1
 fi
 
