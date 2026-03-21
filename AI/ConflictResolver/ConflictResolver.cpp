@@ -74,10 +74,12 @@ static bool HasCycle(
 std::vector<AISuggestion> ConflictResolver::Resolve() {
     if (m_impl->pending.empty()) return {};
 
-    // Group by target (description used as proxy for target here).
+    // Group by targetId; fall back to description if targetId is empty.
     std::unordered_map<std::string, std::vector<AISuggestion*>> byTarget;
-    for (auto& s : m_impl->pending)
-        byTarget[s.description].push_back(&s);
+    for (auto& s : m_impl->pending) {
+        const std::string& key = s.targetId.empty() ? s.description : s.targetId;
+        byTarget[key].push_back(&s);
+    }
 
     std::vector<AISuggestion> accepted;
 

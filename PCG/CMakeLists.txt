@@ -33,6 +33,8 @@ set(PCG_SOURCES
 
     # Blueprint — pcg_pipeline
     Pipeline/PCGPipeline.cpp
+    # Phase 21 — biome-aware world generation
+    Biomes/BiomeGenerator.cpp
 )
 
 add_library(PCGLib STATIC ${PCG_SOURCES})

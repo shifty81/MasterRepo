@@ -949,6 +949,19 @@ This is the "self-building" mode described in implement3.md, where the AI uses s
 
 ---
 
+### Phase 21 — Engine Integration, Dialogue, Biomes & Profiling
+
+**Goal:** Wire the long-pending `Engine/Net/NetContext` TODO into the engine core, add a biome-aware world generator, NPC dialogue system, persistent event audit log, shader asset manager, and a frame-time profiler.
+
+- ✅ `Engine/Net/NetContext.h/.cpp` — Adapter that wires `NetworkManager` into `Engine::Core::Engine`; role-aware `Start()`/`Stop()`/`Poll()` helpers; resolves all `#if 0 TODO` stubs in `Engine/Core/Engine.h` and `Engine.cpp`
+- ✅ `Engine/Shader/ShaderManager.h/.cpp` — Shader asset loader/cache; `LoadFromFiles`, `LoadFromSource`, `Reload` (hot-reload), `Bind`/`Unbind`; GPU stub-ready for OpenGL / Vulkan backends
+- ✅ `Runtime/Dialogue/DialogueSystem.h/.cpp` — Dialogue-tree engine for NPC conversations; `StartDialogue` / `Advance` / `SelectChoice` / `End`; branches, conditions, and action tags; complements `NPCController`
+- ✅ `PCG/Biomes/BiomeGenerator.h/.cpp` — Biome-aware world generation; classifies each cell by moisture × temperature into registered `BiomeDef` ranges; deterministic noise seeding; vegetation/rock asset spawn lists per cell
+- ✅ `Core/EventLog/EventLog.h/.cpp` — Persistent rolling audit log (default 10 000 entries); severity/source/type filters; `FlushToDisk()` writes JSONL for AI training-data collection; bridges `EventBus` and AI meta-learning
+- ✅ `Tools/Profiler/PerformanceProfiler.h/.cpp` — Frame-time and subsystem profiler; `BeginScope`/`EndScope` with RAII `ProfileScope` helper; rolling frame-time history; `GetAllStats()` feeds `AnalyticsDashboard`
+
+---
+
 ## Appendix C: v10.7 Ultra Blueprint Systems Map
 
 The final comprehensive systems map from implement3.md showing all subsystems and their relationships:

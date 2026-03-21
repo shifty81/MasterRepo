@@ -9,10 +9,11 @@ namespace AI {
 /// A suggestion produced by one AI subsystem pipeline.
 struct AISuggestion {
     std::string id;          ///< Unique suggestion identifier
+    std::string targetId;    ///< Object / entity / file this suggestion targets
     std::string pipeline;    ///< Source pipeline: "PCG", "Shader", "Gameplay", etc.
     std::string description; ///< Human-readable summary
-    int         priority;    ///< Higher = more important (default 0)
-    float       confidence;  ///< 0.0 – 1.0
+    int         priority{0}; ///< Higher = more important (default 0)
+    float       confidence{0.5f}; ///< 0.0 – 1.0
 };
 
 /// Result of a conflict resolution attempt.

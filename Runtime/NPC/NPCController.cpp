@@ -95,12 +95,9 @@ void NPCController::Update(float dt) {
             break;
         case NPCBehaviour::Patrol: action = "patrol"; break;
         case NPCBehaviour::Guard:  action = "guard";  break;
-        case NPCBehaviour::Aggressive:
-            action = "attack";
-            for (auto& cb : m_impl->onAction) cb(id, action);
-            continue;
-        case NPCBehaviour::Friendly: action = "greet"; break;
-        case NPCBehaviour::Fleeing:  action = "flee";  break;
+        case NPCBehaviour::Aggressive: action = "attack";  break;
+        case NPCBehaviour::Friendly:   action = "greet";   break;
+        case NPCBehaviour::Fleeing:    action = "flee";    break;
         }
         for (auto& cb : m_impl->onAction) cb(id, action);
     }

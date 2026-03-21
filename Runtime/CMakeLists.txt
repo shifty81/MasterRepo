@@ -21,6 +21,8 @@ add_library(RuntimeLib STATIC
     StateSync/StateSync.cpp
     # Phase 20 — NPC behaviour controller
     NPC/NPCController.cpp
+    # Phase 21 — dialogue tree system
+    Dialogue/DialogueSystem.cpp
 )
 
 target_include_directories(RuntimeLib PUBLIC ${CMAKE_SOURCE_DIR})

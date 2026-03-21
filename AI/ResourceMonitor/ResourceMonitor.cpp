@@ -30,10 +30,9 @@ static uint64_t SampleRamUsed() {
     std::string line;
     while (std::getline(f, line)) {
         if (line.rfind("VmRSS:", 0) == 0) {
-            uint64_t kb = 0;
-            if (std::sscanf(line.c_str(), "VmRSS: %llu kB",
-                            (unsigned long long*)&kb) == 1)
-                return kb * 1024;
+            unsigned long long kb = 0;
+            if (std::sscanf(line.c_str(), "VmRSS: %llu kB", &kb) == 1)
+                return static_cast<uint64_t>(kb) * 1024ULL;
         }
     }
     return 0;

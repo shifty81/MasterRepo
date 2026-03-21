@@ -20,6 +20,8 @@ set(TOOLS_SOURCES
     Scaffolding/CodeScaffolder.cpp
     TestPipeline/TestPipeline.cpp
     MetricsReporting/MetricsReporter.cpp
+    # Phase 21 — performance profiler
+    Profiler/PerformanceProfiler.cpp
 )
 
 add_library(ToolsLib STATIC ${TOOLS_SOURCES})
