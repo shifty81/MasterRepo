@@ -37,6 +37,14 @@ warn()    { echo -e "${YELLOW}[CI]${NC} $*"; }
 error()   { echo -e "${RED}[CI ERROR]${NC} $*" >&2; }
 section() { echo -e "\n${CYAN}${BOLD}══ $* ══${NC}\n"; }
 
+# ── Pause until the user presses Enter (keeps the terminal window open) ────────
+_wait_for_user() {
+    echo ""
+    echo -e "${BOLD}Press [Enter] to close...${NC}"
+    read -r -p "" 2>/dev/null || true
+}
+trap '_wait_for_user' EXIT
+
 # ── Paths ─────────────────────────────────────────────────────────────────────
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
