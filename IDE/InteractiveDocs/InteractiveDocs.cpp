@@ -3,10 +3,12 @@
 #include <filesystem>
 #include <fstream>
 #include <sstream>
-#include <cstdio>
 #ifdef _WIN32
+#  include <stdio.h>   // provides _popen / _pclose in global namespace under MSVC
 #  define popen  _popen
 #  define pclose _pclose
+#else
+#  include <cstdio>
 #endif
 
 namespace fs = std::filesystem;
