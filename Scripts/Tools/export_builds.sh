@@ -39,6 +39,13 @@ warn()    { echo -e "${YELLOW}[EXPORT]${NC} $*"; }
 error()   { echo -e "${RED}[EXPORT ERROR]${NC} $*" >&2; }
 section() { echo -e "\n${CYAN}${BOLD}── $* ──${NC}\n"; }
 
+# ── Pause until the user presses Enter (keeps the terminal window open) ────────
+_wait_for_user() {
+    echo ""
+    echo -e "${BOLD}Press [Enter] to close...${NC}"
+    read -r -p "" 2>/dev/null || true
+}
+
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 PACKAGE_DIR="${REPO_ROOT}/Builds/Packages"
@@ -188,5 +195,6 @@ echo -e "  ❌ Failed:  ${#FAILED[@]}   — ${FAILED[*]:-none}"
 echo -e "  ⏭  Skipped: ${#SKIPPED[@]}  — ${SKIPPED[*]:-none}"
 echo -e "${BOLD}═══════════════════════════════════════${NC}"
 
+_wait_for_user
 [[ ${#FAILED[@]} -gt 0 ]] && exit 1
 exit 0

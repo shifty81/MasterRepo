@@ -41,6 +41,13 @@ warn()  { _log "${YELLOW}[build_all]${NC} $*"; }
 error() { _log "${RED}[build_all ERROR]${NC} $*"; }
 section() { _log "\n${CYAN}${BOLD}── $* ──${NC}\n"; }
 
+# ── Pause until the user presses Enter (keeps the terminal window open) ────────
+_wait_for_user() {
+    echo ""
+    echo -e "${BOLD}Press [Enter] to close...${NC}"
+    read -r -p "" 2>/dev/null || true
+}
+
 # ── Defaults ──────────────────────────────────────────────────────────────────
 DO_DEBUG=true
 DO_RELEASE=true
@@ -303,7 +310,9 @@ echo ""
 
 if [[ ${#FAIL[@]} -gt 0 ]]; then
     error "Build had failures. Check the log above."
+    _wait_for_user
     exit 1
 fi
 
+_wait_for_user
 exit 0
