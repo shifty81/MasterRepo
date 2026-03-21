@@ -6,12 +6,18 @@ add_library(AtlasEngine STATIC
     Physics/PhysicsWorld.cpp
     Camera/Camera.cpp
     Audio/AudioEngine.cpp
+    # Blueprint — audio_pipeline
+    Audio/AudioPipeline.cpp
     Animation/AnimationGraph.cpp
     Animation/AnimationNodes.cpp
+    # Blueprint — animation_pipeline
+    Animation/AnimationPipeline.cpp
     Sim/TickScheduler.cpp
     Window/Window.cpp
     Platform/Platform.cpp
     Render/Renderer.cpp
+    # Blueprint — rendering_pipeline
+    Render/RenderPipeline.cpp
 )
 
 target_include_directories(AtlasEngine PUBLIC ${CMAKE_SOURCE_DIR})

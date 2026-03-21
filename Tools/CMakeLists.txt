@@ -13,6 +13,13 @@ set(TOOLS_SOURCES
     GitPanel/GitPanel.cpp
     AnalyticsDashboard/AnalyticsDashboard.cpp
     SimulationPlayback/SimulationPlayback.cpp
+    DocGenerator/DocGenerator.cpp
+    CodeAudit/CodeAudit.cpp
+    # Blueprint — dev_tools + server admin
+    AdminConsole/AdminConsole.cpp
+    Scaffolding/CodeScaffolder.cpp
+    TestPipeline/TestPipeline.cpp
+    MetricsReporting/MetricsReporter.cpp
 )
 
 add_library(ToolsLib STATIC ${TOOLS_SOURCES})

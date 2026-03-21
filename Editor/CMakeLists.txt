@@ -25,6 +25,10 @@ set(EDITOR_SOURCES
     Panels/ErrorPanel/ErrorPanel.cpp
     GUIEditor/GUIEditor.cpp
     ${CMAKE_SOURCE_DIR}/WorkspaceState/WorkspaceState.cpp
+    # Phase 10.10 — VR/AR Preview
+    Viewport/VRPreview.cpp
+    # Phase 10.11 — Plugin Marketplace
+    ${CMAKE_SOURCE_DIR}/Plugins/Marketplace/PluginMarketplace.cpp
 )
 
 add_library(EditorLib STATIC ${EDITOR_SOURCES})

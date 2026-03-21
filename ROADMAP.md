@@ -569,17 +569,17 @@ MasterRepo/
 
 | # | Task | Description | Output |
 |---|------|-------------|--------|
-| 10.1 | Build Targets | Debug, Release, Editor builds via CMake | `Builds/` |
-| 10.2 | Server Manager | Game server deployment (SteamCMD, config editor) | `Tools/ServerManager/` |
-| 10.3 | Performance Profiler | CPU/GPU/memory profiling panels | `Editor/Panels/Profiler` |
-| 10.4 | Replay Timeline | Record and replay simulations | `Tools/` |
-| 10.5 | Doc Generator | Generate docs from code + AI | `Docs/` |
-| 10.6 | PDF Manual | Editor-integrated manual with chapters | `Docs/` |
-| 10.7 | CI/CD Pipeline | Automated build, test, package | `Scripts/Tools/` |
-| 10.8 | Cloud Backup | Optional cloud sync for projects | `Scripts/Tools/` |
-| 10.9 | Desktop/Mobile/Web Builds | Cross-platform export | `Builds/` |
-| 10.10 | VR/AR Preview | VR/AR preview mode in editor (OpenXR) | `Editor/Viewport/` |
-| 10.11 | Plugin Marketplace | Import/export plugin packs | `Plugins/` |
+| ✅ 10.1 | Build Targets | Debug, Release, Editor builds via CMake | `Builds/` |
+| ✅ 10.2 | Server Manager | Game server deployment (SteamCMD, config editor) | `Tools/ServerManager/` |
+| ✅ 10.3 | Performance Profiler | CPU/GPU/memory profiling panels | `Editor/Panels/Profiler` |
+| ✅ 10.4 | Replay Timeline | Record and replay simulations | `Tools/` |
+| ✅ 10.5 | Doc Generator | Generate docs from code + AI | `Tools/DocGenerator/`, `Docs/` |
+| ✅ 10.6 | PDF Manual | Editor-integrated manual with chapters | `Docs/Manual/MANUAL.md` |
+| ✅ 10.7 | CI/CD Pipeline | Automated build, test, package | `Scripts/Tools/ci_pipeline.sh` |
+| ✅ 10.8 | Cloud Backup | Optional cloud sync for projects | `Scripts/Tools/cloud_backup.sh` |
+| ✅ 10.9 | Desktop/Mobile/Web Builds | Cross-platform export | `CMakePresets.json`, `Scripts/Tools/export_builds.sh` |
+| ✅ 10.10 | VR/AR Preview | VR/AR preview mode in editor (OpenXR stub) | `Editor/Viewport/VRPreview.h` |
+| ✅ 10.11 | Plugin Marketplace | Import/export plugin packs | `Plugins/Marketplace/` |
 
 **Dependencies:** All previous phases
 
@@ -831,10 +831,10 @@ These phases expand the system beyond the core 0–10 roadmap, adding advanced c
 
 ### Phase 11 — Multi-Repo Reverse Engineering & Asset Extraction
 
-- Analyze external repos for reusable patterns
-- Extract and refactor usable systems into MasterRepo
-- AI-assisted code audit and merge suggestions
-- Automated conflict detection across repos
+- ✅ Analyse external repos for reusable patterns (`Tools/CodeAudit/CodeAudit.h`)
+- ✅ Extract and refactor usable systems into MasterRepo — `CodeAudit::GetMigrationCandidates()`
+- ✅ AI-assisted code audit and merge suggestions — `CodeAudit::BuildReport()` + `onMigrationCandidate` hook
+- ✅ Automated conflict detection across repos — `CodeAudit::DetectDuplicates()`
 
 ### Phase 12 — GUI Systems (Advanced)
 
@@ -847,11 +847,11 @@ These phases expand the system beyond the core 0–10 roadmap, adding advanced c
 
 ### Phase 13 — Blender Addon Integration (Deep)
 
-- Full Blender addon for bidirectional asset pipeline
-- Procedural geometry generation via `bpy`
-- Rig/animation export pipeline
-- Material conversion (Blender → Engine)
-- Batch asset processing
+- ✅ Full Blender addon for bidirectional asset pipeline (`Scripts/Python/Blender/atlas_blender_addon.py`) — import + export for meshes, scenes, rigs, animations, materials, batch
+- ✅ Procedural geometry generation via `bpy` (`Scripts/Python/Blender/atlas_procedural_gen.py`) — hull plates, corridors, pipes, modular rooms
+- ✅ Rig/animation export pipeline — armature bones + action keyframe channels
+- ✅ Material conversion (Blender → Engine) (`Scripts/Python/Blender/atlas_material_converter.py`) — Principled BSDF → Atlas PBR JSON (interactive + CLI batch)
+- ✅ Batch asset processing — `BatchExportAtlas` operator exports all selected objects in one step
 
 ### Phase 14 — AI-Driven Testing, Simulation & Analytics
 
@@ -912,10 +912,10 @@ MasterRepo (v10.7 Ultra Blueprint)
 │   ├── engine_core (physics, GPU compute, serialization)
 │   ├── editor (Custom GUI, Code/Script, NodeGraph, Shader, PCG Rule, AI Chat, Metrics)
 │   ├── plugins (procedural mesh, AI tools, asset importers, VR/AR)
-│   ├── rendering_pipeline (LOD, GI, RayTracing, Volumetrics, Particles)
-│   ├── pcg_pipeline (Starbase generators, constraint solver, sandbox sim, validation)
-│   ├── audio_pipeline (procedural audio, SuperCollider, FluidSynth)
-│   └── animation_pipeline (rigging, mocap, procedural animation)
+│   ├── rendering_pipeline — ✅ `Engine/Render/RenderPipeline.h` (LOD, GI, RayTracing, Volumetrics, Particles)
+│   ├── pcg_pipeline — ✅ `PCG/Pipeline/PCGPipeline.h` (Starbase generators, constraint solver, sandbox sim)
+│   ├── audio_pipeline — ✅ `Engine/Audio/AudioPipeline.h` (procedural audio, SuperCollider, FluidSynth)
+│   └── animation_pipeline — ✅ `Engine/Animation/AnimationPipeline.h` (rigging, mocap, procedural animation)
 │
 ├── NovaForge (Game Layer)
 │   ├── gameplay (player, ships, crafting, NPC AI, environment, networking)
@@ -924,26 +924,26 @@ MasterRepo (v10.7 Ultra Blueprint)
 │
 ├── AI (Intelligence Layer)
 │   ├── models (LLaMA, MPT, ONNX, DeepSpeed, GPT4All)
-│   ├── orchestrator (pipeline scheduler, priority/dependency management)
-│   ├── validator (automated debugging, pull-request reports)
-│   ├── rules_engine (constraint checking)
-│   ├── metrics_dashboard (PCG, rendering, gameplay metrics)
-│   ├── rendering_optimizer (visual optimization suggestions)
-│   └── meta_learning_layer (cross-project knowledge transfer)
+│   ├── orchestrator — ✅ `AI/Orchestrator/Orchestrator.h` (pipeline scheduler, priority/dependency management)
+│   ├── validator — ✅ `AI/Validator/Validator.h` (automated debugging, pull-request reports)
+│   ├── rules_engine — ✅ `AI/RulesEngine/RulesEngine.h` (constraint checking)
+│   ├── metrics_dashboard — ✅ `AI/MetricsDashboard/MetricsDashboard.h` (PCG, rendering, gameplay metrics)
+│   ├── rendering_optimizer — ✅ `AI/RenderingOptimizer/RenderingOptimizer.h` (visual optimization suggestions)
+│   └── meta_learning_layer — ✅ `AI/MetaLearning/MetaLearning.h` (cross-project knowledge transfer)
 │
 ├── Server (optional multiplayer)
 │   ├── engine_runtime, networking, pcg_pipeline, ai_integration
-│   └── admin_console (metrics, validation, web UI)
+│   └── admin_console — ✅ `Tools/AdminConsole/AdminConsole.h` (metrics, validation, Prometheus endpoint)
 │
 ├── ClientOffline (standalone offline mode)
 │   ├── engine_runtime (embedded headless server)
 │   ├── pcg_pipeline, ai_integration, hud_interface
 │
 └── dev_tools
-    ├── code_scaffolding_pipeline
-    ├── automated_testing_pipeline
-    ├── build_deployment_pipeline
-    └── metrics_reporting_pipeline
+    ├── code_scaffolding_pipeline — ✅ `Tools/Scaffolding/CodeScaffolder.h`
+    ├── automated_testing_pipeline — ✅ `Tools/TestPipeline/TestPipeline.h`
+    ├── build_deployment_pipeline (CI scripts in Scripts/Tools/)
+    └── metrics_reporting_pipeline — ✅ `Tools/MetricsReporting/MetricsReporter.h`
 ```
 
 ---
