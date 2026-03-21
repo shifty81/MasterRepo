@@ -40,7 +40,7 @@ build_debug() {
               "${REPO_ROOT}"
         echo ""
         info "Building Debug..."
-        cmake --build "${BUILD_DEBUG}" -- -j"${JOBS}"
+        cmake --build "${BUILD_DEBUG}" --config Debug --parallel "${JOBS}"
     } 2>&1 | tee "${log_file}"
     info "Debug build complete. Log: ${log_file}"
 }
@@ -57,7 +57,7 @@ build_release() {
               "${REPO_ROOT}"
         echo ""
         info "Building Release..."
-        cmake --build "${BUILD_RELEASE}" -- -j"${JOBS}"
+        cmake --build "${BUILD_RELEASE}" --config Release --parallel "${JOBS}"
     } 2>&1 | tee "${log_file}"
     info "Release build complete. Log: ${log_file}"
 }
