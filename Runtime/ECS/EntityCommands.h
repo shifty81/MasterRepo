@@ -9,8 +9,7 @@
  */
 
 #include "Runtime/ECS/ECS.h"
-// TODO: #include "Editor/EditorCommandBus.h" // Not yet imported
-// TODO: #include "Editor/UndoableCommandBus.h" // Not yet imported
+#include "Editor/UndoableCommandBus.h"
 #include <any>
 #include <functional>
 #include <string>
@@ -18,8 +17,6 @@
 #include <unordered_map>
 
 namespace Runtime::ECS {
-
-#if 0 // TODO: Enable when Editor/EditorCommandBus.h is imported
 
 /**
  * Create a new entity in the World.
@@ -148,10 +145,6 @@ private:
     bool m_hadPrevious = false;
 };
 
-#endif // TODO: Enable when Editor/EditorCommandBus.h is imported
-
-#if 0 // TODO: Enable when Editor/UndoableCommandBus.h is imported
-
 // ── Undoable Entity Commands ────────────────────────────────────────
 
 /**
@@ -230,7 +223,5 @@ private:
     T m_previousValue{};
     bool m_hadPrevious = false;
 };
-
-#endif // TODO: Enable when Editor/UndoableCommandBus.h is imported
 
 } // namespace Runtime::ECS

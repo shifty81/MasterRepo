@@ -119,9 +119,77 @@ bool MemoryStore::SaveToFile(const std::string& path) const {
 bool MemoryStore::LoadFromFile(const std::string& path) {
     std::ifstream f(path);
     if (!f) return false;
-    // TODO: implement full JSON parsing for MemoryEntry deserialization.
-    // Currently a stub — returns false to indicate load is not yet supported.
-    return false;
+    // Hand-rolled minimal JSON array parser for the format SaveToFile() writes:
+    // [{"id":N,"key":"...","value":"...","importance":F,"timestamp":N}, ...]
+    std::string content((std::istreambuf_iterator<char>(f)),
+                         std::istreambuf_iterator<char>());
+
+    // Helper: extract a string value for a key pattern "key":"<value>"
+    auto extractStr = [&](const std::string& src, size_t start,
+                           const std::string& field) -> std::string {
+        std::string needle = "\"" + field + "\":\"";
+        size_t pos = src.find(needle, start);
+        if (pos == std::string::npos) return {};
+        pos += needle.size();
+        std::string val;
+        for (; pos < src.size(); ++pos) {
+            char c = src[pos];
+            if (c == '\\' && pos + 1 < src.size()) {
+                char esc = src[++pos];
+                if      (esc == '"')  val += '"';
+                else if (esc == '\\') val += '\\';
+                else if (esc == 'n')  val += '\n';
+                else if (esc == 'r')  val += '\r';
+                else if (esc == 't')  val += '\t';
+                else                  val += esc;
+            } else if (c == '"') {
+                break;
+            } else {
+                val += c;
+            }
+        }
+        return val;
+    };
+    // Helper: extract a numeric value for "field":N
+    auto extractNum = [&](const std::string& src, size_t start,
+                           const std::string& field) -> double {
+        std::string needle = "\"" + field + "\":";
+        size_t pos = src.find(needle, start);
+        if (pos == std::string::npos) return 0.0;
+        pos += needle.size();
+        // skip whitespace
+        while (pos < src.size() && (src[pos]==' '||src[pos]=='\t')) ++pos;
+        std::string numStr;
+        for (; pos < src.size(); ++pos) {
+            char c = src[pos];
+            if (c == ',' || c == '}' || c == '\n') break;
+            numStr += c;
+        }
+        try { return std::stod(numStr); } catch (...) { return 0.0; }
+    };
+
+    Clear();
+    size_t pos = 0;
+    while (pos < content.size()) {
+        size_t objStart = content.find('{', pos);
+        if (objStart == std::string::npos) break;
+        size_t objEnd = content.find('}', objStart);
+        if (objEnd == std::string::npos) break;
+
+        MemoryEntry e;
+        e.id         = static_cast<uint64_t>(extractNum(content, objStart, "id"));
+        e.key        = extractStr(content, objStart, "key");
+        e.value      = extractStr(content, objStart, "value");
+        e.importance = static_cast<float>(extractNum(content, objStart, "importance"));
+        e.timestamp  = static_cast<uint64_t>(extractNum(content, objStart, "timestamp"));
+        if (e.id > 0 && !e.key.empty()) {
+            m_entries.push_back(e);
+            m_keyIndex[e.key] = e.id;
+            if (e.id >= m_nextId) m_nextId = e.id + 1;
+        }
+        pos = objEnd + 1;
+    }
+    return true;
 }
 
 } // namespace AI

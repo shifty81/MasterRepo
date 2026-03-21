@@ -33,9 +33,11 @@ add_library(AtlasEngine STATIC
     Network/NetworkManager.cpp
     # Phase 20 — scene graph implementation
     Scene/SceneGraph.cpp
-    # Phase 21 — net context (engine ↔ network bridge) + shader manager
+    # Phase 21 — net context + shader manager
     Net/NetContext.cpp
     Shader/ShaderManager.cpp
+    # Phase 22 — camera controller
+    Camera/CameraController.cpp
 )
 
 target_include_directories(AtlasEngine PUBLIC ${CMAKE_SOURCE_DIR})

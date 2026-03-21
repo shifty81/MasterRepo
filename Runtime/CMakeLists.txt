@@ -23,6 +23,8 @@ add_library(RuntimeLib STATIC
     NPC/NPCController.cpp
     # Phase 21 — dialogue tree system
     Dialogue/DialogueSystem.cpp
+    # Phase 22 — runtime animation controller
+    Animation/AnimationController.cpp
 )
 
 target_include_directories(RuntimeLib PUBLIC ${CMAKE_SOURCE_DIR})

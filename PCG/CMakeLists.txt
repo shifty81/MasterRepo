@@ -35,6 +35,8 @@ set(PCG_SOURCES
     Pipeline/PCGPipeline.cpp
     # Phase 21 — biome-aware world generation
     Biomes/BiomeGenerator.cpp
+    # Phase 22 — BSP dungeon generator
+    Dungeon/DungeonGenerator.cpp
 )
 
 add_library(PCGLib STATIC ${PCG_SOURCES})

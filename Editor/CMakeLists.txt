@@ -33,6 +33,8 @@ set(EDITOR_SOURCES
     Render/EditorRenderer.cpp
     # Phase 20 — anomaly/constraint visual overlay
     Overlay/AnomalyOverlay.cpp
+    # Phase 22 — undoable command bus (undo/redo stack)
+    UndoableCommandBus.cpp
 )
 
 add_library(EditorLib STATIC ${EDITOR_SOURCES})

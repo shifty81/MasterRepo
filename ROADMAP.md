@@ -962,6 +962,19 @@ This is the "self-building" mode described in implement3.md, where the AI uses s
 
 ---
 
+### Phase 22 — Editor Undo Stack, Animation Controller, Dungeon Generator & Camera Controller
+
+**Goal:** Unblock the long-standing `EntityCommands.h` TODO blocks by implementing the undoable command bus; add runtime per-entity animation control, a BSP dungeon generator for PCG, a smooth multi-mode camera controller, and complete the `MemoryStore` JSON persistence stub.
+
+- ✅ `Editor/UndoableCommandBus.h/.cpp` — `IUndoableCommand` / `ICommand` interfaces + thread-safe `Execute`/`Undo`/`Redo` stack (max-depth capped, callbacks fired on history change)
+- ✅ `Runtime/ECS/EntityCommands.h` — All `#if 0 TODO` blocks removed; `CreateEntityCommand`, `DestroyEntityCommand`, `SetComponentCommand<T>`, `RemoveComponentCommand<T>`, `UndoableSetComponentCommand<T>`, `UndoableRemoveComponentCommand<T>` now live code
+- ✅ `Runtime/Animation/AnimationController.h/.cpp` — Per-entity animation state manager; supports multiple layers; `Once`/`Loop`/`PingPong`/`Hold` modes; fires `AnimEvent` on loop/finish; `Update(dt)` integrates with engine tick
+- ✅ `PCG/Dungeon/DungeonGenerator.h/.cpp` — BSP dungeon generator; configurable depth / room sizes / split ratio; deterministic LCG seed; L-shaped corridor connection; tags start/boss rooms; streaming `GenerateWithCallback()`
+- ✅ `Engine/Camera/CameraController.h/.cpp` — Three-mode camera driver: `Orbit` (editor/third-person), `Fly` (free-flight), `Follow` (smooth-lag entity tracking); per-mode smooth damping; `TargetQuery` callback for Follow mode
+- ✅ `AI/Memory/MemoryStore::LoadFromFile()` — Completed hand-rolled JSON deserialization matching `SaveToFile()` output; round-trip save/load now fully functional
+
+---
+
 ## Appendix C: v10.7 Ultra Blueprint Systems Map
 
 The final comprehensive systems map from implement3.md showing all subsystems and their relationships:
