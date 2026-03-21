@@ -45,6 +45,8 @@ set(PCG_SOURCES
     Weather/WeatherSystem.cpp
     # Phase 26 — procedural city generator
     Cities/CityGenerator.cpp
+    # Phase 27 — space station interior layout
+    SpaceLayout/SpaceLayoutGenerator.cpp
 )
 
 add_library(PCGLib STATIC ${PCG_SOURCES})

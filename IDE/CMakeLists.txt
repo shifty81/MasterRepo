@@ -20,6 +20,8 @@ set(IDE_SOURCES
     SnippetManager/SnippetManager.cpp
     # Phase 26 — TODO/FIXME task panel
     TaskPanel/TaskPanel.cpp
+    # Phase 27 — variable watch list panel
+    WatchPanel/WatchPanel.cpp
 )
 
 add_library(IDELib STATIC ${IDE_SOURCES})

@@ -1027,6 +1027,19 @@ This is the "self-building" mode described in implement3.md, where the AI uses s
 
 ---
 
+### Phase 27 — InputMapper, VoxelWorld, SpaceLayoutGenerator, DependencyAnalyzer, WatchPanel & RingBuffer
+
+**Goal:** Add rebindable input abstraction, voxel world foundation, procedural interior layout, include-graph analysis, IDE variable watching, and a lock-free ring buffer primitive.
+
+- ✅ `Runtime/Input/InputMapper/InputMapper.h/.cpp` — Typed `ActionDef` with `Binding` list (Digital/AnalogAxis/CompositeAxis); deadzone, scale, invert per binding; `Update(RawInputFrame)` processes all bindings and fires change callbacks; `IsHeld()`/`IsJustPressed()`/`IsJustReleased()`/`AxisValue()` query API; `RebindAction()`/`AddBinding()`/`RemoveBinding()` at runtime; `MapKey()`/`MapAxis()` convenience factories; `Serialize()`/`Deserialize()` for config persistence
+- ✅ `Engine/Voxel/VoxelWorld.h/.cpp` — `VoxelChunk` (16³ grid, dirty flag); `SetVoxel()`/`GetVoxel()` with world→chunk coordinate mapping; streaming `UpdateStreaming(viewX,Y,Z)` with configurable radius; greedy per-face mesh builder → `VoxelMesh` (vertex+index list); DDA `RayCast()` for pick/place; BFS `FloodFill()` for cavity detection; `FillSphere()` paint brush; `OnMeshReady()` callback
+- ✅ `PCG/SpaceLayout/SpaceLayoutGenerator.h/.cpp` — Seed rooms (Bridge/Engineering); BSP-style grid room placement with randomized room types (Quarters/Cargo/Lab/MedBay/Airlock/Utility); nearest-unconnected corridor chain with L-shaped corridor segments; `SLDoor` with airlock tag; `SpaceLayout::IsConnected()` BFS validation; fallback direct corridor if Engineering unreachable; `OnProgress()` callback
+- ✅ `Tools/DependencyAnalyzer/DependencyAnalyzer.h/.cpp` — Recursive directory scan + `#include` regex parsing; `resolve()` for include path lookup; `fanout`/`fanin` computation; DFS cycle detection with white/gray/black coloring → `IncludeCycle` chains; `FindDependents()`/`FindDependencies()` BFS traversal; `ExportText()` with top-fanout/fanin summary; `ExportDOT()` for Graphviz; incremental `AnalyseFile()`
+- ✅ `IDE/WatchPanel/WatchPanel.h/.cpp` — `WatchEntry` with current/previous value, changed flag, snapshotCount, author note; `Snapshot(EvalCb)` evaluates all enabled entries and tracks deltas; `GetChanged()` for changed-only query; per-entry `deque` value history with configurable depth; `OnChange()` callback; `ExportText()` + `ExportCSV()`; `SetEnabled()`/`SetNote()` for individual entry control
+- ✅ `Core/RingBuffer/RingBuffer.h` — Header-only `RingBuffer<T,N,Policy>` (stack-allocated, zero heap); `OverflowPolicy::Reject` (Push returns false when full) and `OverflowPolicy::Overwrite` (wraps oldest); `Push()`/`Pop()` → `optional<T>`; `Peek()` (oldest) + `PeekBack()` (newest); `operator[]` by age-index; forward iterator for range-for; `Clear()`, `IsFull()`, `IsEmpty()`, `Size()`, `Capacity()`
+
+---
+
 ## Appendix C: v10.7 Ultra Blueprint Systems Map
 
 The final comprehensive systems map from implement3.md showing all subsystems and their relationships:

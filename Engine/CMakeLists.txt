@@ -46,6 +46,8 @@ add_library(AtlasEngine STATIC
     PostProcess/PostProcessPipeline.cpp
     # Phase 26 — heightmap terrain system
     Terrain/TerrainSystem.cpp
+    # Phase 27 — chunk-based voxel world
+    Voxel/VoxelWorld.cpp
 )
 
 target_include_directories(AtlasEngine PUBLIC ${CMAKE_SOURCE_DIR})

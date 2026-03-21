@@ -33,6 +33,8 @@ add_library(RuntimeLib STATIC
     Gameplay/AchievementSystem/AchievementSystem.cpp
     # Phase 26 — multiplayer lobby management
     Multiplayer/LobbySystem/LobbySystem.cpp
+    # Phase 27 — action-map input layer
+    Input/InputMapper/InputMapper.cpp
 )
 
 target_include_directories(RuntimeLib PUBLIC ${CMAKE_SOURCE_DIR})

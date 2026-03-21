@@ -34,6 +34,8 @@ add_library(CoreLib STATIC
     EventDispatcher/EventDispatcher.cpp
     # Phase 26 — typed signal/slot (header-only, compiled stub)
     Signal/Signal.cpp
+    # Phase 27 — fixed-capacity ring buffer (header-only, compiled stub)
+    RingBuffer/RingBuffer.cpp
 )
 
 target_compile_features(CoreLib PUBLIC cxx_std_20)

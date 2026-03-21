@@ -30,6 +30,8 @@ set(TOOLS_SOURCES
     MemoryProfiler/MemoryProfiler.cpp
     # Phase 26 — script execution runner
     ScriptRunner/ScriptRunner.cpp
+    # Phase 27 — include dependency graph analyzer
+    DependencyAnalyzer/DependencyAnalyzer.cpp
 )
 
 add_library(ToolsLib STATIC ${TOOLS_SOURCES})
