@@ -41,6 +41,7 @@ struct Property {
 
 // --- TypeInfo descriptor ---
 
+class TypeRegistry; // forward declaration
 
 struct TypeInfo {
     std::string            Name;
@@ -49,17 +50,7 @@ struct TypeInfo {
     std::vector<Property>  Properties;
     TypeID                 BaseID = 0; // 0 = no base
 
-    const Property* FindProperty(std::string_view propName) const {
-        for (const auto& p : Properties) {
-            if (p.Name == propName) return &p;
-        }
-        // If not found, check base type (if any)
-        if (BaseID != 0) {
-            const TypeInfo* base = TypeRegistry::Instance().Find(BaseID);
-            if (base) return base->FindProperty(propName);
-        }
-        return nullptr;
-    }
+    const Property* FindProperty(std::string_view propName) const;
 };
 
 // --- TypeRegistry singleton ---

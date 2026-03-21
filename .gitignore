@@ -1,7 +1,11 @@
 # Build outputs
+Builds/debug/
+Builds/release/
 Builds/Debug/
 Builds/Release/
 Builds/Editor/
+Builds/CI_*/
+compile_commands.json
 
 # Dependency / virtual environment
 venv/

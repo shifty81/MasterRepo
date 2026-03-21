@@ -22,4 +22,15 @@ const TypeInfo* TypeRegistry::Find(std::string_view name) const {
     return Find(id);
 }
 
+const Property* TypeInfo::FindProperty(std::string_view propName) const {
+    for (const auto& p : Properties) {
+        if (p.Name == propName) return &p;
+    }
+    if (BaseID != 0) {
+        const TypeInfo* base = TypeRegistry::Instance().Find(BaseID);
+        if (base) return base->FindProperty(propName);
+    }
+    return nullptr;
+}
+
 } // namespace Core
