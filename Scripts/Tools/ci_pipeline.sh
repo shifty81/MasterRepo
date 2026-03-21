@@ -126,15 +126,17 @@ check_tool() {
 }
 
 check_tool cmake "" required
-# Accept g++, clang++, or c++ as the C++ compiler
+# Accept g++, clang++, c++, or MSVC cl as the C++ compiler
 if command -v g++ &>/dev/null; then
     info "  c++ compiler: $(g++ --version | head -1)"
 elif command -v clang++ &>/dev/null; then
     info "  c++ compiler: $(clang++ --version | head -1)"
 elif command -v c++ &>/dev/null; then
     info "  c++ compiler: $(c++ --version | head -1)"
+elif command -v cl &>/dev/null; then
+    info "  c++ compiler: $(cl 2>&1 | head -1)"
 else
-    error "  No C++ compiler found (g++ / clang++ / c++ required)"
+    error "  No C++ compiler found (g++ / clang++ / c++ / cl required)"
     ENV_OK=false
 fi
 check_tool git  "" required

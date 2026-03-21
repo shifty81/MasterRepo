@@ -106,15 +106,17 @@ check_cmd() {
 }
 
 check_cmd cmake
-# Accept any C++ compiler
+# Accept any C++ compiler (g++, clang++, c++, or MSVC cl)
 if command -v g++ &>/dev/null; then
     info "  c++ compiler: $(g++ --version | head -1)"
 elif command -v clang++ &>/dev/null; then
     info "  c++ compiler: $(clang++ --version | head -1)"
 elif command -v c++ &>/dev/null; then
     info "  c++ compiler: $(c++ --version | head -1)"
+elif command -v cl &>/dev/null; then
+    info "  c++ compiler: $(cl 2>&1 | head -1)"
 else
-    error "  No C++ compiler (g++ / clang++ / c++) found — aborting"
+    error "  No C++ compiler (g++ / clang++ / c++ / cl) found — aborting"
     exit 1
 fi
 
