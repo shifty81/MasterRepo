@@ -20,6 +20,8 @@ add_library(CoreLib STATIC
     NetworkProtocolGen/NetworkProtocolGen.cpp
     JobSystem/JobSystem.cpp
     CodeIntelligence/CodeIntelligence.cpp
+    # Phase 19 — deterministic PCG seed manager
+    DeterministicSeed/DeterministicSeed.cpp
 )
 
 target_compile_features(CoreLib PUBLIC cxx_std_20)

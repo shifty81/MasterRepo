@@ -26,6 +26,8 @@ add_library(AILib STATIC
     Orchestrator/Orchestrator.cpp
     RulesEngine/RulesEngine.cpp
     MetricsDashboard/MetricsDashboard.cpp
+    # Phase 19 — AI decision visualiser
+    DecisionVisualizer/DecisionVisualizer.cpp
 )
 target_include_directories(AILib PUBLIC ${CMAKE_SOURCE_DIR})
 target_compile_features(AILib PUBLIC cxx_std_20)

@@ -29,6 +29,8 @@ add_library(AtlasEngine STATIC
     Render/Renderer.cpp
     # Blueprint — rendering_pipeline
     Render/RenderPipeline.cpp
+    # Phase 19 — networking core
+    Network/NetworkManager.cpp
 )
 
 target_include_directories(AtlasEngine PUBLIC ${CMAKE_SOURCE_DIR})

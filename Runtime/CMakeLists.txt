@@ -17,6 +17,8 @@ add_library(RuntimeLib STATIC
     BuilderRuntime/BuilderRuntime.cpp
     Collision/Collision.cpp
     Gameplay/Prefabs/PrefabSystem.cpp
+    # Phase 19 — multiplayer state synchronisation
+    StateSync/StateSync.cpp
 )
 
 target_include_directories(RuntimeLib PUBLIC ${CMAKE_SOURCE_DIR})

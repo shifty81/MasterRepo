@@ -5,6 +5,7 @@
 #include <ctime>
 
 #ifdef _WIN32
+#  include <stdio.h>   // declares _popen / _pclose on MSVC
 #  define popen  _popen
 #  define pclose _pclose
 #endif

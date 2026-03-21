@@ -12,6 +12,8 @@ set(IDE_SOURCES
     LSP/LSPClient.cpp
     NLAssistant/NLAssistant.cpp
     InteractiveDocs/InteractiveDocs.cpp
+    # Phase 19 — voice-to-action pipeline
+    VoiceInput/VoiceInput.cpp
 )
 
 add_library(IDELib STATIC ${IDE_SOURCES})

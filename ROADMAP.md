@@ -864,7 +864,7 @@ These phases expand the system beyond the core 0–10 roadmap, adding advanced c
 ### Phase 15 — Onboard Natural Language AI Assistant
 
 - ✅ Natural language command interface in editor (`IDE/NLAssistant/NLAssistant.h`)
-- Voice-to-action pipeline (optional / future)
+- ✅ Voice-to-action pipeline (`IDE/VoiceInput/VoiceInput.h`) — implemented in Phase 19
 - ✅ Context-aware help system (`AI/ContextHelp/ContextHelp.h`)
 - ✅ AI tutorials and walkthroughs (`AI/Tutorial/Tutorial.h`)
 - ✅ Interactive documentation (`IDE/InteractiveDocs/InteractiveDocs.h`)
@@ -920,6 +920,19 @@ This is the "self-building" mode described in implement3.md, where the AI uses s
 - ✅ `Editor/CMakeLists.txt` — EditorRenderer added to EditorLib
 
 **Rules followed:** No ImGui (Atlas Rule) — UI drawn entirely with custom OpenGL primitives.
+
+---
+
+### Phase 19 — Networking Core, Voice Input & AI Decision Visualiser
+
+**Goal:** Add multiplayer networking foundations, complete the voice-to-action pipeline from Phase 15, introduce a deterministic PCG seed manager, multiplayer state-sync with desync detection, and an AI reasoning visualiser for editor overlays.
+
+- ✅ `Engine/Network/NetworkManager.h/.cpp` — Lightweight ENet-style session manager; supports host/connect/broadcast; stub-ready for ENet / LiteNetLib / asio
+- ✅ `IDE/VoiceInput/VoiceInput.h/.cpp` — Voice-to-action pipeline (completes Phase 15); keyword → action mapping; stub-ready for Whisper / Vosk offline STT backends
+- ✅ `AI/DecisionVisualizer/DecisionVisualizer.h/.cpp` — Records AI reasoning chains (BeginTrace / AddStep / CommitTrace); editor overlays query this to show "why the AI made this choice"
+- ✅ `Core/DeterministicSeed/DeterministicSeed.h/.cpp` — Global singleton seed registry; `Derive(domain)` / `Derive(domain, index)` give every PCG subsystem reproducible seeds; serialise/deserialise for save-files
+- ✅ `Runtime/StateSync/StateSync.h/.cpp` — World-snapshot ring buffer with deterministic diff-based desync detection and rollback; fires conflict callbacks for resolution strategies
+- ✅ Windows build fix: `Agents/CodeAgent/ToolSystem.cpp` and `Agents/SelfBuildAgent/SelfBuildAgent.cpp` now include `<stdio.h>` inside `#ifdef _WIN32` so `_popen` / `_pclose` are properly declared on MSVC
 
 ---
 
