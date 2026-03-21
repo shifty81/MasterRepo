@@ -41,6 +41,8 @@ set(PCG_SOURCES
     Story/StoryGenerator.cpp
     # Phase 24 — biome-aware vegetation placement
     Vegetation/VegetationGenerator.cpp
+    # Phase 25 — dynamic weather simulation
+    Weather/WeatherSystem.cpp
 )
 
 add_library(PCGLib STATIC ${PCG_SOURCES})

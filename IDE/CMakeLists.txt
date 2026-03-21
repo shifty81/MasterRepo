@@ -16,6 +16,8 @@ set(IDE_SOURCES
     VoiceInput/VoiceInput.cpp
     # Phase 24 — project file tree explorer
     ProjectExplorer/ProjectExplorer.cpp
+    # Phase 25 — code snippet library
+    SnippetManager/SnippetManager.cpp
 )
 
 add_library(IDELib STATIC ${IDE_SOURCES})

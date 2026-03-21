@@ -26,6 +26,8 @@ set(TOOLS_SOURCES
     BenchmarkRunner/BenchmarkRunner.cpp
     # Phase 24 — unified asset import/process/export pipeline
     AssetPipeline/AssetPipeline.cpp
+    # Phase 25 — memory allocation profiler
+    MemoryProfiler/MemoryProfiler.cpp
 )
 
 add_library(ToolsLib STATIC ${TOOLS_SOURCES})

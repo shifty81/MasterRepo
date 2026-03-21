@@ -29,6 +29,8 @@ add_library(RuntimeLib STATIC
     Gameplay/GameSession/GameSession.cpp
     # Phase 24 — behavior tree for NPC AI
     AI/BehaviorTree/BehaviorTree.cpp
+    # Phase 25 — achievement tracking system
+    Gameplay/AchievementSystem/AchievementSystem.cpp
 )
 
 target_include_directories(RuntimeLib PUBLIC ${CMAKE_SOURCE_DIR})

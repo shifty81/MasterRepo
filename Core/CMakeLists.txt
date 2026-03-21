@@ -30,6 +30,8 @@ add_library(CoreLib STATIC
     Config/ConfigSystem.cpp
     # Phase 24 — script engine binding registry
     Scripting/LuaBinding.cpp
+    # Phase 25 — typed event dispatcher
+    EventDispatcher/EventDispatcher.cpp
 )
 
 target_compile_features(CoreLib PUBLIC cxx_std_20)

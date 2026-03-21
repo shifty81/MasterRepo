@@ -42,6 +42,8 @@ add_library(AtlasEngine STATIC
     Lod/LODSystem.cpp
     # Phase 24 — CPU particle system
     Particles/ParticleSystem.cpp
+    # Phase 25 — post-process pipeline
+    PostProcess/PostProcessPipeline.cpp
 )
 
 target_include_directories(AtlasEngine PUBLIC ${CMAKE_SOURCE_DIR})

@@ -1001,6 +1001,19 @@ This is the "self-building" mode described in implement3.md, where the AI uses s
 
 ---
 
+### Phase 25 — Achievement System, Post-Process Pipeline, Weather System, Memory Profiler, Snippet Manager & Event Dispatcher
+
+**Goal:** Fill remaining gameplay, rendering, world-simulation, developer-tooling, and IDE gaps with polished, fully-wired subsystems.
+
+- ✅ `Runtime/Gameplay/AchievementSystem/AchievementSystem.h/.cpp` — Achievement definitions with four condition types (Cumulative, SingleEvent, Streak, TimedAccumulation); `Update(eventKey, delta)` drives all matching achievements in one call; `ForceUnlock()`, `ResetStreak()`; `ExportState()`/`ImportState()` for save/load; `OnUnlock`/`OnProgress` callbacks; rewardXP + rewardItemId per def
+- ✅ `Engine/PostProcess/PostProcessPipeline.h/.cpp` — Seven configurable post-process passes: Bloom (threshold/blur), Tonemapping (ACES/Reinhard/Uncharted2), Vignette, SSAO (hemisphere kernel), Chromatic Aberration, ColorGrading (lift/gamma/gain/saturation/contrast), FXAA; `Execute(fbo, w, h)` runs enabled passes in correct order; `PassResult` timing per pass; `EnablePass()` per-name override
+- ✅ `PCG/Weather/WeatherSystem.h/.cpp` — Seven built-in presets (Clear/Cloudy/Rain/Storm/Fog/Snow/Blizzard); full `WeatherState` (cloud/rain/snow/fog/wind/temp/humidity/lightning/visibility/fog-colour); smooth `Lerp()` blending between presets; auto-transition with weighted random selection after hold duration; time-of-day temperature modulation; `OnWeatherChange`/`OnTick` callbacks
+- ✅ `Tools/MemoryProfiler/MemoryProfiler.h/.cpp` — Explicit `Track(tag,bytes,callsite)`/`Untrack(id)` instrumentation; per-tag `TagStats` (live/count/peak/totalAlloc/totalFreed); RAII `ScopeTracker`; `Snapshot()` capture; `DiffSnapshots()` for leak detection; `Report()` aligned text + `ReportCSV()`; `ResetPeaks()` for per-frame high-water tracking
+- ✅ `IDE/SnippetManager/SnippetManager.h/.cpp` — Snippet library with `${VAR}` placeholder substitution; `ExpandByPrefix()` for trigger-based expansion (e.g. "forr<tab>"); search by tag/language/substring; `LoadFromFile()`/`SaveToFile()` in pipe-delimited format; seven built-in C++/Lua/Python snippets; `useCount` tracking for MRU sorting
+- ✅ `Core/EventDispatcher/EventDispatcher.h/.cpp` — Typed `Subscribe<T>(event, fn, priority, oneShot)`; `Dispatch<T>` synchronous sorted-by-priority dispatch; `Defer<T>` + `FlushDeferred()` for deferred queue; `Unsubscribe(ListenerID)`/`UnsubscribeAll(event)`; thread-safe ID generation with `std::atomic`; copy-before-dispatch avoids iterator invalidation from recursive unsubscribe
+
+---
+
 ## Appendix C: v10.7 Ultra Blueprint Systems Map
 
 The final comprehensive systems map from implement3.md showing all subsystems and their relationships:
