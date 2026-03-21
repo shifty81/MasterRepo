@@ -43,6 +43,8 @@ set(PCG_SOURCES
     Vegetation/VegetationGenerator.cpp
     # Phase 25 — dynamic weather simulation
     Weather/WeatherSystem.cpp
+    # Phase 26 — procedural city generator
+    Cities/CityGenerator.cpp
 )
 
 add_library(PCGLib STATIC ${PCG_SOURCES})

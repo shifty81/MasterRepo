@@ -18,6 +18,8 @@ set(IDE_SOURCES
     ProjectExplorer/ProjectExplorer.cpp
     # Phase 25 — code snippet library
     SnippetManager/SnippetManager.cpp
+    # Phase 26 — TODO/FIXME task panel
+    TaskPanel/TaskPanel.cpp
 )
 
 add_library(IDELib STATIC ${IDE_SOURCES})

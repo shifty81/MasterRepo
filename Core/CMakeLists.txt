@@ -32,6 +32,8 @@ add_library(CoreLib STATIC
     Scripting/LuaBinding.cpp
     # Phase 25 — typed event dispatcher
     EventDispatcher/EventDispatcher.cpp
+    # Phase 26 — typed signal/slot (header-only, compiled stub)
+    Signal/Signal.cpp
 )
 
 target_compile_features(CoreLib PUBLIC cxx_std_20)

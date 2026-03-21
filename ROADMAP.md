@@ -1014,6 +1014,19 @@ This is the "self-building" mode described in implement3.md, where the AI uses s
 
 ---
 
+### Phase 26 — LobbySystem, TerrainSystem, CityGenerator, ScriptRunner, TaskPanel & Signal
+
+**Goal:** Add multiplayer foundation, open-world terrain, procedural urbanism, script tooling, IDE productivity, and a lightweight signal/slot primitive.
+
+- ✅ `Runtime/Multiplayer/LobbySystem/LobbySystem.h/.cpp` — Named rooms with `LobbyRoomConfig` (maxPlayers, password, gameMode, observers); `PlayerSlot` state machine (Open/Occupied/Closed/Observer); `JoinRoom()` with password check + observer mode; `KickPlayer()`/`SetReady()`/`CloseSlot()`/`OpenSlot()`; automatic host migration (oldest player promoted); `StartGame()` countdown; `Update(dt)` countdown timer; `LobbyEvent` callbacks (PlayerJoined/Left/Kicked/Ready/HostChanged/GameStarting/GameStarted/RoomClosed)
+- ✅ `Engine/Terrain/TerrainSystem.h/.cpp` — `TerrainChunk` with bilinear `SampleHeight()`, per-vertex normal `ComputeNormals()`; `LODPolicy` distance-threshold selection; chunk streaming `UpdateStreaming(viewX, viewZ)` with configurable radius; `RayCast()` linear step-refine intersection; `Sculpt()` weighted-paint height delta; `HeightmapSourceCb` for noise/file-based height fill; `ChunkCoordHash` for O(1) chunk lookup
+- ✅ `PCG/Cities/CityGenerator.h/.cpp` — Grid intersection lattice; road segment graph (Highway/Arterial/Secondary/Residential/Alley); block polygon extraction; lot subdivision with configurable `minLotWidth`/`maxLotWidth`; land-use zoning (Residential/Commercial/Industrial/Park/Civic/Empty) weighted by distance-from-centre + `commercialCoreBias`; step-by-step `GenerateStep()` API; `OnProgress()` callback per phase
+- ✅ `Tools/ScriptRunner/ScriptRunner.h/.cpp` — `DetectLang()` by file extension; `FindInterpreter()` auto-discovery (lua5.4/python3/sh); `Run()` synchronous + `RunStreaming()` line-callback variant; `RunFile()` / `RunString()` convenience wrappers; `ValidateScript()` pre-flight check; temp-file based `RunString()`; POSIX/Windows `popen`/`_popen` portability; wall-time measurement; timeout detection
+- ✅ `IDE/TaskPanel/TaskPanel.h/.cpp` — Recursive directory scan for TODO/FIXME/HACK/NOTE/OPTIMIZE/REVIEW/BUG comment markers; configurable extensions and keywords; `TaskItem` with file/line/column/author; `GetFiltered(TaskFilter)` with marker/priority/file/message filters; four `SortBy` options (File/Line/Priority/Marker); `JumpTo()` with IDE navigation callback; `ExportText()` + `ExportCSV()`; `RefreshFile()` incremental update
+- ✅ `Core/Signal/Signal.h` — Header-only typed `Signal<Args...>` template; `Connect(fn)`→`ConnectionID`; `ConnectScoped(fn)`→`ScopedConnection` RAII handle (auto-disconnects on destruction); `Disconnect(id)`, `DisconnectAll()`; deferred tombstone erase during `Emit()` (prevents iterator invalidation from self-disconnect); `operator()` functor shorthand; move-only `ScopedConnection`
+
+---
+
 ## Appendix C: v10.7 Ultra Blueprint Systems Map
 
 The final comprehensive systems map from implement3.md showing all subsystems and their relationships:

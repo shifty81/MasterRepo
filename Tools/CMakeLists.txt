@@ -28,6 +28,8 @@ set(TOOLS_SOURCES
     AssetPipeline/AssetPipeline.cpp
     # Phase 25 — memory allocation profiler
     MemoryProfiler/MemoryProfiler.cpp
+    # Phase 26 — script execution runner
+    ScriptRunner/ScriptRunner.cpp
 )
 
 add_library(ToolsLib STATIC ${TOOLS_SOURCES})

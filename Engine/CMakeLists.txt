@@ -44,6 +44,8 @@ add_library(AtlasEngine STATIC
     Particles/ParticleSystem.cpp
     # Phase 25 — post-process pipeline
     PostProcess/PostProcessPipeline.cpp
+    # Phase 26 — heightmap terrain system
+    Terrain/TerrainSystem.cpp
 )
 
 target_include_directories(AtlasEngine PUBLIC ${CMAKE_SOURCE_DIR})

@@ -31,6 +31,8 @@ add_library(RuntimeLib STATIC
     AI/BehaviorTree/BehaviorTree.cpp
     # Phase 25 — achievement tracking system
     Gameplay/AchievementSystem/AchievementSystem.cpp
+    # Phase 26 — multiplayer lobby management
+    Multiplayer/LobbySystem/LobbySystem.cpp
 )
 
 target_include_directories(RuntimeLib PUBLIC ${CMAKE_SOURCE_DIR})
