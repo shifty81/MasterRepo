@@ -913,9 +913,9 @@ MasterRepo (v10.7 Ultra Blueprint)
 │   ├── editor (Custom GUI, Code/Script, NodeGraph, Shader, PCG Rule, AI Chat, Metrics)
 │   ├── plugins (procedural mesh, AI tools, asset importers, VR/AR)
 │   ├── rendering_pipeline — ✅ `Engine/Render/RenderPipeline.h` (LOD, GI, RayTracing, Volumetrics, Particles)
-│   ├── pcg_pipeline (Starbase generators, constraint solver, sandbox sim, validation)
-│   ├── audio_pipeline (procedural audio, SuperCollider, FluidSynth)
-│   └── animation_pipeline (rigging, mocap, procedural animation)
+│   ├── pcg_pipeline — ✅ `PCG/Pipeline/PCGPipeline.h` (Starbase generators, constraint solver, sandbox sim)
+│   ├── audio_pipeline — ✅ `Engine/Audio/AudioPipeline.h` (procedural audio, SuperCollider, FluidSynth)
+│   └── animation_pipeline — ✅ `Engine/Animation/AnimationPipeline.h` (rigging, mocap, procedural animation)
 │
 ├── NovaForge (Game Layer)
 │   ├── gameplay (player, ships, crafting, NPC AI, environment, networking)
@@ -924,26 +924,26 @@ MasterRepo (v10.7 Ultra Blueprint)
 │
 ├── AI (Intelligence Layer)
 │   ├── models (LLaMA, MPT, ONNX, DeepSpeed, GPT4All)
-│   ├── orchestrator (pipeline scheduler, priority/dependency management)
+│   ├── orchestrator — ✅ `AI/Orchestrator/Orchestrator.h` (pipeline scheduler, priority/dependency management)
 │   ├── validator — ✅ `AI/Validator/Validator.h` (automated debugging, pull-request reports)
-│   ├── rules_engine (constraint checking)
-│   ├── metrics_dashboard (PCG, rendering, gameplay metrics)
+│   ├── rules_engine — ✅ `AI/RulesEngine/RulesEngine.h` (constraint checking)
+│   ├── metrics_dashboard — ✅ `AI/MetricsDashboard/MetricsDashboard.h` (PCG, rendering, gameplay metrics)
 │   ├── rendering_optimizer — ✅ `AI/RenderingOptimizer/RenderingOptimizer.h` (visual optimization suggestions)
 │   └── meta_learning_layer — ✅ `AI/MetaLearning/MetaLearning.h` (cross-project knowledge transfer)
 │
 ├── Server (optional multiplayer)
 │   ├── engine_runtime, networking, pcg_pipeline, ai_integration
-│   └── admin_console (metrics, validation, web UI)
+│   └── admin_console — ✅ `Tools/AdminConsole/AdminConsole.h` (metrics, validation, Prometheus endpoint)
 │
 ├── ClientOffline (standalone offline mode)
 │   ├── engine_runtime (embedded headless server)
 │   ├── pcg_pipeline, ai_integration, hud_interface
 │
 └── dev_tools
-    ├── code_scaffolding_pipeline
-    ├── automated_testing_pipeline
-    ├── build_deployment_pipeline
-    └── metrics_reporting_pipeline
+    ├── code_scaffolding_pipeline — ✅ `Tools/Scaffolding/CodeScaffolder.h`
+    ├── automated_testing_pipeline — ✅ `Tools/TestPipeline/TestPipeline.h`
+    ├── build_deployment_pipeline (CI scripts in Scripts/Tools/)
+    └── metrics_reporting_pipeline — ✅ `Tools/MetricsReporting/MetricsReporter.h`
 ```
 
 ---

@@ -30,6 +30,9 @@ set(PCG_SOURCES
 
     # Noise
     Noise/NoiseGenerator.cpp
+
+    # Blueprint — pcg_pipeline
+    Pipeline/PCGPipeline.cpp
 )
 
 add_library(PCGLib STATIC ${PCG_SOURCES})
