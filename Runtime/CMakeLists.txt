@@ -19,6 +19,8 @@ add_library(RuntimeLib STATIC
     Gameplay/Prefabs/PrefabSystem.cpp
     # Phase 19 — multiplayer state synchronisation
     StateSync/StateSync.cpp
+    # Phase 20 — NPC behaviour controller
+    NPC/NPCController.cpp
 )
 
 target_include_directories(RuntimeLib PUBLIC ${CMAKE_SOURCE_DIR})

@@ -31,6 +31,8 @@ add_library(AtlasEngine STATIC
     Render/RenderPipeline.cpp
     # Phase 19 — networking core
     Network/NetworkManager.cpp
+    # Phase 20 — scene graph implementation
+    Scene/SceneGraph.cpp
 )
 
 target_include_directories(AtlasEngine PUBLIC ${CMAKE_SOURCE_DIR})

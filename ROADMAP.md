@@ -936,6 +936,19 @@ This is the "self-building" mode described in implement3.md, where the AI uses s
 
 ---
 
+### Phase 20 — AI Safety, Conflict Resolution & Performance Monitoring
+
+**Goal:** Complete the v10.7 Ultra Blueprint remaining enhancements: transaction-safe AI suggestion staging, multi-model conflict resolution, resource monitoring, NPC behaviour controller, viewport anomaly overlays, and the SceneGraph implementation.
+
+- ✅ `Engine/Scene/SceneGraph.cpp` — Implements the existing `SceneGraph.h`; add/remove/find/traverse/count operations on the node tree
+- ✅ `AI/ConflictResolver/ConflictResolver.h/.cpp` — Arbitrates competing AI suggestions from PCG, Shader, and Gameplay pipelines; priority × pipeline-weight scoring; cyclic dependency detection and breaking
+- ✅ `AI/ResourceMonitor/ResourceMonitor.h/.cpp` — Samples CPU/RAM/GPU usage during AI sessions; configurable thresholds fire alert callbacks so the orchestrator can throttle; 1-hour session limit enforced
+- ✅ `Core/TransactionManager/TransactionManager.h/.cpp` — Transaction-safe AI suggestion staging; `Begin`/`Stage`/`Commit`/`Rollback` with nested savepoints; nothing touches live project until committed
+- ✅ `Editor/Overlay/AnomalyOverlay.h/.cpp` — Manages `OverlayAnnotation` objects (info/warning/error) for in-viewport PCG constraint violations, AI feedback, and anomaly highlights; per-source visibility toggling
+- ✅ `Runtime/NPC/NPCController.h/.cpp` — Runtime NPC behaviour controller; supports `Idle/Patrol/Guard/Aggressive/Friendly/Fleeing` archetypes; AI Chat can call `TuneParams()` mid-session for interactive behaviour adjustment
+
+---
+
 ## Appendix C: v10.7 Ultra Blueprint Systems Map
 
 The final comprehensive systems map from implement3.md showing all subsystems and their relationships:

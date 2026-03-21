@@ -22,6 +22,8 @@ add_library(CoreLib STATIC
     CodeIntelligence/CodeIntelligence.cpp
     # Phase 19 — deterministic PCG seed manager
     DeterministicSeed/DeterministicSeed.cpp
+    # Phase 20 — transaction-safe AI suggestion staging
+    TransactionManager/TransactionManager.cpp
 )
 
 target_compile_features(CoreLib PUBLIC cxx_std_20)
