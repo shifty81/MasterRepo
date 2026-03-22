@@ -45,6 +45,26 @@ _wait_for_user() {
 }
 trap '_wait_for_user' EXIT
 
+# ── Helper: run cmake without a pipe to prevent MSBuild worker-node hang ──────
+# On Windows, MSBuild spawns persistent worker-node processes that inherit any
+# pipe write-handle, preventing tee from seeing EOF (= infinite hang).
+# Fix: redirect output directly to the log file (no pipe), then stream via
+# tail -f (an MSYS2 binary — reliable Unix-to-Unix I/O, no SIGPIPE issues).
+_cmake_run() {
+    local log_file="$1"; shift
+    : >> "${log_file}"                     # ensure file exists before tail
+    "$@" >> "${log_file}" 2>&1 &
+    local _pid=$!
+    tail -f "${log_file}" &
+    local _tail_pid=$!
+    local _rc=0
+    wait "${_pid}" || _rc=$?
+    sleep 0.1 2>/dev/null || true          # let tail flush last bytes
+    kill "${_tail_pid}" 2>/dev/null || true
+    wait "${_tail_pid}" 2>/dev/null || true
+    return "${_rc}"
+}
+
 # ── Paths ─────────────────────────────────────────────────────────────────────
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
@@ -140,7 +160,7 @@ check_tool() {
     fi
 }
 
-check_tool cmake "" required
+check_tool cmake required
 # ── C++ compiler detection (shared helper) ────────────────────────────────────
 # shellcheck source=Scripts/Tools/detect_compiler.sh
 source "$(dirname "${BASH_SOURCE[0]}")/detect_compiler.sh"
@@ -150,9 +170,9 @@ else
     error "  No C++ compiler found — see instructions above"
     ENV_OK=false
 fi
-check_tool git  "" required
-check_tool cppcheck "" optional
-check_tool cpack "" optional
+check_tool git required
+check_tool cppcheck optional
+check_tool cpack optional
 
 CMAKE_JOBS="$(nproc 2>/dev/null || echo 4)"
 info "  Parallel jobs: ${CMAKE_JOBS}"
@@ -169,25 +189,26 @@ fi
 if [[ "${BUILD_DEBUG}" == "true" ]]; then
     section "Stage 2: Debug Build"
     # Configure
-    cmake -B "${BUILD_DIR_DEBUG}" \
-          -DCMAKE_BUILD_TYPE=Debug \
-          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-          -DBUILD_TESTS=ON \
-          "${REPO_ROOT}" 2>&1 | tee "${OUTPUT_DIR}/cmake_debug.log" || {
+    if ! _cmake_run "${OUTPUT_DIR}/cmake_debug.log" \
+            cmake -B "${BUILD_DIR_DEBUG}" \
+                  -DCMAKE_BUILD_TYPE=Debug \
+                  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+                  -DBUILD_TESTS=ON \
+                  "${REPO_ROOT}"; then
         stage_fail "Debug Build"
         error "Debug configure failed — see ${OUTPUT_DIR}/cmake_debug.log"
         exit 2
-    }
+    fi
     # Detect MSBuild generator (.sln present) and pass /nodeReuse:false to
     # prevent worker-node handles from keeping a pipe open after the build.
-    local _nodeReuse_args_debug=()
+    _nodeReuse_args_debug=()
     for _f in "${BUILD_DIR_DEBUG}"/*.sln; do
         [[ -f "${_f}" ]] && { _nodeReuse_args_debug=("--" "/nodeReuse:false"); break; }
     done
-    if cmake --build "${BUILD_DIR_DEBUG}" \
-             --parallel "${CMAKE_JOBS}" \
-             "${_nodeReuse_args_debug[@]}" \
-             2>&1 | tee "${OUTPUT_DIR}/build_debug.log"; then
+    if _cmake_run "${OUTPUT_DIR}/build_debug.log" \
+            cmake --build "${BUILD_DIR_DEBUG}" \
+                  --parallel "${CMAKE_JOBS}" \
+                  "${_nodeReuse_args_debug[@]}"; then
         stage_pass "Debug Build"
         # Copy compile_commands.json to repo root for IDE tooling
         cp "${BUILD_DIR_DEBUG}/compile_commands.json" \
@@ -204,21 +225,22 @@ fi
 # ── Stage 3: Release Build ────────────────────────────────────────────────────
 if [[ "${BUILD_RELEASE}" == "true" ]]; then
     section "Stage 3: Release Build"
-    cmake -B "${BUILD_DIR_RELEASE}" \
-          -DCMAKE_BUILD_TYPE=Release \
-          "${REPO_ROOT}" 2>&1 | tee "${OUTPUT_DIR}/cmake_release.log" || {
+    if ! _cmake_run "${OUTPUT_DIR}/cmake_release.log" \
+            cmake -B "${BUILD_DIR_RELEASE}" \
+                  -DCMAKE_BUILD_TYPE=Release \
+                  "${REPO_ROOT}"; then
         stage_fail "Release Build"
         error "Release configure failed — see ${OUTPUT_DIR}/cmake_release.log"
         exit 2
-    }
-    local _nodeReuse_args_release=()
+    fi
+    _nodeReuse_args_release=()
     for _f in "${BUILD_DIR_RELEASE}"/*.sln; do
         [[ -f "${_f}" ]] && { _nodeReuse_args_release=("--" "/nodeReuse:false"); break; }
     done
-    if cmake --build "${BUILD_DIR_RELEASE}" \
-             --parallel "${CMAKE_JOBS}" \
-             "${_nodeReuse_args_release[@]}" \
-             2>&1 | tee "${OUTPUT_DIR}/build_release.log"; then
+    if _cmake_run "${OUTPUT_DIR}/build_release.log" \
+            cmake --build "${BUILD_DIR_RELEASE}" \
+                  --parallel "${CMAKE_JOBS}" \
+                  "${_nodeReuse_args_release[@]}"; then
         stage_pass "Release Build"
     else
         stage_fail "Release Build"

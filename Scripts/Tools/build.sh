@@ -66,20 +66,41 @@ else
     warn "No C++ compiler found — CMake will attempt its own detection."
 fi
 
-# ── Helper: detect MSBuild generator and run cmake --build safely ─────────────
-# MSBuild spawns persistent worker-node processes that inherit any pipe
-# write-handle, preventing a downstream 'tee' from seeing EOF (= infinite hang).
-# Passing /nodeReuse:false tells MSBuild to shut those nodes down after the
-# build.  We detect the VS generator by checking for a .sln after configure.
+# ── Helper: run any command without a pipe, streaming output via tail ──────────
+# On Windows, MSBuild spawns persistent worker-node processes that inherit any
+# pipe write-handle.  When the build finishes, those nodes are still alive and
+# keep the write end of the pipe open, so a downstream 'tee' never sees EOF and
+# the script hangs indefinitely.
+#
+# Fix: redirect output directly to the log file (no pipe ever touches cmake or
+# MSBuild), then stream the file to the terminal with 'tail -f'.  tail is an
+# MSYS2 binary — Unix-to-Unix I/O — so SIGPIPE/EOF handling is reliable.
+_cmake_run() {
+    local log_file="$1"; shift
+    # Ensure the log file exists before tail tries to follow it
+    : >> "${log_file}"
+    "$@" >> "${log_file}" 2>&1 &
+    local _pid=$!
+    tail -f "${log_file}" &
+    local _tail_pid=$!
+    local _rc=0
+    wait "${_pid}" || _rc=$?
+    sleep 0.1 2>/dev/null || true    # let tail flush the last bytes
+    kill "${_tail_pid}" 2>/dev/null || true
+    wait "${_tail_pid}" 2>/dev/null || true
+    return "${_rc}"
+}
+
+# ── Helper: cmake --build with /nodeReuse:false for MSBuild generators ─────────
 _cmake_build() {
     local build_dir="$1" config="$2" log_file="$3"
     local _nr=()
     for _f in "${build_dir}"/*.sln; do
         [[ -f "${_f}" ]] && { _nr=("--" "/nodeReuse:false"); break; }
     done
-    cmake --build "${build_dir}" --config "${config}" \
-          --parallel "${JOBS}" "${_nr[@]}" \
-          2>&1 | tee -a "${log_file}"
+    _cmake_run "${log_file}" \
+        cmake --build "${build_dir}" --config "${config}" \
+              --parallel "${JOBS}" "${_nr[@]}"
 }
 
 # ── Individual build functions ─────────────────────────────────────────────────
@@ -88,11 +109,11 @@ build_debug() {
     info "Configuring Debug build → ${BUILD_DEBUG}"
     info "Log: ${log_file}"
     mkdir -p "${BUILD_DEBUG}"
-    cmake -B "${BUILD_DEBUG}" \
-          -DCMAKE_BUILD_TYPE=Debug \
-          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-          "${REPO_ROOT}" \
-          2>&1 | tee "${log_file}" || return 1
+    _cmake_run "${log_file}" \
+        cmake -B "${BUILD_DEBUG}" \
+              -DCMAKE_BUILD_TYPE=Debug \
+              -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+              "${REPO_ROOT}" || return 1
     echo ""
     info "Building Debug..."
     _cmake_build "${BUILD_DEBUG}" "Debug" "${log_file}" || return 1
@@ -104,11 +125,11 @@ build_release() {
     info "Configuring Release build → ${BUILD_RELEASE}"
     info "Log: ${log_file}"
     mkdir -p "${BUILD_RELEASE}"
-    cmake -B "${BUILD_RELEASE}" \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-          "${REPO_ROOT}" \
-          2>&1 | tee "${log_file}" || return 1
+    _cmake_run "${log_file}" \
+        cmake -B "${BUILD_RELEASE}" \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+              "${REPO_ROOT}" || return 1
     echo ""
     info "Building Release..."
     _cmake_build "${BUILD_RELEASE}" "Release" "${log_file}" || return 1
