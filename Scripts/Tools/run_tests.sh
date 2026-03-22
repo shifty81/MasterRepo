@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Atlas Engine — run_tests.sh
-# Discovers a CMake build directory and runs ctest with verbose output.
+# MasterRepo — run_tests.sh   (Windows / Git Bash / MSYS2)
+# Discovers the CMake build directory and runs ctest with verbose output.
+# Build directories match build_all.sh: Builds/debug and Builds/release
 # =============================================================================
 set -euo pipefail
 
-BUILD_DEBUG="${TMPDIR:-/tmp}/atlas_build_debug"
-BUILD_RELEASE="${TMPDIR:-/tmp}/atlas_build_release"
-BUILD_ALL="${TMPDIR:-/tmp}/build_all"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+BUILD_DEBUG="${REPO_ROOT}/Builds/debug"
+BUILD_RELEASE="${REPO_ROOT}/Builds/release"
+JOBS="$(nproc 2>/dev/null || echo 4)"
 
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -23,7 +25,6 @@ _TEST_START="${SECONDS}"
 _TEST_RESULT="UNKNOWN"
 _TEST_BUILD_DIR=""
 
-# ── Build status report + pause ───────────────────────────────────────────────
 _print_summary_and_wait() {
     local elapsed=$(( SECONDS - _TEST_START ))
     echo ""
@@ -42,10 +43,9 @@ _print_summary_and_wait() {
     read -r -p "" 2>/dev/null || true
 }
 
-# ── Find a built directory that contains CTestTestfile.cmake ──────────────────
-
+# ── Find a build directory that contains CTestTestfile.cmake ──────────────────
 find_build_dir() {
-    for dir in "${BUILD_DEBUG}" "${BUILD_RELEASE}" "${BUILD_ALL}"; do
+    for dir in "${BUILD_DEBUG}" "${BUILD_RELEASE}"; do
         if [[ -f "${dir}/CTestTestfile.cmake" ]]; then
             echo "${dir}"
             return 0
@@ -58,8 +58,8 @@ BUILD_DIR="${1:-}"
 
 if [[ -z "${BUILD_DIR}" ]]; then
     if ! BUILD_DIR="$(find_build_dir)"; then
-        error "No built directory found. Run build.sh first."
-        error "Checked: ${BUILD_DEBUG}, ${BUILD_RELEASE}, ${BUILD_ALL}"
+        error "No built directory found. Run build_all.sh first."
+        error "Checked: ${BUILD_DEBUG}, ${BUILD_RELEASE}"
         _TEST_RESULT="SKIP"
         _print_summary_and_wait
         exit 1
@@ -78,7 +78,7 @@ _TEST_BUILD_DIR="${BUILD_DIR}"
 info "Running tests in: ${BUILD_DIR}"
 cd "${BUILD_DIR}"
 
-if ! ctest --output-on-failure --parallel "$(nproc)" "$@"; then
+if ! ctest --output-on-failure --parallel "${JOBS}" "$@"; then
     error "Some tests FAILED."
     _TEST_RESULT="FAIL"
     _print_summary_and_wait
