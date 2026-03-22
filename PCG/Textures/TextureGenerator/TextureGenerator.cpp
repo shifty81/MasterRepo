@@ -1,6 +1,7 @@
 #include "PCG/Textures/TextureGenerator/TextureGenerator.h"
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 #include <chrono>
 #include <thread>
 #include <stdexcept>
@@ -248,7 +249,7 @@ void TextureGenerator::GenerateAsync(TextureGenCb callback) {
     // Copy impl state for the background thread
     Impl copy = *m_impl;
     std::thread([copy = std::move(copy), cb = std::move(callback)]() mutable {
-        cb(const_cast<Impl&>(copy).build());
+        cb(copy.build());
     }).detach();
 }
 

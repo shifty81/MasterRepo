@@ -149,7 +149,16 @@ void CraftingSystem::Tick(float dt) {
 
         if (as.session.elapsed >= as.session.total) {
             // Complete
-            as.addFn(m_impl->recipes.at(as.session.recipeId).outputs);
+            auto recipeIt = m_impl->recipes.find(as.session.recipeId);
+            if (recipeIt == m_impl->recipes.end()) {
+                // Recipe was removed mid-session; fail gracefully
+                for (auto& cb : m_impl->failedCbs)
+                    cb(sid, as.session.recipeId, "Recipe removed");
+                ++m_impl->failedTotal;
+                finished.push_back(sid);
+                continue;
+            }
+            as.addFn(recipeIt->second.outputs);
             for (auto& cb : m_impl->completeCbs) cb(sid, as.session.recipeId);
             ++m_impl->completedTotal;
             ++m_impl->completedThisFrame;

@@ -85,6 +85,12 @@ add_library(AtlasEngine STATIC
     Decals/DecalSystem/DecalSystem.cpp
     # Phase 31 — dynamic scene light manager
     Lighting/LightManager/LightManager.cpp
+    # NFE — client-side entity interpolation buffer
+    Net/NetworkInterpolationBuffer/NetworkInterpolationBuffer.cpp
+    # NFE — server-side delta compression for entity snapshots
+    Net/DeltaCompression/DeltaCompression.cpp
+    # NFE — DAG-based tile-map generation graph
+    Tile/TileGraph/TileGraph.cpp
 )
 
 target_include_directories(AtlasEngine PUBLIC ${CMAKE_SOURCE_DIR})

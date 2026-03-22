@@ -35,6 +35,12 @@ set(EDITOR_SOURCES
     Overlay/AnomalyOverlay.cpp
     # Phase 22 — undoable command bus (undo/redo stack)
     UndoableCommandBus.cpp
+    # NFE — editor tool registry (lifecycle, activate/deactivate)
+    Tools/EditorToolRegistry.cpp
+    # NFE — entity inspector overlay tool
+    Tools/EntityInspectorTool.cpp
+    # NFE — material parameter override tool
+    Tools/MaterialOverrideTool.cpp
 )
 
 add_library(EditorLib STATIC ${EDITOR_SOURCES})

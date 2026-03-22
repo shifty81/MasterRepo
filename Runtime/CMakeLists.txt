@@ -43,6 +43,12 @@ add_library(RuntimeLib STATIC
     Streaming/AssetStreamer/AssetStreamer.cpp
     # Phase 31 — recipe-based crafting system
     Crafting/CraftingSystem/CraftingSystem.cpp
+    # NFE — autonomous AI miner state machine
+    Sim/AIMinerStateMachine/AIMinerStateMachine.cpp
+    # NFE — NPC credits economy (wallet system)
+    Sim/AIWalletSystem/AIWalletSystem.cpp
+    # NFE — player skill tree with prerequisites and effects
+    Gameplay/SkillTree/SkillTree.cpp
 )
 
 target_include_directories(RuntimeLib PUBLIC ${CMAKE_SOURCE_DIR})
