@@ -53,6 +53,8 @@ set(PCG_SOURCES
     World/WorldChunkGen/WorldChunkGen.cpp
     # Phase 30 — procedural quest graph generator
     Quests/QuestGraphGen/QuestGraphGen.cpp
+    # Phase 31 — procedural texture generation
+    Textures/TextureGenerator/TextureGenerator.cpp
 )
 
 add_library(PCGLib STATIC ${PCG_SOURCES})

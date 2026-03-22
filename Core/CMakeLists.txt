@@ -42,6 +42,8 @@ add_library(CoreLib STATIC
     Threading/ThreadPool/ThreadPool.cpp
     # Phase 30 — fast little-endian binary serialisation (header-only, compiled stub)
     Serialization/BinarySerializer/BinarySerializer.cpp
+    # Phase 31 — RLE/LZ/LZH data compression
+    Compression/DataCompressor/DataCompressor.cpp
 )
 
 target_compile_features(CoreLib PUBLIC cxx_std_20)

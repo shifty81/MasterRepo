@@ -83,6 +83,8 @@ add_library(AtlasEngine STATIC
     Occlusion/OcclusionCuller/OcclusionCuller.cpp
     # Phase 30 — runtime decal projection system
     Decals/DecalSystem/DecalSystem.cpp
+    # Phase 31 — dynamic scene light manager
+    Lighting/LightManager/LightManager.cpp
 )
 
 target_include_directories(AtlasEngine PUBLIC ${CMAKE_SOURCE_DIR})

@@ -28,6 +28,8 @@ set(IDE_SOURCES
     Debugger/BreakpointManager/BreakpointManager.cpp
     # Phase 30 — LSP diagnostic message manager
     LSP/LSPDiagnostics/LSPDiagnostics.cpp
+    # Phase 31 — code search engine with indexing and async search
+    Search/CodeSearchEngine/CodeSearchEngine.cpp
 )
 
 add_library(IDELib STATIC ${IDE_SOURCES})

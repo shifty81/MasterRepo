@@ -41,6 +41,8 @@ add_library(RuntimeLib STATIC
     Components/ComponentRegistry/ComponentRegistry.cpp
     # Phase 30 — async asset streaming manager
     Streaming/AssetStreamer/AssetStreamer.cpp
+    # Phase 31 — recipe-based crafting system
+    Crafting/CraftingSystem/CraftingSystem.cpp
 )
 
 target_include_directories(RuntimeLib PUBLIC ${CMAKE_SOURCE_DIR})
