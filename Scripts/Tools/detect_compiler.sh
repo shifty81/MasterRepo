@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # =============================================================================
-# detect_compiler.sh — Cross-platform C++ compiler detection helper
+# detect_compiler.sh — Windows C++ compiler detection helper
 #
 # Source this file; it exports:
 #   CXX_FOUND     = true | false
 #   CXX_NAME      = human-readable compiler string (for logging)
 #   CXX           = path / command to invoke the compiler (exported)
 #
-# On Windows (Git Bash / MSYS2 / Cygwin) the script:
+# The script:
 #   1. Checks whether any compiler is already in PATH (CXX envvar first).
 #   2. If not, locates Visual Studio via vswhere.exe and activates
 #      vcvarsall.bat so that cl.exe and the MSVC linker enter PATH.
@@ -98,8 +98,22 @@ fi
 
 # ── Step 3: Windows — vswhere + vcvarsall ─────────────────────────────────────
 # Runs only when: still not found AND we appear to be on Windows
-# (WINDIR is set in Git Bash / MSYS2 / Cygwin).
+# (WINDIR is set in Git Bash / MSYS2).
 if [[ "${CXX_FOUND}" == "false" && -n "${WINDIR:-}" ]]; then
+
+    # Detect GNU coreutils timeout BEFORE calling any external Windows tools.
+    # Both vswhere.exe and vcvarsall.bat can hang indefinitely (slow VS install,
+    # license check, network drive).  Windows' built-in TIMEOUT.EXE ignores the
+    # COMMAND argument and exits 0; GNU coreutils timeout exits 124 when the
+    # timer fires — use that as a reliable discriminator.
+    # Redirect stdin from /dev/null so TIMEOUT.EXE does not block waiting for
+    # a keypress when stdin is not a terminal.
+    _vcvars_timeout=""
+    if command -v timeout &>/dev/null; then
+        timeout 0.1 sleep 1 </dev/null 2>/dev/null; _to_ec=$?
+        [[ "${_to_ec}" -eq 124 ]] && _vcvars_timeout="timeout 60"
+        unset _to_ec
+    fi
 
     # ${PROGRAMFILES(X86)} contains parentheses, which are not valid in bash
     # variable names.  Read the value via cmd.exe and fall back to the
@@ -130,13 +144,16 @@ if [[ "${CXX_FOUND}" == "false" && -n "${WINDIR:-}" ]]; then
 
     if [[ -n "${VSWHERE}" ]]; then
         # Find the latest VS installation that includes the VC tools.
-        # Capture ALL output first; do NOT pipe to 'tr' or any other process.
-        # On Windows, SIGPIPE is not reliably delivered to native processes
-        # (vswhere.exe), so a pipe can hang indefinitely.  Strip CR/LF with
-        # the _first_line_of bash built-in helper instead.
-        _vs_raw="$("${VSWHERE}" -latest -products '*' \
-                   -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 \
-                   -property installationPath 2>/dev/null || true)"
+        # Guard with GNU coreutils timeout so a slow/hung vswhere.exe does not
+        # block the build indefinitely.  If no reliable timeout is available,
+        # skip vswhere entirely — run from a VS Developer Command Prompt instead.
+        _vs_raw=""
+        if [[ -n "${_vcvars_timeout}" ]]; then
+            # shellcheck disable=SC2086  # intentional word-splitting
+            _vs_raw="$(${_vcvars_timeout} "${VSWHERE}" -latest -products '*' \
+                       -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 \
+                       -property installationPath 2>/dev/null || true)"
+        fi
         VS_INSTALL="$(_first_line_of "${_vs_raw}")"
 
         if [[ -n "${VS_INSTALL}" ]]; then
@@ -148,31 +165,9 @@ if [[ "${CXX_FOUND}" == "false" && -n "${WINDIR:-}" ]]; then
                 # Run vcvarsall.bat ONCE and capture the resulting environment.
                 # We use cmd.exe to source it, then print all env vars, and
                 # merge the differences into the current bash session.
-                # Guard against Windows' built-in timeout.exe (System32) which
-                # silently ignores the COMMAND argument and just sleeps — it
-                # would cause an indefinite hang here.  Detect GNU coreutils
-                # timeout via a functional test: GNU exits 124 when the timer
-                # fires; Windows' built-in never runs the command and exits 0.
+                # Only invoke when GNU coreutils timeout is confirmed (already
+                # detected above) so a stalled vcvarsall.bat cannot hang the build.
                 VCVARS_WIN="$(cygpath -w "${VCVARSALL}" 2>/dev/null || echo "${VCVARSALL}")"
-                _vcvars_timeout=""
-                if command -v timeout &>/dev/null; then
-                    # Functional test: GNU coreutils timeout wraps COMMAND and
-                    # exits 124 when the timer fires.  Windows' built-in
-                    # timeout.exe ignores the COMMAND argument (never runs it)
-                    # and exits 0.  Note: duration=0 disables GNU timeout, so
-                    # use 0.1s; sleep 1 caps worst-case delay to ~1s if the
-                    # test unexpectedly does not terminate quickly.
-                    # Redirect stdin from /dev/null so that Windows' built-in
-                    # TIMEOUT.EXE (which prompts "Press any key to continue...")
-                    # does not block waiting for keyboard input.
-                    timeout 0.1 sleep 1 </dev/null 2>/dev/null; _to_ec=$?
-                    [[ "${_to_ec}" -eq 124 ]] && _vcvars_timeout="timeout 60"
-                    unset _to_ec
-                fi
-                # Safety: only invoke vcvarsall.bat when a reliable (GNU
-                # coreutils) timeout wrapper has been confirmed.  Running
-                # without any timeout risks an indefinite hang if vcvarsall.bat
-                # itself stalls (e.g., slow network, license check).
                 VCVARS_ENV=""
                 if [[ -n "${_vcvars_timeout}" ]]; then
                     # shellcheck disable=SC2086  # intentional word-splitting
@@ -180,7 +175,6 @@ if [[ "${CXX_FOUND}" == "false" && -n "${WINDIR:-}" ]]; then
                         "\"${VCVARS_WIN}\" x64 > NUL 2>&1 && set" \
                         2>/dev/null || true)"
                 fi
-                unset _vcvars_timeout
 
                 if [[ -n "${VCVARS_ENV}" ]]; then
                     # Export every variable emitted by vcvarsall
@@ -247,15 +241,14 @@ if [[ "${CXX_FOUND}" == "false" && -n "${WINDIR:-}" ]]; then
             fi
         done
     fi
+    unset _vcvars_timeout
 fi
 
 # ── Step 4: Final verdict ─────────────────────────────────────────────────────
 if [[ "${CXX_FOUND}" == "true" ]]; then
     : # caller will print the success message
 else
-    # Print a platform-specific help message
-    if [[ -n "${WINDIR:-}" ]]; then
-        cat >&2 <<'WINHELP'
+    cat >&2 <<'WINHELP'
 
   [ERROR] No C++ compiler found on Windows.
 
@@ -263,11 +256,11 @@ else
 
     A) Run this script from a Visual Studio Developer Command Prompt:
          Start → "x64 Native Tools Command Prompt for VS 2022"
-         Then re-run: bash Scripts/Tools/ci_pipeline.sh
+         Then re-run: bash Scripts/Tools/build_all.sh  (or ci_pipeline.sh)
 
     B) Run from a Visual Studio Developer PowerShell:
          Start → "Developer PowerShell for VS 2022"
-         bash Scripts/Tools/ci_pipeline.sh
+         bash Scripts/Tools/build_all.sh  (or ci_pipeline.sh)
 
     C) Install Build Tools for Visual Studio 2022 (free, ~3 GB):
          https://aka.ms/vs/17/release/vs_BuildTools.exe
@@ -280,16 +273,4 @@ else
          Use the "UCRT64" MSYS2 terminal and re-run.
 
 WINHELP
-    else
-        cat >&2 <<'LINHELP'
-
-  [ERROR] No C++ compiler found.
-
-  Fix:
-    Ubuntu/Debian:  sudo apt-get install -y g++ build-essential
-    Fedora/RHEL:    sudo dnf install -y gcc-c++
-    macOS:          xcode-select --install   (or: brew install llvm)
-
-LINHELP
-    fi
 fi

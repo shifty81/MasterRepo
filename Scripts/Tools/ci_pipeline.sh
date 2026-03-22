@@ -48,7 +48,7 @@ trap '_wait_for_user' EXIT
 # ── Paths ─────────────────────────────────────────────────────────────────────
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
-DEFAULT_BUILD_BASE="${TMPDIR:-/tmp}/atlas_ci_${TIMESTAMP}"
+DEFAULT_BUILD_BASE="${TEMP:-${TMP:-/tmp}}/atlas_ci_${TIMESTAMP}"
 DEFAULT_OUTPUT="${REPO_ROOT}/Builds/CI_${TIMESTAMP}"
 
 # ── Defaults ─────────────────────────────────────────────────────────────────
@@ -118,13 +118,20 @@ section "Stage 1: Environment Validation"
 ENV_OK=true
 
 check_tool() {
-    local tool="$1" min_ver="${2:-}"
+    local tool="$1"
     if command -v "${tool}" &>/dev/null; then
-        local ver
-        ver="$(${tool} --version 2>&1 | head -1)"
-        info "  ${tool}: ${ver}"
+        # Capture ALL output first; do NOT pipe directly to 'head -1'.
+        # On Windows, SIGPIPE is not reliably delivered to native processes, so
+        # the subprocess can hang indefinitely on a broken pipe.  Extract the
+        # first line with bash parameter expansion instead.
+        local _out _ver
+        _out="$("${tool}" --version 2>&1 || true)"
+        _ver="${_out%%$'\n'*}"
+        _ver="${_ver%%$'\r'*}"
+        [[ -z "${_ver}" ]] && _ver="(version unknown)"
+        info "  ${tool}: ${_ver}"
     else
-        if [[ "${3:-required}" == "required" ]]; then
+        if [[ "${2:-required}" == "required" ]]; then
             error "  ${tool} not found (required)"
             ENV_OK=false
         else
@@ -144,11 +151,10 @@ else
     ENV_OK=false
 fi
 check_tool git  "" required
-check_tool python3 "" optional
 check_tool cppcheck "" optional
 check_tool cpack "" optional
 
-CMAKE_JOBS="$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)"
+CMAKE_JOBS="$(nproc 2>/dev/null || echo 4)"
 info "  Parallel jobs: ${CMAKE_JOBS}"
 
 if [[ "${ENV_OK}" == "true" ]]; then
@@ -282,10 +288,15 @@ if [[ "${RUN_PACKAGE}" == "true" ]] && [[ "${BUILD_RELEASE}" == "true" ]]; then
     cp -r "${REPO_ROOT}/Scripts"        "${ARTIFACT_DIR}/${PKG_NAME}/"
     cp    "${REPO_ROOT}/README.md"      "${ARTIFACT_DIR}/${PKG_NAME}/"
 
-    # Create tarball
-    TARBALL="${ARTIFACT_DIR}/${PKG_NAME}.tar.gz"
-    (cd "${ARTIFACT_DIR}" && tar czf "${TARBALL}" "${PKG_NAME}") && \
-        info "Package created: ${TARBALL}"
+    # Create zip archive (Windows-native format)
+    ZIPFILE="${ARTIFACT_DIR}/${PKG_NAME}.zip"
+    if command -v zip &>/dev/null; then
+        (cd "${ARTIFACT_DIR}" && zip -r "${ZIPFILE}" "${PKG_NAME}") && \
+            info "Package created: ${ZIPFILE}"
+    else
+        warn "  zip not found — skipping archive (folder left at ${ARTIFACT_DIR}/${PKG_NAME})"
+        warn "  Install zip via MSYS2: pacman -S zip"
+    fi
 
     stage_pass "Packaging"
 else
