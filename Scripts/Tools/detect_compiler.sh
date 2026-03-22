@@ -24,12 +24,32 @@
 CXX_FOUND=false
 CXX_NAME=""
 
+# ── Helper: extract the first non-empty line from a multi-line string ─────────
+# Uses only bash built-ins — no subprocess pipe that could hang on Windows.
+# Strips LF first, then CR, which correctly handles Unix (LF), Windows (CRLF)
+# and old-Mac (CR) line endings:
+#   CRLF "line1\r\nline2"  → after %%$'\n'* → "line1\r" → after %%$'\r'* → "line1"
+#   LF   "line1\nline2"    → after %%$'\n'* → "line1"   → after %%$'\r'* → "line1"
+#   CR   "line1\rline2"    → after %%$'\n'* → unchanged  → after %%$'\r'* → "line1"
+_first_line_of() {
+    local _s="$1"
+    _s="${_s%%$'\n'*}"   # strip everything from first LF (handles LF and CRLF)
+    _s="${_s%%$'\r'*}"   # strip remaining CR (handles trailing CR from CRLF or CR-only)
+    printf '%s' "${_s}"
+}
+
 # ── Helper: try a single candidate ───────────────────────────────────────────
 _try_cxx() {
     local cmd="$1"
     if command -v "${cmd}" &>/dev/null; then
-        local ver
-        ver="$("${cmd}" --version 2>&1 | head -1)" || ver="(version unknown)"
+        local ver _out
+        # Capture ALL output first; do NOT pipe directly to 'head -1'.
+        # On Windows, SIGPIPE is not reliably delivered to native processes,
+        # so the subprocess can hang indefinitely on a broken pipe.
+        # Use _first_line_of (bash parameter expansion) instead.
+        _out="$("${cmd}" --version 2>&1 || true)"
+        ver="$(_first_line_of "${_out}")"
+        [[ -z "${ver}" ]] && ver="(version unknown)"
         CXX_FOUND=true
         CXX_NAME="${cmd}: ${ver}"
         export CXX="${cmd}"
@@ -41,12 +61,13 @@ _try_cxx() {
 # ── Helper: try MSVC cl.exe ───────────────────────────────────────────────────
 _try_cl() {
     if command -v cl &>/dev/null; then
-        # Do NOT pipe cl.exe bare output — it can hang in Git Bash pipes.
-        # Instead query the version safely via cmd /c so the subprocess is
-        # fully contained and closes immediately.
-        local ver
-        ver="$(cmd.exe /c "cl 2>&1" 2>/dev/null | head -1 | tr -d '\r')" \
-            || ver="(version unknown)"
+        # Capture ALL cmd.exe output first; do NOT pipe directly to 'head -1'.
+        # On Windows, SIGPIPE is not reliably delivered to native processes
+        # (cmd.exe, cl.exe), so 'head -1' exiting can leave the writer hanging
+        # indefinitely on a broken pipe.  Extract the first line in pure bash.
+        local ver _out
+        _out="$(cmd.exe /c "cl 2>&1" 2>/dev/null || true)"
+        ver="$(_first_line_of "${_out}")"
         [[ -z "${ver}" ]] && ver="(version unknown)"
         CXX_FOUND=true
         CXX_NAME="cl (MSVC): ${ver}"
@@ -58,7 +79,8 @@ _try_cl() {
 
 # ── Step 1: honour $CXX if already set ───────────────────────────────────────
 if [[ -n "${CXX:-}" ]] && command -v "${CXX}" &>/dev/null; then
-    ver="$("${CXX}" --version 2>&1 | head -1)"
+    _cxx1_out="$("${CXX}" --version 2>&1 || true)"
+    ver="$(_first_line_of "${_cxx1_out}")"
     CXX_FOUND=true
     CXX_NAME="${CXX}: ${ver}"
 fi
@@ -117,11 +139,29 @@ if [[ "${CXX_FOUND}" == "false" && -n "${WINDIR:-}" ]]; then
                 # Run vcvarsall.bat ONCE and capture the resulting environment.
                 # We use cmd.exe to source it, then print all env vars, and
                 # merge the differences into the current bash session.
-                # A 60-second timeout guards against antivirus / slow I/O hangs.
+                # Guard against Windows' built-in timeout.exe (System32) which
+                # silently ignores the COMMAND argument and just sleeps — it
+                # would cause an indefinite hang here.  Detect GNU coreutils
+                # timeout via a functional test: GNU exits 124 when the timer
+                # fires; Windows' built-in never runs the command and exits 0.
                 VCVARS_WIN="$(cygpath -w "${VCVARSALL}" 2>/dev/null || echo "${VCVARSALL}")"
-                VCVARS_ENV="$(timeout 60 cmd.exe //c \
+                _vcvars_timeout=""
+                if command -v timeout &>/dev/null; then
+                    # Functional test: GNU coreutils timeout wraps COMMAND and
+                    # exits 124 when the timer fires.  Windows' built-in
+                    # timeout.exe ignores the COMMAND argument (never runs it)
+                    # and exits 0.  Note: duration=0 disables GNU timeout, so
+                    # use 0.1s; sleep 1 caps worst-case delay to ~1s if the
+                    # test unexpectedly does not terminate quickly.
+                    timeout 0.1 sleep 1 2>/dev/null; _to_ec=$?
+                    [[ "${_to_ec}" -eq 124 ]] && _vcvars_timeout="timeout 60"
+                    unset _to_ec
+                fi
+                # shellcheck disable=SC2086  # intentional word-splitting of _vcvars_timeout
+                VCVARS_ENV="$(${_vcvars_timeout} cmd.exe //c \
                     "\"${VCVARS_WIN}\" x64 > NUL 2>&1 && set" \
                     2>/dev/null || true)"
+                unset _vcvars_timeout
 
                 if [[ -n "${VCVARS_ENV}" ]]; then
                     # Export every variable emitted by vcvarsall
