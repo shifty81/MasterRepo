@@ -38,6 +38,8 @@ set(TOOLS_SOURCES
     GitPanel/GitHistory/GitHistory.cpp
     # Phase 30 — gameplay replay recording and playback
     ReplayTimeline/ReplayRecorder/ReplayRecorder.cpp
+    # Phase 31 — GPU frame profiler with zone tracking
+    Profiler/GPUProfiler/GPUProfiler.cpp
 )
 
 add_library(ToolsLib STATIC ${TOOLS_SOURCES})

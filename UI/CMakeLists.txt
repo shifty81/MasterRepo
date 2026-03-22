@@ -7,11 +7,14 @@ cmake_minimum_required(VERSION 3.20)
 add_library(UILib STATIC
     Widgets/Widget.cpp
     Themes/Theme.cpp
+    Themes/UIStyle.cpp
     Layouts/Layout.cpp
+    Layouts/UILayoutSolver.cpp
     Animation/UIAnimation.cpp
     Localization/Localization.cpp
     Accessibility/Accessibility.cpp
     GUISystem/GUISystem.cpp
+    GUISystem/UILogicGraph.cpp
 )
 
 target_include_directories(UILib PUBLIC ${CMAKE_SOURCE_DIR})
