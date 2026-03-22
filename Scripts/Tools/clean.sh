@@ -1,33 +1,46 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Atlas Engine — clean.sh
-# Removes all CMake build artifact directories.
+# MasterRepo — clean.sh   (Windows / Git Bash / MSYS2)
+# Removes CMake build artifact directories.
+# Build directories match build_all.sh: Builds/debug and Builds/release
 # =============================================================================
 set -euo pipefail
 
-BUILD_DEBUG="${TMPDIR:-/tmp}/atlas_build_debug"
-BUILD_RELEASE="${TMPDIR:-/tmp}/atlas_build_release"
-BUILD_ALL="${TMPDIR:-/tmp}/build_all"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+BUILD_DEBUG="${REPO_ROOT}/Builds/debug"
+BUILD_RELEASE="${REPO_ROOT}/Builds/release"
 
 YELLOW='\033[1;33m'
 GREEN='\033[0;32m'
+BOLD='\033[1m'
 NC='\033[0m'
 
-warn()  { echo -e "${YELLOW}[clean]${NC} $*"; }
-info()  { echo -e "${GREEN}[clean]${NC} $*"; }
+warn() { echo -e "${YELLOW}[clean]${NC} $*"; }
+info() { echo -e "${GREEN}[clean]${NC} $*"; }
 
 removed=0
 
-for dir in "${BUILD_DEBUG}" "${BUILD_RELEASE}" "${BUILD_ALL}"; do
+for dir in "${BUILD_DEBUG}" "${BUILD_RELEASE}"; do
     if [[ -d "${dir}" ]]; then
         warn "Removing: ${dir}"
         rm -rf "${dir}"
-        removed=$((removed + 1))
+        removed=$(( removed + 1 ))
     fi
 done
 
-if [[ $removed -eq 0 ]]; then
+# Also remove the time-estimate cache so next build starts fresh
+CACHE="${REPO_ROOT}/Logs/Build/.build_time_cache"
+if [[ -f "${CACHE}" ]]; then
+    warn "Removing: ${CACHE}"
+    rm -f "${CACHE}"
+fi
+
+if [[ ${removed} -eq 0 ]]; then
     info "Nothing to clean."
 else
-    info "Removed ${removed} build director$([ $removed -eq 1 ] && echo y || echo ies)."
+    info "Removed ${removed} build director$([ ${removed} -eq 1 ] && echo y || echo ies)."
 fi
+
+echo ""
+echo -e "${BOLD}Press [Enter] to close...${NC}"
+read -r -p "" 2>/dev/null || true

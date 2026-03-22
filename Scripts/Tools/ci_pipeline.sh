@@ -48,7 +48,7 @@ trap '_wait_for_user' EXIT
 # ── Paths ─────────────────────────────────────────────────────────────────────
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
-DEFAULT_BUILD_BASE="${TEMP:-${TMP:-/tmp}}/atlas_ci_${TIMESTAMP}"
+DEFAULT_BUILD_BASE="${REPO_ROOT}/Builds/ci_${TIMESTAMP}"
 DEFAULT_OUTPUT="${REPO_ROOT}/Builds/CI_${TIMESTAMP}"
 
 # ── Defaults ─────────────────────────────────────────────────────────────────
@@ -168,17 +168,30 @@ fi
 # ── Stage 2: Debug Build ──────────────────────────────────────────────────────
 if [[ "${BUILD_DEBUG}" == "true" ]]; then
     section "Stage 2: Debug Build"
-    if cmake -B "${BUILD_DIR_DEBUG}" \
-             -DCMAKE_BUILD_TYPE=Debug \
-             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-             -DBUILD_TESTS=ON \
-             "${REPO_ROOT}" 2>&1 | tee "${OUTPUT_DIR}/cmake_debug.log" \
-       && cmake --build "${BUILD_DIR_DEBUG}" \
-                -- -j"${CMAKE_JOBS}" 2>&1 | tee "${OUTPUT_DIR}/build_debug.log"; then
+    # Configure
+    cmake -B "${BUILD_DIR_DEBUG}" \
+          -DCMAKE_BUILD_TYPE=Debug \
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+          -DBUILD_TESTS=ON \
+          "${REPO_ROOT}" 2>&1 | tee "${OUTPUT_DIR}/cmake_debug.log" || {
+        stage_fail "Debug Build"
+        error "Debug configure failed — see ${OUTPUT_DIR}/cmake_debug.log"
+        exit 2
+    }
+    # Detect MSBuild generator (.sln present) and pass /nodeReuse:false to
+    # prevent worker-node handles from keeping a pipe open after the build.
+    local _nodeReuse_args_debug=()
+    for _f in "${BUILD_DIR_DEBUG}"/*.sln; do
+        [[ -f "${_f}" ]] && { _nodeReuse_args_debug=("--" "/nodeReuse:false"); break; }
+    done
+    if cmake --build "${BUILD_DIR_DEBUG}" \
+             --parallel "${CMAKE_JOBS}" \
+             "${_nodeReuse_args_debug[@]}" \
+             2>&1 | tee "${OUTPUT_DIR}/build_debug.log"; then
         stage_pass "Debug Build"
-        # Symlink compile_commands.json to repo root for tooling
-        ln -sf "${BUILD_DIR_DEBUG}/compile_commands.json" \
-               "${REPO_ROOT}/compile_commands.json" 2>/dev/null || true
+        # Copy compile_commands.json to repo root for IDE tooling
+        cp "${BUILD_DIR_DEBUG}/compile_commands.json" \
+           "${REPO_ROOT}/compile_commands.json" 2>/dev/null || true
     else
         stage_fail "Debug Build"
         error "Debug build failed — see ${OUTPUT_DIR}/build_debug.log"
@@ -191,11 +204,21 @@ fi
 # ── Stage 3: Release Build ────────────────────────────────────────────────────
 if [[ "${BUILD_RELEASE}" == "true" ]]; then
     section "Stage 3: Release Build"
-    if cmake -B "${BUILD_DIR_RELEASE}" \
-             -DCMAKE_BUILD_TYPE=Release \
-             "${REPO_ROOT}" 2>&1 | tee "${OUTPUT_DIR}/cmake_release.log" \
-       && cmake --build "${BUILD_DIR_RELEASE}" \
-                -- -j"${CMAKE_JOBS}" 2>&1 | tee "${OUTPUT_DIR}/build_release.log"; then
+    cmake -B "${BUILD_DIR_RELEASE}" \
+          -DCMAKE_BUILD_TYPE=Release \
+          "${REPO_ROOT}" 2>&1 | tee "${OUTPUT_DIR}/cmake_release.log" || {
+        stage_fail "Release Build"
+        error "Release configure failed — see ${OUTPUT_DIR}/cmake_release.log"
+        exit 2
+    }
+    local _nodeReuse_args_release=()
+    for _f in "${BUILD_DIR_RELEASE}"/*.sln; do
+        [[ -f "${_f}" ]] && { _nodeReuse_args_release=("--" "/nodeReuse:false"); break; }
+    done
+    if cmake --build "${BUILD_DIR_RELEASE}" \
+             --parallel "${CMAKE_JOBS}" \
+             "${_nodeReuse_args_release[@]}" \
+             2>&1 | tee "${OUTPUT_DIR}/build_release.log"; then
         stage_pass "Release Build"
     else
         stage_fail "Release Build"
