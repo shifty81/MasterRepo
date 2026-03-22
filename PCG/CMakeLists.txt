@@ -55,6 +55,8 @@ set(PCG_SOURCES
     Quests/QuestGraphGen/QuestGraphGen.cpp
     # Phase 31 — procedural texture generation
     Textures/TextureGenerator/TextureGenerator.cpp
+    # Phase 32 — procedural building and structure generation
+    Structures/StructureGenerator/StructureGenerator.cpp
 )
 
 add_library(PCGLib STATIC ${PCG_SOURCES})

@@ -40,6 +40,8 @@ set(TOOLS_SOURCES
     ReplayTimeline/ReplayRecorder/ReplayRecorder.cpp
     # Phase 31 — GPU frame profiler with zone tracking
     Profiler/GPUProfiler/GPUProfiler.cpp
+    # Phase 32 — texture atlas packing with Shelf and MaxRects algorithms
+    Packing/TextureAtlasPacker/TextureAtlasPacker.cpp
 )
 
 add_library(ToolsLib STATIC ${TOOLS_SOURCES})

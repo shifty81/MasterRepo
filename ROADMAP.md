@@ -1100,4 +1100,17 @@ MasterRepo (v10.7 Ultra Blueprint)
 
 ---
 
+### Phase 32 — AudioMixer, AnimBlendTree, StructureGenerator, TextureAtlasPacker, RefactorPanel & LRUCache
+
+**Goal:** Add multi-channel audio mixing, animation blend tree, procedural structure generation, texture atlas packing, code refactoring panel, and an LRU cache.
+
+- ✅ `Runtime/Audio/AudioMixer/AudioMixer.h/.cpp` — `ChannelType` (Master/Music/SFX/Voice/Ambient); `EffectType` (LowPass/HighPass/Reverb/Delay/Distortion/Compressor); `ChannelDesc` (volume, pan, mute, solo, sends, effects); `AddChannel()`/`RemoveChannel()`; `SetVolume()`/`SetPan()`/`SetMute()`/`SetSolo()`; `AddEffect()`/`RemoveEffect()`/`SetEffectEnabled()`; `SetSend()` aux bus routing; `MixFrame(dt)` per-frame mix with peak tracking; `GetPeakLevel()`; `OnPeakReached()` clip callback; `MixerStats` (channelCount, activeChannels, clippedChannels, mixCallCount)
+- ✅ `Engine/Animation/AnimBlendTree/AnimBlendTree.h/.cpp` — `BlendMode` (Override/Additive/Lerp); `CondOp` (Equal/NotEqual/Greater/Less/Bool); `TransitionCondition` + `TransitionDesc` with priority and exit-time; `AddState()`/`AddTransition()`/`SetEntryState()`/`Start()`; `Update(dt)` evaluates transition conditions, advances blend weights; `GetBlendWeight(stateId)`; float/int/bool parameter store; `ForceTransition()`; `OnStateEnter()`/`OnStateExit()`/`OnTransitionBegin()` callbacks; `BlendTreeStats`
+- ✅ `PCG/Structures/StructureGenerator/StructureGenerator.h/.cpp` — `StructureType` (Building/Tower/Ruin/Bunker/Outpost); `RoomType` (Hall/Corridor/Storage/Office/Lab/Shrine/Stairwell); `StructureConfig` (size, floors, roomCount, ruinFactor); xorshift64 PRNG; greedy MST room connection with door placement; multi-floor staircase linking; `ApplyRuin()` based on ruinFactor; BFS `IsValidMap()` connectivity check; `GetRoomsByType()`/`GetFloorRooms()`/`FindPath()`; `GeneratorStats`
+- ✅ `Tools/Packing/TextureAtlasPacker/TextureAtlasPacker.h/.cpp` — `PackAlgo` (Shelf, MaxRects guillotine); `AtlasConfig` (pageSize, padding, allowRotation, maxPages); area-sorted input; Shelf: left-to-right shelf packing; MaxRects: best-area-fit guillotine split with rotation; multi-page overflow; `GetPackedTexture(name)`; `ExportManifestJSON()` atlas manifest; `AtlasStats` (inputCount, packedCount, pageCount, avgUtilisation, packTimeMs)
+- ✅ `IDE/Refactor/RefactorPanel/RefactorPanel.h/.cpp` — `RefactorKind` (Rename/ExtractFunction/ExtractVariable/InlineVariable/MoveDeclaration/ChangeSignature); `RefactorRequest` (kind, location, newName, scope, targetFile); `TextEdit` (file, start/end line+col, newText); `IndexFiles()`/`IndexFile()`; `Preview()`/`Apply()` with reverse-order edit application; single-level `Undo()`; `GetAvailableRefactors(loc)`; `OnApplyComplete()`/`OnIndexReady()` callbacks; `RefactorStats`
+- ✅ `Core/Cache/LRUCache/LRUCache.h` — Header-only `LRUCache<Key,Value,Capacity>`; `std::list` (LRU front → MRU back) + `std::unordered_map` for O(1) put/get; `Put()`/`Get()` (promotes to MRU)/ `Peek()` (no promotion)/`Contains()`/`Evict()`/`Clear()`; mutex-protected thread safety; `Keys()` snapshot in LRU→MRU order; `OnEvict(cb)` eviction callback; `LRUStats` (hits, misses, evictions, puts)
+
+---
+
 *This roadmap is a living document. Update it as phases are completed and new requirements emerge.*
