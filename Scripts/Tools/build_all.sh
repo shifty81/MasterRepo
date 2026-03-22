@@ -115,7 +115,9 @@ check_cmd() {
 check_cmd cmake
 # ── C++ compiler detection (shared helper) ────────────────────────────────────
 # shellcheck source=Scripts/Tools/detect_compiler.sh
-source "$(dirname "${BASH_SOURCE[0]}")/detect_compiler.sh"
+# Use || true so a detection failure (no compiler on PATH yet) does not abort
+# the build — CMake's own compiler probe will run and may still succeed.
+source "$(dirname "${BASH_SOURCE[0]}")/detect_compiler.sh" || true
 if [[ "${CXX_FOUND}" == "true" ]]; then
     info "  c++ compiler: ${CXX_NAME}"
 else

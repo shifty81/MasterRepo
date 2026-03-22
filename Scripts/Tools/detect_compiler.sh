@@ -75,9 +75,17 @@ fi
 # (WINDIR is set in Git Bash / MSYS2 / Cygwin).
 if [[ "${CXX_FOUND}" == "false" && -n "${WINDIR:-}" ]]; then
 
+    # ${PROGRAMFILES(X86)} contains parentheses, which are not valid in bash
+    # variable names.  Read the value via cmd.exe and fall back to the
+    # well-known default path when cmd.exe is unavailable.
+    _pfiles_x86="$(cmd.exe /c "echo %PROGRAMFILES(X86)%" 2>/dev/null | tr -d '\r')"
+    if [[ -z "${_pfiles_x86}" || "${_pfiles_x86}" == "%PROGRAMFILES(X86)%" ]]; then
+        _pfiles_x86="${PROGRAMFILES:-C:/Program Files} (x86)"
+    fi
+
     # Locate vswhere.exe — it ships with VS 2017+ and Build Tools
     VSWHERE_PATHS=(
-        "${PROGRAMFILES(X86):-C:/Program Files (x86)}/Microsoft Visual Studio/Installer/vswhere.exe"
+        "${_pfiles_x86}/Microsoft Visual Studio/Installer/vswhere.exe"
         "${PROGRAMFILES:-C:/Program Files}/Microsoft Visual Studio/Installer/vswhere.exe"
     )
     VSWHERE=""
