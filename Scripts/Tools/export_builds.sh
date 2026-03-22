@@ -37,6 +37,26 @@ _wait_for_user() {
     read -r -p "" 2>/dev/null || true
 }
 
+# ── Helper: run cmake without a pipe to prevent MSBuild worker-node hang ──────
+# On Windows, MSBuild spawns persistent worker-node processes that inherit any
+# pipe write-handle, preventing tee from seeing EOF (= infinite hang).
+# Fix: redirect output directly to the log file (no pipe), then stream via
+# tail -f (an MSYS2 binary — reliable Unix-to-Unix I/O, no SIGPIPE issues).
+_cmake_run() {
+    local log_file="$1"; shift
+    : >> "${log_file}"                     # ensure file exists before tail
+    "$@" >> "${log_file}" 2>&1 &
+    local _pid=$!
+    tail -f "${log_file}" &
+    local _tail_pid=$!
+    local _rc=0
+    wait "${_pid}" || _rc=$?
+    sleep 0.1 2>/dev/null || true          # let tail flush last bytes
+    kill "${_tail_pid}" 2>/dev/null || true
+    wait "${_tail_pid}" 2>/dev/null || true
+    return "${_rc}"
+}
+
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 PACKAGE_DIR="${REPO_ROOT}/Builds/Packages"
@@ -112,9 +132,9 @@ build_preset() {
     # ── Configure ─────────────────────────────────────────────────────────────
     local configure_log="${PACKAGE_DIR}/${preset}_configure.log"
     info "Configuring preset '${preset}'…"
-    if ! cmake --preset "${preset}" \
-               -S "${REPO_ROOT}" \
-               2>&1 | tee "${configure_log}"; then
+    if ! _cmake_run "${configure_log}" \
+            cmake --preset "${preset}" \
+                  -S "${REPO_ROOT}"; then
         error "Configure failed for '${preset}' — see ${configure_log}"
         FAILED+=("${preset}")
         return 1
@@ -131,10 +151,10 @@ build_preset() {
         [[ -f "${_f}" ]] && { _nr=("--" "/nodeReuse:false"); break; }
     done
 
-    if ! cmake --build --preset "${preset}" \
-               --parallel "${JOBS}" \
-               "${_nr[@]}" \
-               2>&1 | tee "${build_log}"; then
+    if ! _cmake_run "${build_log}" \
+            cmake --build --preset "${preset}" \
+                  --parallel "${JOBS}" \
+                  "${_nr[@]}"; then
         error "Build failed for '${preset}' — see ${build_log}"
         FAILED+=("${preset}")
         return 1

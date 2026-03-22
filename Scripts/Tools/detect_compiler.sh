@@ -180,7 +180,7 @@ if [[ "${CXX_FOUND}" == "false" && -n "${WINDIR:-}" ]]; then
                     # Export every variable emitted by vcvarsall.
                     # Capture PATH inline during the loop — no subprocess pipe
                     # needed (avoids any SIGPIPE risk on Windows).
-                    local win_path_val=""
+                    win_path_val=""
                     while IFS='=' read -r key val; do
                         key="${key%%$'\r'}"
                         val="${val%%$'\r'}"
