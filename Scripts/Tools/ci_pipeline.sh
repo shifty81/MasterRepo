@@ -178,15 +178,15 @@ if [[ "${BUILD_DEBUG}" == "true" ]]; then
         error "Debug configure failed — see ${OUTPUT_DIR}/cmake_debug.log"
         exit 2
     }
-    # Build — detect MSBuild generator (.sln) and pass /nodeReuse:false to
-    # prevent worker-node handles from keeping any pipe open after the build.
-    _ci_nr_debug=()
+    # Detect MSBuild generator (.sln present) and pass /nodeReuse:false to
+    # prevent worker-node handles from keeping a pipe open after the build.
+    local _nodeReuse_args_debug=()
     for _f in "${BUILD_DIR_DEBUG}"/*.sln; do
-        [[ -f "${_f}" ]] && { _ci_nr_debug=("--" "/nodeReuse:false"); break; }
+        [[ -f "${_f}" ]] && { _nodeReuse_args_debug=("--" "/nodeReuse:false"); break; }
     done
     if cmake --build "${BUILD_DIR_DEBUG}" \
              --parallel "${CMAKE_JOBS}" \
-             "${_ci_nr_debug[@]}" \
+             "${_nodeReuse_args_debug[@]}" \
              2>&1 | tee "${OUTPUT_DIR}/build_debug.log"; then
         stage_pass "Debug Build"
         # Copy compile_commands.json to repo root for IDE tooling
@@ -211,13 +211,13 @@ if [[ "${BUILD_RELEASE}" == "true" ]]; then
         error "Release configure failed — see ${OUTPUT_DIR}/cmake_release.log"
         exit 2
     }
-    _ci_nr_release=()
+    local _nodeReuse_args_release=()
     for _f in "${BUILD_DIR_RELEASE}"/*.sln; do
-        [[ -f "${_f}" ]] && { _ci_nr_release=("--" "/nodeReuse:false"); break; }
+        [[ -f "${_f}" ]] && { _nodeReuse_args_release=("--" "/nodeReuse:false"); break; }
     done
     if cmake --build "${BUILD_DIR_RELEASE}" \
              --parallel "${CMAKE_JOBS}" \
-             "${_ci_nr_release[@]}" \
+             "${_nodeReuse_args_release[@]}" \
              2>&1 | tee "${OUTPUT_DIR}/build_release.log"; then
         stage_pass "Release Build"
     else

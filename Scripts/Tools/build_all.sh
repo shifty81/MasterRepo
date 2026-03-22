@@ -176,7 +176,7 @@ _load_time_cache
 #   Frame 9 : DIM     "─"        (edge-on, returning)
 
 _LOGO_N=( "A"  "t"  "l"  "a"  "s"  "F"  "o"  "r"  "g"  "e"  )
-_LOGO_F=( "∀"  "ʇ"  "l"  "ɐ"  "s"  "Ⅎ"  "o"  "ɹ"  "ɓ"  "ǝ"  )
+_LOGO_F=( "∀"  "ʇ"  "l"  "ɐ"  "s"  "Ⅎ"  "o"  "ɹ"  "ᵷ"  "ǝ"  )
 _LOGO_E="─"   # the "edge-on" glyph shown at frames 3 and 9
 _ANIM_TICK=0  # incremented on every redraw
 _LC=""        # output variable used by _logo_char (avoids subshell capture)
@@ -357,7 +357,11 @@ _cmake_bg() {
     local t0="${SECONDS}"
     _STAGE_STATES[$sidx]="active"
 
-    # Launch cmake — output appends to the phase log, not a pipe
+    # Launch cmake — output appends to the phase log, not a pipe.
+    # A bash zombie (process finished but not yet waited) still answers
+    # kill -0 with success, so the loop below exits naturally when cmake
+    # finishes.  We always call wait "${_pid}" after the loop, which
+    # atomically collects the exit code and reaps the zombie.
     "$@" >> "${plog}" 2>&1 &
     local _pid=$!
 
