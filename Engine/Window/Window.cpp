@@ -58,9 +58,10 @@ bool Window::Init() {
     glfwSetWindowUserPointer(win, this);
 
     // Register callbacks
-    glfwSetCursorPosCallback    (win, s_CursorPosCallback);
-    glfwSetMouseButtonCallback  (win, s_MouseButtonCallback);
-    glfwSetKeyCallback          (win, s_KeyCallback);
+    glfwSetCursorPosCallback      (win, s_CursorPosCallback);
+    glfwSetMouseButtonCallback    (win, s_MouseButtonCallback);
+    glfwSetKeyCallback            (win, s_KeyCallback);
+    glfwSetCharCallback           (win, s_CharCallback);
     glfwSetFramebufferSizeCallback(win, s_FramebufferSizeCallback);
 
     m_handle      = win;
@@ -156,6 +157,12 @@ void Window::s_KeyCallback(GLFWwindow* w, int key, int /*scan*/, int action, int
     if (action == GLFW_REPEAT) return; // ignore key-repeat for now
     bool pressed = (action == GLFW_PRESS);
     if (self->onKey) self->onKey(key, pressed);
+}
+
+void Window::s_CharCallback(GLFWwindow* w, unsigned int codepoint) {
+    auto* self = static_cast<Window*>(glfwGetWindowUserPointer(w));
+    if (!self) return;
+    if (self->onChar) self->onChar(codepoint);
 }
 
 void Window::s_FramebufferSizeCallback(GLFWwindow* w, int width, int height) {

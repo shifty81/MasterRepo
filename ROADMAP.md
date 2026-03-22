@@ -481,47 +481,329 @@ Work through these in order for the fastest path to a usable editor:
 | **Session 8** | EI-13 | Play game from inside editor |
 | **Session 9** | EI-14, AI-LV-01 | AI chat live with Ollama |
 | **Session 10** | NF-01..NF-05 | First playable NovaForge scene |
+## Phase 1 – Core Systems
+
+**Goal:** Build the shared foundation that all other systems depend on.
+
+**Milestone:** Event-driven architecture with serialization, reflection, and a task system running.
+
+| # | Task | Description | Output |
+|---|------|-------------|--------|
+| 1.1 | Message Bus | Publish/subscribe message system | `Core/Messaging/` |
+| 1.2 | Event System | Typed event dispatching | `Core/Events/` |
+| 1.3 | Reflection System | Runtime type info, property iteration | `Core/Reflection/` |
+| 1.4 | Metadata System | Tag any object with key-value metadata | `Core/Metadata/` |
+| 1.5 | Serialization | JSON/binary save/load for all reflected types | `Core/Serialization/` |
+| 1.6 | Task / Job System | Multi-threaded task execution | `Core/TaskSystem/` |
+| 1.7 | Command System | Undo/redo command pattern | `Core/CommandSystem/` |
+| 1.8 | Resource Manager | Asset loading, caching, reference counting | `Core/ResourceManager/` |
+| 1.9 | Plugin System | Dynamic plugin loading | `Core/PluginSystem/` |
+| 1.10 | Archive System | Archive management with metadata | `Core/ArchiveSystem/` |
+| 1.11 | Version System | Snapshot/frame creation and diffing | `Core/VersionSystem/` |
+
+**Dependencies:** Phase 0
+
+**Usable result:** Robust core library usable by all subsystems; events, serialization, and task scheduling working.
 
 ---
 
-## Completed Phases Reference
+## Phase 2 – Engine Foundation
 
-> Full history of all 32 completed build phases is in [Appendix C](#appendix-c-phases-18-32).
-> All 259 headers and 278 source files build clean on Linux.
+**Goal:** Get a rendering window with input handling, basic shapes, and a camera.
 
-| Phases | Subsystems built |
-|--------|-----------------|
-| 0–10 | Foundation, Core, Engine, Editor infra, Runtime, AI, Builder, PCG, IDE, Assets, Deploy |
-| 11–17 | GUI systems, Blender addon, AI testing, NL assistant, Core expansion, Self-build agent |
-| 18–32 | 90+ additional subsystems (audio mixer, anim blend, net foundations, crafting, lighting, etc.) |
+**Milestone:** 3D viewport with camera controls, basic shape rendering, and keyboard/mouse input.
+
+| # | Task | Description | Output |
+|---|------|-------------|--------|
+| 2.1 | Window / Platform | SDL2 or GLFW window, OS abstraction | `Engine/Window/`, `Engine/Platform/` |
+| 2.2 | Input System | Keyboard, mouse, gamepad with action mapping | `Engine/Input/` |
+| 2.3 | Math Library | Vectors, matrices, quaternions, transforms | `Engine/Math/` |
+| 2.4 | Renderer (basic) | OpenGL 4.x forward renderer, camera, lights | `Engine/Render/` |
+| 2.5 | Audio (stub) | Audio system interface, placeholder impl | `Engine/Audio/` |
+| 2.6 | Physics (stub) | Physics world interface, Bullet integration stub | `Engine/Physics/` |
+
+**Dependencies:** Phase 0, Phase 1 (events, messaging)
+
+**Usable result:** An interactive 3D viewport with camera movement and shape rendering.
 
 ---
 
-## Appendix A — Build Commands
+## Phase 3 – Editor Framework
 
-```bash
-# Full build (debug + release)
-./Scripts/Tools/build_all.sh
+**Goal:** Build the editor shell — custom UI with dockable panels and a 3D viewport.
 
-# Debug only (faster, ~2×)
-./Scripts/Tools/build_all.sh --debug-only
+**Milestone:** Dockable editor with scene viewport, hierarchy panel, inspector panel, and gizmos.
 
-# Clean rebuild
-./Scripts/Tools/build_all.sh --clean --debug-only
+| # | Task | Description | Output |
+|---|------|-------------|--------|
+| 3.1 | Custom UI System | Widgets, layouts, themes (Atlas rule: no ImGui) | `Editor/UI/`, `UI/` |
+| 3.2 | Docking System | Dock/undock/split/tab panels | `Editor/Docking/` |
+| 3.3 | Panel System | Base panel class, panel registry | `Editor/Panels/` |
+| 3.4 | Viewport System | 3D viewport with camera modes (FPS, freecam, orbit) | `Editor/Viewport/` |
+| 3.5 | Gizmo System | Move, rotate, scale gizmos with snapping | `Editor/Gizmos/` |
+| 3.6 | Overlay System | Debug overlays, tool overlays, notifications | `Editor/Overlay/` |
+| 3.7 | Editor Modes | Select, place, paint, sculpt mode switching | `Editor/Modes/` |
+| 3.8 | Scene Outliner | Hierarchical scene tree panel | `Editor/Panels/SceneOutliner` |
+| 3.9 | Inspector Panel | Property editor using reflection system | `Editor/Panels/Inspector` |
+| 3.10 | Content Browser | File/asset browser with preview | `Editor/Panels/ContentBrowser` |
+| 3.11 | Console Panel | Log output, command input | `Editor/Panels/Console` |
+| 3.12 | Node Editor Base | Node graph framework for blueprints/materials | `Editor/NodeEditors/` |
 
-# Run the editor
-./Builds/debug/bin/AtlasEditor
+**Dependencies:** Phase 1 (reflection, events, commands), Phase 2 (renderer, input)
 
-# Run the game
-./Builds/debug/bin/NovaForge
+**Usable result:** A fully dockable editor with a 3D viewport where you can select and manipulate objects.
+
+---
+
+## Phase 4 – Runtime & Gameplay
+
+**Goal:** Build the gameplay layer so the engine can run a game.
+
+**Milestone:** Entities in a world with components, a player that can move, and basic inventory.
+
+| # | Task | Description | Output |
+|---|------|-------------|--------|
+| 4.1 | ECS Core | Entity-Component-System framework | `Runtime/ECS/` |
+| 4.2 | World / Scene | Scene graph, world management, scene loading | `Runtime/World/` |
+| 4.3 | Component Library | Transform, mesh, light, camera, collider, etc. | `Runtime/Components/` |
+| 4.4 | System Library | Render system, physics system, input system | `Runtime/Systems/` |
+| 4.5 | Player System | Player controller, rig, TAB UI (equipment view) | `Runtime/Player/` |
+| 4.6 | Inventory System | Item storage, stacking, categories | `Runtime/Inventory/` |
+| 4.7 | Equipment System | Equip/unequip, slots, stats | `Runtime/Equipment/` |
+| 4.8 | Crafting System | Recipes, multi-stage crafting, assembler | `Runtime/Crafting/` |
+| 4.9 | Damage System | Health, damage types, armor, death | `Runtime/Damage/` |
+| 4.10 | Spawn System | Entity spawning, pooling | `Runtime/Spawn/` |
+| 4.11 | Save/Load | Serialization of game state | `Runtime/SaveLoad/` |
+| 4.12 | Runtime UI (HUD) | HUD, menus, game UI | `Runtime/UI/` |
+| 4.13 | Prefab System | Prefab templates, instantiation | `Runtime/Gameplay/Prefabs` |
+
+**Dependencies:** Phase 1 (serialization, events, ECS), Phase 2 (renderer, physics, input)
+
+**Usable result:** A playable prototype — player in a world with objects, inventory, and basic combat.
+
+---
+
+## Phase 5 – AI Agent System
+
+**Goal:** Get a local AI agent running that can read/write project files and generate code.
+
+**Milestone:** Chat with a local LLM, ask it to generate or modify code, and see results in the editor.
+
+| # | Task | Description | Output | Status |
+|---|------|-------------|--------|--------|
+| 5.1 | LLM Integration | Connect to Ollama / llama.cpp / local models | `AI/ModelManager/` | Stubbed |
+| 5.2 | Agent Core | Prompt → Plan → Tool → Result loop | `Agents/CodeAgent/` | Incomplete |
+| 5.3 | Tool System | Tool registry, tool runner, permissions | `AI/` + `Agents/` | Stubbed |
+| 5.4 | File System Tools | `read_file`, `write_file`, `list_dir`, `search_code` | Agent tools | Stubbed |
+| 5.5 | Build Tools | `compile_cpp`, `run_cmake`, `run_tests` | Agent tools | Stubbed |
+| 5.6 | Memory System | Long-term context storage, embeddings | `AI/Memory/`, `AI/Embeddings/` | Stubbed |
+| 5.7 | Agent Scheduler | Multi-agent orchestration, task queue | `AI/AgentScheduler/` | Stubbed |
+| 5.8 | Workspace State | Track open files, build state, errors | `WorkspaceState/` | Stubbed |
+| 5.9 | Error Learning | Learn from build failures, auto-fix patterns | `AI/ErrorLearning/` | Stubbed |
+| 5.10 | Code Learning | Index codebase for context-aware generation | `AI/CodeLearning/` | Stubbed |
+| 5.11 | Prompt Library | Reusable prompt templates | `AI/Prompts/` | Stubbed |
+| 5.12 | Sandbox System | AI outputs to temp workspace, user approves/merges | Safety system | Stubbed |
+
+**Current Focus:**
+Phase 5 is the active development focus. The following features are stubbed or incomplete and are being prioritized:
+- Agent Core (prompt → plan → tool → result loop)
+- Tool System (registry, runner, permissions)
+- File/Build Tools (read/write/list/search, compile/run/tests)
+- Memory System (context, embeddings)
+- Agent Scheduler (multi-agent orchestration)
+- Workspace State (open files, build state, errors)
+- Error/Code Learning (auto-fix, code indexing)
+- Prompt Library (reusable templates)
+- Sandbox System (safe output, approval workflow)
+
+**Dependencies:** Phase 1 (events, tasks), Phase 0 (file structure)
+
+**Usable result:** An AI assistant that can generate code files, fix compile errors, and modify the project — all offline.
+
+---
+
+## Phase 6 – Builder System
+
+**Goal:** Implement Starbase-style module building with snap points, welding, and assemblies.
+
+**Milestone:** Place, snap, weld, and detach modules in the 3D editor. Parts have hitboxes and damage.
+
+| # | Task | Description | Output |
+|---|------|-------------|--------|
+| 6.1 | Part Format | Part definition (mesh, collision, snap points, stats) | `Builder/Parts/` |
+| 6.2 | Module Format | Module = group of parts, connection rules | `Builder/Modules/` |
+| 6.3 | Snap System | Snap point matching, alignment, validation | `Builder/SnapRules/` |
+| 6.4 | Assembly System | Assemble/disassemble module groups | `Builder/Assembly/` |
+| 6.5 | Builder Physics | Physics data for built structures | `Builder/PhysicsData/` |
+| 6.6 | Builder Collision | Collision shapes from assembled parts | `Builder/Collision/` |
+| 6.7 | Builder Damage | Per-part damage, destruction, repair | `Builder/Damage/` |
+| 6.8 | Builder Editor | Editor integration for building | `Editor/BuilderEditor/` |
+| 6.9 | Builder Runtime | Runtime building (in-game) | `Runtime/BuilderRuntime/` |
+
+**Dependencies:** Phase 2 (renderer, physics), Phase 3 (editor, gizmos), Phase 4 (ECS, components)
+
+**Usable result:** A Starbase-like building system where you snap modules together and test damage/physics.
+
+---
+
+## Phase 7 – Procedural Content Generation
+
+**Goal:** Procedurally generate geometry, textures, audio, worlds, and quests.
+
+**Milestone:** Generate a procedural space station or terrain from rules and preview it in-editor.
+
+| # | Task | Description | Output |
+|---|------|-------------|--------|
+| 7.1 | PCG Rule Engine | Define procedural rules (constraints, weights, seeds) | `PCG/Rules/` |
+| 7.2 | Geometry Generator | Procedural meshes, terrain, structures | `PCG/Geometry/` |
+| 7.3 | Texture Generator | Procedural textures (noise, patterns) | `PCG/Textures/` |
+| 7.4 | Audio Generator | Procedural sound effects, ambient | `PCG/Audio/` |
+| 7.5 | World Generator | Procedural worlds, dungeons, stations | `PCG/World/` |
+| 7.6 | Quest Generator | Procedural missions, objectives, branching | `PCG/Quests/` |
+| 7.7 | PCG Validation | Validate outputs (structural integrity, no overlaps) | `PCG/Validation/` |
+| 7.8 | PCG Editor | Node-based rule editor with live preview | `Editor/PCGEditor/` |
+| 7.9 | AI-Assisted PCG | AI generates/tunes PCG rules from prompts | `Agents/PCGAgent/` |
+
+**Dependencies:** Phase 1 (serialization), Phase 2 (renderer), Phase 3 (editor, node editor), Phase 5 (AI agents)
+
+**Usable result:** A procedural pipeline that generates content from rules — with AI assistance.
+
+---
+
+## Phase 8 – IDE & Integrated Tooling
+
+**Goal:** Embed a code editor and AI chat panel directly inside the editor.
+
+**Milestone:** Write code, see AI suggestions, chat with AI — all inside the editor.
+
+| # | Task | Description | Output |
+|---|------|-------------|--------|
+| 8.1 | Code Editor | Embed Monaco or custom editor with syntax highlighting | `IDE/CodeEditor/` |
+| 8.2 | Language Support | C++, Lua, Python, shader, JSON, GLSL | LSP integration |
+| 8.3 | AI Autocomplete | AI-powered code completion from local LLM | `IDE/CodeEditor/` |
+| 8.4 | AI Chat Panel | Chat window connected to agent system | `IDE/AIChat/` |
+| 8.5 | Console / Terminal | Integrated terminal in editor | `IDE/Console/` |
+| 8.6 | Debugger Integration | Step-through debugging, breakpoints | `IDE/Debugger/` |
+| 8.7 | Git UI Panel | Commit, branch, diff, stash from editor | `Tools/` |
+| 8.8 | Error Panel | Show build errors, click-to-navigate | `Editor/Panels/` |
+
+**Dependencies:** Phase 3 (editor framework, panels), Phase 5 (AI agent system)
+
+**Usable result:** A fully integrated IDE inside the editor — code, debug, chat with AI, all in one place.
+
+---
+
+## Phase 9 – Asset Pipeline & Blender Integration
+
+**Goal:** Import, export, and procedurally generate assets via Blender and AI.
+
+**Milestone:** Import a model from Blender, generate procedural textures, preview in editor.
+
+| # | Task | Description | Output |
+|---|------|-------------|--------|
+| 9.1 | Asset Import | Import FBX, GLTF, OBJ via Assimp/TinyGLTF | `Tools/Importer/` |
+| 9.2 | Asset Export | Export to engine formats | `Tools/Importer/` |
+| 9.3 | Asset Database | Index all assets with metadata, tags, previews | `Core/ResourceManager/` |
+| 9.4 | Blender Addon | `blender --python` pipeline for models/rigs/anims | `Scripts/Python/Blender/` |
+| 9.5 | AI Asset Agent | Generate assets from text prompts | `Agents/AssetAgent/` |
+| 9.6 | Material Editor | Node-based material editor | `Editor/MaterialEditor/` |
+| 9.7 | Asset Versioning | Local versioning, snapshot, rollback | `Versions/` |
+| 9.8 | Semantic Search | AI-powered asset search (SBERT embeddings) | `AI/Embeddings/` |
+
+**Dependencies:** Phase 2 (renderer), Phase 3 (editor), Phase 5 (AI), Phase 7 (PCG)
+
+**Usable result:** Full asset pipeline from Blender → Engine → Editor with AI-generated assets.
+
+---
+
+## Phase 10 – Deployment, Docs & Polish
+
+**Goal:** Build targets, server deployment, documentation, and final polish.
+
+**Milestone:** Ship a build, deploy a server, generate docs — production-ready.
+
+| # | Task | Description | Output |
+|---|------|-------------|--------|
+| ✅ 10.1 | Build Targets | Debug, Release, Editor builds via CMake | `Builds/` |
+| ✅ 10.2 | Server Manager | Game server deployment (SteamCMD, config editor) | `Tools/ServerManager/` |
+| ✅ 10.3 | Performance Profiler | CPU/GPU/memory profiling panels | `Editor/Panels/Profiler` |
+| ✅ 10.4 | Replay Timeline | Record and replay simulations | `Tools/` |
+| ✅ 10.5 | Doc Generator | Generate docs from code + AI | `Tools/DocGenerator/`, `Docs/` |
+| ✅ 10.6 | PDF Manual | Editor-integrated manual with chapters | `Docs/Manual/MANUAL.md` |
+| ✅ 10.7 | CI/CD Pipeline | Automated build, test, package | `Scripts/Tools/ci_pipeline.sh` |
+| ✅ 10.8 | Cloud Backup | Optional cloud sync for projects | `Scripts/Tools/cloud_backup.sh` |
+| ✅ 10.9 | Desktop/Mobile/Web Builds | Cross-platform export | `CMakePresets.json`, `Scripts/Tools/export_builds.sh` |
+| ✅ 10.10 | VR/AR Preview | VR/AR preview mode in editor (OpenXR stub) | `Editor/Viewport/VRPreview.h` |
+| ✅ 10.11 | Plugin Marketplace | Import/export plugin packs | `Plugins/Marketplace/` |
+
+**Dependencies:** All previous phases
+
+**Usable result:** A polished, deployable system with documentation, builds, and server tools.
+
+---
+
+## Dependency Graph
+
+```
+Phase 0 ──────────────────────────────────────────────────────────────
+   │
+   ▼
+Phase 1 (Core) ──────────────────────────────────────────────────────
+   │                    │                        │
+   ▼                    ▼                        ▼
+Phase 2 (Engine)     Phase 5 (AI Agents)      (standalone)
+   │                    │
+   ▼                    ▼
+Phase 3 (Editor) ◄── Phase 5 (AI tools)
+   │         │
+   ▼         ▼
+Phase 4    Phase 8 (IDE)
+(Runtime)    │
+   │         │
+   ▼         ▼
+Phase 6 ◄── Phase 7 (PCG) ◄── Phase 5 (AI-assisted PCG)
+(Builder)
+   │
+   ▼
+Phase 9 (Assets) ◄── Phase 5 + Phase 7
+   │
+   ▼
+Phase 10 (Deploy)
 ```
 
-> **Windows (Git Bash):** `Scripts/Tools/detect_compiler.sh` auto-detects MSVC via
-> `vswhere.exe`. Run from Git Bash — no manual vcvarsall needed.
+**Key insight:** Phases 1-2-3-4 are the critical path for a usable engine/editor. Phase 5 (AI) can start in parallel after Phase 1, since it mainly needs the file system and core events.
+
+---
+
+## Work Path Summary
+
+There are **three parallel work paths** that can be developed simultaneously:
+
+### Path A: Engine → Editor → Runtime (Core Product)
+```
+Phase 0 → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 6
+```
+This is the **critical path** to a usable game engine with an editor.
+
+### Path B: AI Agent System (Intelligence Layer)
+```
+Phase 0 → Phase 1 → Phase 5 → Phase 7 → Phase 8
+```
+This gives you the **offline AI assistant** that can generate code and assets.
+
+### Path C: Assets & Tools (Content Pipeline)
+```
+Phase 0 → Phase 1 → Phase 2 → Phase 9 → Phase 10
+```
+This gives you the **asset pipeline** and deployment tools.
+
+All three paths converge for the final product.
 
 ---
 
 ## Appendix B — Rules & Conventions
+
+These rules are **locked in** across all phases (from implement2.md):
 
 | Rule | Description |
 |------|-------------|

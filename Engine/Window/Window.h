@@ -51,6 +51,7 @@ public:
     std::function<void(double x, double y)>       onMouseMove;
     std::function<void(int btn, bool pressed)>    onMouseButton;
     std::function<void(int key, bool pressed)>    onKey;
+    std::function<void(unsigned int codepoint)>   onChar;
     std::function<void(int w, int h)>             onResize;
 
     const MouseState& GetMouse() const { return m_mouse; }
@@ -70,6 +71,7 @@ private:
     static void s_CursorPosCallback(GLFWwindow* w, double x, double y);
     static void s_MouseButtonCallback(GLFWwindow* w, int btn, int action, int mods);
     static void s_KeyCallback(GLFWwindow* w, int key, int scancode, int action, int mods);
+    static void s_CharCallback(GLFWwindow* w, unsigned int codepoint);
     static void s_FramebufferSizeCallback(GLFWwindow* w, int width, int height);
 };
 

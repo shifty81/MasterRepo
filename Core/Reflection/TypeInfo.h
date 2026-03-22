@@ -41,7 +41,7 @@ struct Property {
 
 // --- TypeInfo descriptor ---
 
-class TypeRegistry; // forward declaration
+class TypeRegistry; // forward declaration — needed by TypeInfo::FindProperty
 
 struct TypeInfo {
     std::string            Name;
@@ -50,6 +50,7 @@ struct TypeInfo {
     std::vector<Property>  Properties;
     TypeID                 BaseID = 0; // 0 = no base
 
+    // Implemented out-of-line in TypeInfo.cpp where TypeRegistry is complete.
     const Property* FindProperty(std::string_view propName) const;
 };
 
