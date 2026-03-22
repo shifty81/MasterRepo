@@ -33,6 +33,7 @@ set(PCG_SOURCES
 
     # Blueprint — pcg_pipeline
     Pipeline/PCGPipeline.cpp
+<<<<<<< Updated upstream
     # Phase 21 — biome-aware world generation
     Biomes/BiomeGenerator.cpp
     # Phase 22 — BSP dungeon generator
@@ -57,6 +58,10 @@ set(PCG_SOURCES
     Textures/TextureGenerator/TextureGenerator.cpp
     # Phase 32 — procedural building and structure generation
     Structures/StructureGenerator/StructureGenerator.cpp
+=======
+        # Advanced
+        Advanced/PCGAdvanced.cpp
+>>>>>>> Stashed changes
 )
 
 add_library(PCGLib STATIC ${PCG_SOURCES})

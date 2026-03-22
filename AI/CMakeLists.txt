@@ -26,6 +26,7 @@ add_library(AILib STATIC
     Orchestrator/Orchestrator.cpp
     RulesEngine/RulesEngine.cpp
     MetricsDashboard/MetricsDashboard.cpp
+<<<<<<< Updated upstream
     # Phase 19 — AI decision visualiser
     DecisionVisualizer/DecisionVisualizer.cpp
     # Phase 20 — AI safety & performance
@@ -33,6 +34,10 @@ add_library(AILib STATIC
     ResourceMonitor/ResourceMonitor.cpp
     # Phase 23 — GOAP goal planner
     GoalPlanner/GoalPlanner.cpp
+=======
+        KnowledgeIngestion/KnowledgeIngestion.cpp
+        Arbiter/Arbiter.cpp
+>>>>>>> Stashed changes
 )
 target_include_directories(AILib PUBLIC ${CMAKE_SOURCE_DIR})
 target_compile_features(AILib PUBLIC cxx_std_20)

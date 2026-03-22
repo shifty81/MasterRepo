@@ -41,7 +41,10 @@ struct Property {
 
 // --- TypeInfo descriptor ---
 
+<<<<<<< Updated upstream
 class TypeRegistry; // forward declaration
+=======
+>>>>>>> Stashed changes
 
 struct TypeInfo {
     std::string            Name;
@@ -50,7 +53,21 @@ struct TypeInfo {
     std::vector<Property>  Properties;
     TypeID                 BaseID = 0; // 0 = no base
 
+<<<<<<< Updated upstream
     const Property* FindProperty(std::string_view propName) const;
+=======
+    const Property* FindProperty(std::string_view propName) const {
+        for (const auto& p : Properties) {
+            if (p.Name == propName) return &p;
+        }
+        // If not found, check base type (if any)
+        if (BaseID != 0) {
+            const TypeInfo* base = TypeRegistry::Instance().Find(BaseID);
+            if (base) return base->FindProperty(propName);
+        }
+        return nullptr;
+    }
+>>>>>>> Stashed changes
 };
 
 // --- TypeRegistry singleton ---
