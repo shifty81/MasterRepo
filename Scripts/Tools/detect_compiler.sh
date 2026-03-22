@@ -104,7 +104,11 @@ if [[ "${CXX_FOUND}" == "false" && -n "${WINDIR:-}" ]]; then
     # ${PROGRAMFILES(X86)} contains parentheses, which are not valid in bash
     # variable names.  Read the value via cmd.exe and fall back to the
     # well-known default path when cmd.exe is unavailable.
-    _pfiles_x86="$(cmd.exe /c "echo %PROGRAMFILES(X86)%" 2>/dev/null | tr -d '\r')"
+    # Capture ALL output first; do NOT pipe to 'tr' or any other process.
+    # On Windows, SIGPIPE is not reliably delivered to native processes, so a
+    # pipe from cmd.exe can hang indefinitely.  Strip CR/LF with bash built-ins.
+    _pfiles_x86_raw="$(cmd.exe /c "echo %PROGRAMFILES(X86)%" 2>/dev/null || true)"
+    _pfiles_x86="$(_first_line_of "${_pfiles_x86_raw}")"
     if [[ -z "${_pfiles_x86}" || "${_pfiles_x86}" == "%PROGRAMFILES(X86)%" ]]; then
         _pfiles_x86="${PROGRAMFILES:-C:/Program Files} (x86)"
     fi
@@ -125,10 +129,15 @@ if [[ "${CXX_FOUND}" == "false" && -n "${WINDIR:-}" ]]; then
     done
 
     if [[ -n "${VSWHERE}" ]]; then
-        # Find the latest VS installation that includes the VC tools
-        VS_INSTALL="$("${VSWHERE}" -latest -products '*' \
-                       -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 \
-                       -property installationPath 2>/dev/null | tr -d '\r')"
+        # Find the latest VS installation that includes the VC tools.
+        # Capture ALL output first; do NOT pipe to 'tr' or any other process.
+        # On Windows, SIGPIPE is not reliably delivered to native processes
+        # (vswhere.exe), so a pipe can hang indefinitely.  Strip CR/LF with
+        # the _first_line_of bash built-in helper instead.
+        _vs_raw="$("${VSWHERE}" -latest -products '*' \
+                   -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 \
+                   -property installationPath 2>/dev/null || true)"
+        VS_INSTALL="$(_first_line_of "${_vs_raw}")"
 
         if [[ -n "${VS_INSTALL}" ]]; then
             # Convert to a Unix path for bash
