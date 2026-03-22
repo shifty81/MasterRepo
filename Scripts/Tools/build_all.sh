@@ -224,8 +224,18 @@ run_phase() {
 
     if [[ "${ok}" == "true" ]]; then
         info "CMake build → ${build_dir}"
+        # MSBuild spawns persistent worker-node processes that inherit the
+        # pipe write-handle, preventing tee from ever seeing EOF (= infinite
+        # hang).  /nodeReuse:false tells MSBuild to shut those nodes down once
+        # the build finishes.  Only pass the flag when the VS generator was
+        # selected (detected by the presence of a .sln file after configure).
+        local _nodeReuse_args=()
+        for _sln in "${build_dir}"/*.sln; do
+            [[ -f "${_sln}" ]] && { _nodeReuse_args=("--" "/nodeReuse:false"); break; }
+        done
         {
-            cmake --build "${build_dir}" --config "${build_type}" --parallel "${JOBS}"
+            cmake --build "${build_dir}" --config "${build_type}" \
+                  --parallel "${JOBS}" "${_nodeReuse_args[@]}"
         } 2>&1 | tee -a "${LOG_FILE}" "${phase_tmp}" || ok=false
     fi
 

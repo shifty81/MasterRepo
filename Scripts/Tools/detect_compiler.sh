@@ -177,7 +177,10 @@ if [[ "${CXX_FOUND}" == "false" && -n "${WINDIR:-}" ]]; then
                 fi
 
                 if [[ -n "${VCVARS_ENV}" ]]; then
-                    # Export every variable emitted by vcvarsall
+                    # Export every variable emitted by vcvarsall.
+                    # Capture PATH inline during the loop — no subprocess pipe
+                    # needed (avoids any SIGPIPE risk on Windows).
+                    local win_path_val=""
                     while IFS='=' read -r key val; do
                         key="${key%%$'\r'}"
                         val="${val%%$'\r'}"
@@ -185,14 +188,10 @@ if [[ "${CXX_FOUND}" == "false" && -n "${WINDIR:-}" ]]; then
                         case "${key}" in
                             PROMPT|PS1|SHLVL|_|PWD|OLDPWD|HOME|TERM|SHELL) continue ;;
                         esac
+                        [[ "${key}" == "PATH" ]] && win_path_val="${val}"
                         export "${key}=${val}" 2>/dev/null || true
                     done <<< "${VCVARS_ENV}"
 
-                    # Extract the new PATH from the already-captured output
-                    # (avoids a second, expensive cmd.exe //c vcvarsall call).
-                    local win_path_val
-                    win_path_val="$(grep -i '^PATH=' <<< "${VCVARS_ENV}" \
-                                    | head -1 | cut -d'=' -f2- | tr -d '\r')"
                     if [[ -n "${win_path_val}" ]]; then
                         MSYS_PATHS=""
                         IFS=';' read -ra WIN_PARTS <<< "${win_path_val}"
