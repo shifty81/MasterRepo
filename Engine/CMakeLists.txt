@@ -27,6 +27,9 @@ else()
             GIT_REPOSITORY https://github.com/glfw/glfw.git
             GIT_TAG        3.4
             GIT_SHALLOW    TRUE
+            # Network timeout: abort the clone if the server stalls instead of
+            # hanging indefinitely (requires CMake 3.25+ for GIT_CONFIG support).
+            GIT_CONFIG     "http.timeout=60;http.lowSpeedLimit=1000;http.lowSpeedTime=30"
         )
         set(GLFW_BUILD_DOCS     OFF CACHE BOOL "" FORCE)
         set(GLFW_BUILD_TESTS    OFF CACHE BOOL "" FORCE)

@@ -55,6 +55,13 @@ DO_CLEAN=false
 JOBS="$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)"  # default 4 is a safe minimum on any machine
 START_SECS="${SECONDS}"
 
+# Git network timeouts used both in git-config (below) and passed to cmake so
+# FetchContent's git clone does not hang indefinitely on a slow/stalled server.
+# Keep these values in sync with the GIT_CONFIG entry in Engine/CMakeLists.txt.
+GIT_HTTP_TIMEOUT=60       # seconds before a stalled connection is dropped
+GIT_LOW_SPEED_LIMIT=1000  # bytes/s — abort if transfer rate stays below this …
+GIT_LOW_SPEED_TIME=30     # … for this many consecutive seconds
+
 # ── Argument parsing ──────────────────────────────────────────────────────────
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -122,6 +129,13 @@ check_cmd() {
 }
 
 check_cmd cmake
+# git is required for CMake FetchContent (used to clone GLFW when not found locally)
+if command -v git &>/dev/null; then
+    check_cmd git
+else
+    warn "  git: NOT FOUND — FetchContent (GLFW source download) will not work."
+    warn "  Install git and re-run, or install libglfw3-dev / glfw3 via your package manager."
+fi
 # ── C++ compiler detection (shared helper) ────────────────────────────────────
 # shellcheck source=Scripts/Tools/detect_compiler.sh
 # Use || true so a detection failure (no compiler on PATH yet) does not abort
@@ -132,6 +146,92 @@ if [[ "${CXX_FOUND}" == "true" ]]; then
 else
     warn "  No C++ compiler found in PATH — CMake will attempt its own detection."
     warn "  Configure may fail; see instructions printed above."
+fi
+
+# ── Dependency pre-install ────────────────────────────────────────────────────
+# Attempts to install required system packages so the build does not hang
+# waiting for missing libraries (OpenGL headers, GLFW dev libs, build tools).
+# Each platform manager is tried only if it is present; failures are non-fatal.
+section "Dependencies"
+
+_install_linux_deps() {
+    # Detect the available package manager and install known build deps.
+    if command -v apt-get &>/dev/null; then
+        info "  Detected apt-get — installing build dependencies…"
+        sudo apt-get install -y --no-install-recommends \
+            build-essential cmake git \
+            libgl-dev libglu1-mesa-dev \
+            libglfw3-dev \
+            libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev \
+            2>&1 | tee -a "${LOG_FILE}" || \
+        warn "  apt-get install failed (may need sudo or packages are already present)."
+    elif command -v dnf &>/dev/null; then
+        info "  Detected dnf — installing build dependencies…"
+        sudo dnf install -y \
+            gcc-c++ cmake git \
+            mesa-libGL-devel mesa-libGLU-devel \
+            glfw-devel \
+            libX11-devel libXrandr-devel libXinerama-devel libXcursor-devel libXi-devel \
+            2>&1 | tee -a "${LOG_FILE}" || \
+        warn "  dnf install failed (may need sudo or packages are already present)."
+    elif command -v pacman &>/dev/null && [[ -z "${WINDIR:-}" ]]; then
+        info "  Detected pacman (Linux) — installing build dependencies…"
+        sudo pacman -S --noconfirm \
+            base-devel cmake git \
+            mesa glfw-x11 \
+            2>&1 | tee -a "${LOG_FILE}" || \
+        warn "  pacman install failed (may need sudo or packages are already present)."
+    else
+        info "  No recognised Linux package manager in PATH — skipping auto-install."
+        info "  Install manually: g++, cmake, git, libgl-dev, libglfw3-dev"
+    fi
+}
+
+_install_macos_deps() {
+    if command -v brew &>/dev/null; then
+        info "  Detected Homebrew — installing build dependencies…"
+        brew install cmake git glfw 2>&1 | tee -a "${LOG_FILE}" || \
+        warn "  brew install failed (packages may already be up-to-date)."
+    else
+        info "  Homebrew not found on macOS."
+        info "  Install manually: xcode-select --install  then  brew install cmake glfw"
+    fi
+}
+
+_install_windows_deps() {
+    # On Windows (Git Bash / MSYS2): if inside an MSYS2 environment, use pacman.
+    # Otherwise provide guidance — FetchContent will download GLFW automatically.
+    if command -v pacman &>/dev/null; then
+        info "  Detected MSYS2 pacman — installing build dependencies…"
+        pacman -S --noconfirm --needed \
+            mingw-w64-ucrt-x86_64-cmake \
+            mingw-w64-ucrt-x86_64-gcc \
+            mingw-w64-ucrt-x86_64-glfw \
+            git \
+            2>&1 | tee -a "${LOG_FILE}" || \
+        warn "  pacman install failed (packages may already be present)."
+    else
+        info "  Windows (non-MSYS2): GLFW will be downloaded automatically via CMake FetchContent."
+        info "  Ensure git is installed (https://git-scm.com) so FetchContent can clone GLFW."
+    fi
+}
+
+if [[ -n "${WINDIR:-}" ]]; then
+    _install_windows_deps
+elif [[ "$(uname -s)" == "Darwin" ]]; then
+    _install_macos_deps
+else
+    _install_linux_deps
+fi
+
+# ── Git network timeout (prevents FetchContent hangs) ────────────────────────
+# Set conservative git timeouts so that a network stall during GLFW clone does
+# not hang the build indefinitely.  These are local configs scoped to the repo.
+if command -v git &>/dev/null; then
+    info "  Configuring git network timeouts for FetchContent…"
+    git -C "${REPO_ROOT}" config http.timeout      "${GIT_HTTP_TIMEOUT}"    2>/dev/null || true
+    git -C "${REPO_ROOT}" config http.lowSpeedLimit "${GIT_LOW_SPEED_LIMIT}" 2>/dev/null || true
+    git -C "${REPO_ROOT}" config http.lowSpeedTime  "${GIT_LOW_SPEED_TIME}"  2>/dev/null || true
 fi
 
 # ── Clean ─────────────────────────────────────────────────────────────────────
@@ -165,6 +265,8 @@ run_phase() {
 
     {
         # Configure
+        # -DFETCHCONTENT_QUIET=OFF  — show download progress so network stalls
+        #                             are visible rather than silent hangs.
         cmake -S "${REPO_ROOT}" \
               -B "${build_dir}" \
               -DCMAKE_BUILD_TYPE="${build_type}" \
@@ -172,7 +274,8 @@ run_phase() {
               -DBUILD_EDITOR=ON \
               -DBUILD_RUNTIME=ON \
               -DBUILD_AI=ON \
-              -DBUILD_TOOLS=ON
+              -DBUILD_TOOLS=ON \
+              -DFETCHCONTENT_QUIET=OFF
     } 2>&1 | tee -a "${LOG_FILE}" "${phase_tmp}" || ok=false
 
     if [[ "${ok}" == "true" ]]; then
