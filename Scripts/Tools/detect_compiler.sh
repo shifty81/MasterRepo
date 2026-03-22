@@ -40,10 +40,14 @@ _try_cxx() {
 
 # ── Helper: try MSVC cl.exe ───────────────────────────────────────────────────
 _try_cl() {
-    # cl.exe prints version to stderr
     if command -v cl &>/dev/null; then
+        # Do NOT pipe cl.exe bare output — it can hang in Git Bash pipes.
+        # Instead query the version safely via cmd /c so the subprocess is
+        # fully contained and closes immediately.
         local ver
-        ver="$(cl 2>&1 | head -1)" || ver="(version unknown)"
+        ver="$(cmd.exe /c "cl 2>&1" 2>/dev/null | head -1 | tr -d '\r')" \
+            || ver="(version unknown)"
+        [[ -z "${ver}" ]] && ver="(version unknown)"
         CXX_FOUND=true
         CXX_NAME="cl (MSVC): ${ver}"
         export CXX="cl"
@@ -110,11 +114,14 @@ if [[ "${CXX_FOUND}" == "false" && -n "${WINDIR:-}" ]]; then
             VCVARSALL="${VS_INSTALL_UNIX}/VC/Auxiliary/Build/vcvarsall.bat"
 
             if [[ -f "${VCVARSALL}" ]]; then
-                # Run vcvarsall.bat and capture the resulting environment.
+                # Run vcvarsall.bat ONCE and capture the resulting environment.
                 # We use cmd.exe to source it, then print all env vars, and
                 # merge the differences into the current bash session.
+                # A 60-second timeout guards against antivirus / slow I/O hangs.
                 VCVARS_WIN="$(cygpath -w "${VCVARSALL}" 2>/dev/null || echo "${VCVARSALL}")"
-                VCVARS_ENV="$(cmd.exe //c "\"${VCVARS_WIN}\" x64 > NUL 2>&1 && set" 2>/dev/null)"
+                VCVARS_ENV="$(timeout 60 cmd.exe //c \
+                    "\"${VCVARS_WIN}\" x64 > NUL 2>&1 && set" \
+                    2>/dev/null || true)"
 
                 if [[ -n "${VCVARS_ENV}" ]]; then
                     # Export every variable emitted by vcvarsall
@@ -128,16 +135,21 @@ if [[ "${CXX_FOUND}" == "false" && -n "${WINDIR:-}" ]]; then
                         export "${key}=${val}" 2>/dev/null || true
                     done <<< "${VCVARS_ENV}"
 
-                    # Convert the new PATH entries to MSYS-style and prepend
-                    WIN_PATH="${PATH}"
-                    MSYS_PATHS=""
-                    IFS=';' read -ra WIN_PARTS <<< "$(cmd.exe //c "\"${VCVARS_WIN}\" x64 > NUL 2>&1 && echo %PATH%" 2>/dev/null | tr -d '\r')"
-                    for wp in "${WIN_PARTS[@]}"; do
-                        [[ -z "${wp}" ]] && continue
-                        mp="$(cygpath -u "${wp}" 2>/dev/null)" || continue
-                        MSYS_PATHS="${mp}:${MSYS_PATHS}"
-                    done
-                    export PATH="${MSYS_PATHS}${PATH}"
+                    # Extract the new PATH from the already-captured output
+                    # (avoids a second, expensive cmd.exe //c vcvarsall call).
+                    local win_path_val
+                    win_path_val="$(grep -i '^PATH=' <<< "${VCVARS_ENV}" \
+                                    | head -1 | cut -d'=' -f2- | tr -d '\r')"
+                    if [[ -n "${win_path_val}" ]]; then
+                        MSYS_PATHS=""
+                        IFS=';' read -ra WIN_PARTS <<< "${win_path_val}"
+                        for wp in "${WIN_PARTS[@]}"; do
+                            [[ -z "${wp}" ]] && continue
+                            mp="$(cygpath -u "${wp}" 2>/dev/null)" || continue
+                            MSYS_PATHS="${mp}:${MSYS_PATHS}"
+                        done
+                        export PATH="${MSYS_PATHS}${PATH}"
+                    fi
 
                     # Now cl should be findable
                     _try_cl || true

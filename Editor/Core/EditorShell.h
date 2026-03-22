@@ -63,10 +63,34 @@ struct InspectorPanel : public Panel {
                     float value = 0.0f;
                     prop.Getter(shell->selectedObject, &value);
                     std::cout << " = " << value;
+                    std::cout << " [edit: enter new float value or press Enter to skip] ";
+                    std::string input;
+                    std::getline(std::cin, input);
+                    if (!input.empty()) {
+                        try {
+                            float newValue = std::stof(input);
+                            prop.Setter(shell->selectedObject, &newValue);
+                            std::cout << " -> updated to " << newValue;
+                        } catch (...) {
+                            std::cout << " (invalid input)";
+                        }
+                    }
                 } else if (prop.TypeName == "int") {
                     int value = 0;
                     prop.Getter(shell->selectedObject, &value);
                     std::cout << " = " << value;
+                    std::cout << " [edit: enter new int value or press Enter to skip] ";
+                    std::string input;
+                    std::getline(std::cin, input);
+                    if (!input.empty()) {
+                        try {
+                            int newValue = std::stoi(input);
+                            prop.Setter(shell->selectedObject, &newValue);
+                            std::cout << " -> updated to " << newValue;
+                        } catch (...) {
+                            std::cout << " (invalid input)";
+                        }
+                    }
                 }
                 std::cout << std::endl;
             });

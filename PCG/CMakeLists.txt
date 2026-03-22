@@ -57,6 +57,8 @@ set(PCG_SOURCES
     Textures/TextureGenerator/TextureGenerator.cpp
     # Phase 32 — procedural building and structure generation
     Structures/StructureGenerator/StructureGenerator.cpp
+    # Advanced PCG: AI rule generation, validation, live preview
+    Advanced/PCGAdvanced.cpp
 )
 
 add_library(PCGLib STATIC ${PCG_SOURCES})
