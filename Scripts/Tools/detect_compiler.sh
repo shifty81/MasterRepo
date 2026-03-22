@@ -153,14 +153,24 @@ if [[ "${CXX_FOUND}" == "false" && -n "${WINDIR:-}" ]]; then
                     # and exits 0.  Note: duration=0 disables GNU timeout, so
                     # use 0.1s; sleep 1 caps worst-case delay to ~1s if the
                     # test unexpectedly does not terminate quickly.
-                    timeout 0.1 sleep 1 2>/dev/null; _to_ec=$?
+                    # Redirect stdin from /dev/null so that Windows' built-in
+                    # TIMEOUT.EXE (which prompts "Press any key to continue...")
+                    # does not block waiting for keyboard input.
+                    timeout 0.1 sleep 1 </dev/null 2>/dev/null; _to_ec=$?
                     [[ "${_to_ec}" -eq 124 ]] && _vcvars_timeout="timeout 60"
                     unset _to_ec
                 fi
-                # shellcheck disable=SC2086  # intentional word-splitting of _vcvars_timeout
-                VCVARS_ENV="$(${_vcvars_timeout} cmd.exe //c \
-                    "\"${VCVARS_WIN}\" x64 > NUL 2>&1 && set" \
-                    2>/dev/null || true)"
+                # Safety: only invoke vcvarsall.bat when a reliable (GNU
+                # coreutils) timeout wrapper has been confirmed.  Running
+                # without any timeout risks an indefinite hang if vcvarsall.bat
+                # itself stalls (e.g., slow network, license check).
+                VCVARS_ENV=""
+                if [[ -n "${_vcvars_timeout}" ]]; then
+                    # shellcheck disable=SC2086  # intentional word-splitting
+                    VCVARS_ENV="$(${_vcvars_timeout} cmd.exe //c \
+                        "\"${VCVARS_WIN}\" x64 > NUL 2>&1 && set" \
+                        2>/dev/null || true)"
+                fi
                 unset _vcvars_timeout
 
                 if [[ -n "${VCVARS_ENV}" ]]; then

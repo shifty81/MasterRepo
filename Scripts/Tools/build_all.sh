@@ -105,7 +105,16 @@ section "Environment"
 check_cmd() {
     local cmd="$1" label="${2:-$1}"
     if command -v "${cmd}" &>/dev/null; then
-        info "  ${label}: $(${cmd} --version 2>&1 | head -1)"
+        # Capture ALL output first; do NOT pipe directly to 'head -1'.
+        # On Windows, SIGPIPE is not reliably delivered to native processes, so
+        # the subprocess can hang indefinitely on a broken pipe.  Extract the
+        # first line with bash parameter expansion instead.
+        local _out _ver
+        _out="$("${cmd}" --version 2>&1 || true)"
+        _ver="${_out%%$'\n'*}"
+        _ver="${_ver%%$'\r'*}"
+        [[ -z "${_ver}" ]] && _ver="(version unknown)"
+        info "  ${label}: ${_ver}"
     else
         error "  ${label}: NOT FOUND (required)"
         return 1
