@@ -38,6 +38,10 @@ add_library(CoreLib STATIC
     RingBuffer/RingBuffer.cpp
     # Phase 28 — fixed-size pool allocator (header-only, compiled stub)
     Allocator/PoolAllocator/PoolAllocator.cpp
+    # Phase 29 — fixed-thread-count thread pool with priority queue
+    Threading/ThreadPool/ThreadPool.cpp
+    # Phase 30 — fast little-endian binary serialisation (header-only, compiled stub)
+    Serialization/BinarySerializer/BinarySerializer.cpp
 )
 
 target_compile_features(CoreLib PUBLIC cxx_std_20)

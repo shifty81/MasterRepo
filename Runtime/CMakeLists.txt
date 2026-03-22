@@ -37,6 +37,10 @@ add_library(RuntimeLib STATIC
     Input/InputMapper/InputMapper.cpp
     # Phase 28 — AABB rigid-body physics simulation
     Physics/PhysicsWorld/PhysicsWorld.cpp
+    # Phase 29 — ECS component type registration
+    Components/ComponentRegistry/ComponentRegistry.cpp
+    # Phase 30 — async asset streaming manager
+    Streaming/AssetStreamer/AssetStreamer.cpp
 )
 
 target_include_directories(RuntimeLib PUBLIC ${CMAKE_SOURCE_DIR})

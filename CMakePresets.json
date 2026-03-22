@@ -77,7 +77,7 @@
     {
       "name": "windows-x64",
       "displayName": "Windows x86-64 Release",
-      "description": "Windows 10/11 (64-bit) release build",
+      "description": "Windows 10/11 (64-bit) release build. GLFW is auto-downloaded via FetchContent if not found.",
       "inherits": "base",
       "generator": "Visual Studio 17 2022",
       "architecture": {
@@ -87,6 +87,25 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_SYSTEM_NAME": "Windows"
+      }
+    },
+
+    {
+      "name": "windows-x64-debug",
+      "displayName": "Windows x86-64 Debug",
+      "description": "Windows Debug build for local development. GLFW auto-downloaded if not found.",
+      "inherits": "base",
+      "generator": "Visual Studio 17 2022",
+      "architecture": {
+        "value": "x64",
+        "strategy": "set"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_SYSTEM_NAME": "Windows",
+        "BUILD_EDITOR": "ON",
+        "BUILD_RUNTIME": "ON",
+        "BUILD_AI": "ON"
       }
     },
 
@@ -188,6 +207,11 @@
       "name": "windows-x64",
       "configurePreset": "windows-x64",
       "configuration": "Release"
+    },
+    {
+      "name": "windows-x64-debug",
+      "configurePreset": "windows-x64-debug",
+      "configuration": "Debug"
     },
     {
       "name": "macos-universal",

@@ -34,6 +34,10 @@ set(TOOLS_SOURCES
     DependencyAnalyzer/DependencyAnalyzer.cpp
     # Phase 28 — in-project symbol locator / fuzzy search
     Locator/SymbolLocator/SymbolLocator.cpp
+    # Phase 29 — git commit history browser
+    GitPanel/GitHistory/GitHistory.cpp
+    # Phase 30 — gameplay replay recording and playback
+    ReplayTimeline/ReplayRecorder/ReplayRecorder.cpp
 )
 
 add_library(ToolsLib STATIC ${TOOLS_SOURCES})

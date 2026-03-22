@@ -71,30 +71,74 @@ all function without an internet connection.
 
 ### Prerequisites
 
-| Tool | Minimum Version |
-|------|----------------|
-| CMake | 3.20 |
-| GCC / Clang | C++20 support (GCC 11+, Clang 13+) |
-| Python | 3.9+ |
-| Blender (optional) | 3.6 LTS |
-| Ollama (optional) | latest |
+#### All platforms
+
+| Tool | Minimum Version | Notes |
+|------|----------------|-------|
+| CMake | 3.20 | [cmake.org](https://cmake.org/download/) |
+| C++20 compiler | GCC 11 / Clang 13 / MSVC 19.30 (VS 2022) | |
+| Python | 3.9+ | For AI tools and scripting |
+| Blender (optional) | 3.6 LTS | Asset pipeline |
+| Ollama (optional) | latest | Local AI inference |
+
+#### Windows additional notes
+
+**GLFW** (the windowing library used by the editor) is fetched automatically by
+CMake's `FetchContent` module if it is not already installed — no manual
+download is required. On first configure, CMake will clone and compile
+GLFW 3.4 from source, which adds ~30 s to the initial configure step.
+
+For faster/offline builds, pre-install GLFW via vcpkg:
+
+```powershell
+# One-time vcpkg setup
+git clone https://github.com/microsoft/vcpkg C:\vcpkg
+C:\vcpkg\bootstrap-vcpkg.bat
+C:\vcpkg\vcpkg install glfw3:x64-windows
+
+# Then configure with the toolchain file:
+cmake --preset windows-x64-debug `
+  -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake
+```
 
 ### Build
+
+#### Linux / macOS
 
 ```bash
 # Clone
 git clone https://github.com/your-org/MasterRepo.git
 cd MasterRepo
 
-# Debug build
-cmake -B /tmp/atlas_debug -DCMAKE_BUILD_TYPE=Debug .
-cmake --build /tmp/atlas_debug -- -j$(nproc)
+# Debug build (editor + runtime)
+cmake -B Builds/debug -DCMAKE_BUILD_TYPE=Debug .
+cmake --build Builds/debug --parallel $(nproc)
 
 # Run editor
-/tmp/atlas_debug/bin/AtlasEditor
+./Builds/debug/bin/AtlasEditor
 
 # Run game
-/tmp/atlas_debug/bin/NovaForge
+./Builds/debug/bin/NovaForge
+```
+
+#### Windows (Visual Studio 2022)
+
+```powershell
+# Run bootstrap first (creates directories, checks tools)
+.\bootstrap.ps1
+
+# Configure + build editor (GLFW downloaded automatically if needed)
+cmake --preset windows-x64-debug
+cmake --build Builds/windows-x64-debug --config Debug --target AtlasEditor
+
+# Run editor
+.\Builds\windows-x64-debug\Debug\bin\AtlasEditor.exe
+```
+
+Or use the full build script from Git Bash / MSYS2:
+
+```bash
+bash Scripts/Tools/build_all.sh
 ```
 
 ### One-command Setup
