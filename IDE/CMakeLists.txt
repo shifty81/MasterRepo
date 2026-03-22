@@ -30,6 +30,8 @@ set(IDE_SOURCES
     LSP/LSPDiagnostics/LSPDiagnostics.cpp
     # Phase 31 — code search engine with indexing and async search
     Search/CodeSearchEngine/CodeSearchEngine.cpp
+    # Phase 32 — code refactoring panel (rename, extract, move)
+    Refactor/RefactorPanel/RefactorPanel.cpp
 )
 
 add_library(IDELib STATIC ${IDE_SOURCES})

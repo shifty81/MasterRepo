@@ -49,6 +49,8 @@ add_library(RuntimeLib STATIC
     Sim/AIWalletSystem/AIWalletSystem.cpp
     # NFE — player skill tree with prerequisites and effects
     Gameplay/SkillTree/SkillTree.cpp
+    # Phase 32 — multi-channel audio mixer with bus routing and effects chain
+    Audio/AudioMixer/AudioMixer.cpp
 )
 
 target_include_directories(RuntimeLib PUBLIC ${CMAKE_SOURCE_DIR})

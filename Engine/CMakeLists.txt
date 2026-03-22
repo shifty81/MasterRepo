@@ -91,6 +91,8 @@ add_library(AtlasEngine STATIC
     Net/DeltaCompression/DeltaCompression.cpp
     # NFE — DAG-based tile-map generation graph
     Tile/TileGraph/TileGraph.cpp
+    # Phase 32 — animation blend tree with state machine and transitions
+    Animation/AnimBlendTree/AnimBlendTree.cpp
 )
 
 target_include_directories(AtlasEngine PUBLIC ${CMAKE_SOURCE_DIR})

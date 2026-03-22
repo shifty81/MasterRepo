@@ -44,6 +44,8 @@ add_library(CoreLib STATIC
     Serialization/BinarySerializer/BinarySerializer.cpp
     # Phase 31 — RLE/LZ/LZH data compression
     Compression/DataCompressor/DataCompressor.cpp
+    # Phase 32 — thread-safe LRU cache with eviction callbacks (header-only, compiled stub)
+    Cache/LRUCache/LRUCache.cpp
 )
 
 target_compile_features(CoreLib PUBLIC cxx_std_20)
