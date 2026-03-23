@@ -439,10 +439,17 @@ run_phase() {
     if [[ "${ok}" == "true" ]]; then
         t0="${SECONDS}"
         : > "${plog}"
+        # Detect MSBuild generator (.sln present) and disable node reuse to
+        # prevent worker-node handles from keeping plog open after cmake exits.
+        local _nr=()
+        for _f in "${build_dir}"/*.sln; do
+            [[ -f "${_f}" ]] && { _nr=("--" "/nodeReuse:false"); break; }
+        done
         if _cmake_bg "${bidx}" "${plog}" "${best}" \
             cmake --build "${build_dir}" \
                   --config "${build_type}" \
-                  --parallel "${JOBS}"; then
+                  --parallel "${JOBS}" \
+                  "${_nr[@]}"; then
             printf -v "${bk}" '%d' "$(( SECONDS - t0 ))"
             (( _STAGE_DONE++ )) || true
         else

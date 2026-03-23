@@ -66,28 +66,29 @@ else
     warn "No C++ compiler found — CMake will attempt its own detection."
 fi
 
-# ── Helper: run any command without a pipe, streaming output via tail ──────────
+# ── Helper: run cmake without a pipe or background streaming process ───────────
 # On Windows, MSBuild spawns persistent worker-node processes that inherit any
 # pipe write-handle.  When the build finishes, those nodes are still alive and
 # keep the write end of the pipe open, so a downstream 'tee' never sees EOF and
 # the script hangs indefinitely.
 #
-# Fix: redirect output directly to the log file (no pipe ever touches cmake or
-# MSBuild), then stream the file to the terminal with 'tail -f'.  tail is an
-# MSYS2 binary — Unix-to-Unix I/O — so SIGPIPE/EOF handling is reliable.
+# The previous fix used 'tail -f "${log_file}" &' to stream output, but on
+# Windows (Git Bash / MSYS2) 'kill SIGTERM tail' is unreliable — the process
+# may not respond, causing 'wait "${_tail_pid}"' to hang indefinitely.
+#
+# Fix: redirect output directly to the log file (no pipe, no background
+# streaming process).  Use a kill-0 polling loop to wait for cmake to finish —
+# no secondary process to kill.  Output is in the log file noted above.
 _cmake_run() {
     local log_file="$1"; shift
-    # Ensure the log file exists before tail tries to follow it
     : >> "${log_file}"
     "$@" >> "${log_file}" 2>&1 &
     local _pid=$!
-    tail -f "${log_file}" &
-    local _tail_pid=$!
     local _rc=0
+    while kill -0 "${_pid}" 2>/dev/null; do
+        sleep 0.5 2>/dev/null || true
+    done
     wait "${_pid}" || _rc=$?
-    sleep 0.1 2>/dev/null || true    # let tail flush the last bytes
-    kill "${_tail_pid}" 2>/dev/null || true
-    wait "${_tail_pid}" 2>/dev/null || true
     return "${_rc}"
 }
 
