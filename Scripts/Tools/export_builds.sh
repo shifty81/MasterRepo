@@ -37,23 +37,24 @@ _wait_for_user() {
     read -r -p "" 2>/dev/null || true
 }
 
-# ── Helper: run cmake without a pipe to prevent MSBuild worker-node hang ──────
+# ── Helper: run cmake without a pipe or background streaming process ───────────
 # On Windows, MSBuild spawns persistent worker-node processes that inherit any
 # pipe write-handle, preventing tee from seeing EOF (= infinite hang).
-# Fix: redirect output directly to the log file (no pipe), then stream via
-# tail -f (an MSYS2 binary — reliable Unix-to-Unix I/O, no SIGPIPE issues).
+# The previous fix used 'tail -f "${log_file}" &' to stream output, but on
+# Windows (Git Bash / MSYS2) 'kill SIGTERM tail' is unreliable — the process
+# may not respond, causing 'wait "${_tail_pid}"' to hang indefinitely.
+# Fix: redirect output directly to the log file (no pipe, no background
+# streaming process).  Use a kill-0 polling loop — no secondary process to kill.
 _cmake_run() {
     local log_file="$1"; shift
-    : >> "${log_file}"                     # ensure file exists before tail
+    : >> "${log_file}"
     "$@" >> "${log_file}" 2>&1 &
     local _pid=$!
-    tail -f "${log_file}" &
-    local _tail_pid=$!
     local _rc=0
+    while kill -0 "${_pid}" 2>/dev/null; do
+        sleep 0.5 2>/dev/null || true
+    done
     wait "${_pid}" || _rc=$?
-    sleep 0.1 2>/dev/null || true          # let tail flush last bytes
-    kill "${_tail_pid}" 2>/dev/null || true
-    wait "${_tail_pid}" 2>/dev/null || true
     return "${_rc}"
 }
 
