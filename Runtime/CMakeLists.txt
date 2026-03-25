@@ -51,6 +51,8 @@ add_library(RuntimeLib STATIC
     Gameplay/SkillTree/SkillTree.cpp
     # Phase 32 — multi-channel audio mixer with bus routing and effects chain
     Audio/AudioMixer/AudioMixer.cpp
+    # Phase 33 — component-based damage system with typed damage, resistances, and stacking
+    Damage/DamageSystem/DamageSystem.cpp
 )
 
 target_include_directories(RuntimeLib PUBLIC ${CMAKE_SOURCE_DIR})

@@ -80,6 +80,9 @@ add_subdirectory(IDE)
 # Phase 9: Tools
 add_subdirectory(Tools)
 
+# TrainingData — AI training sample collector
+add_subdirectory(TrainingData)
+
 # Phase 10: Game projects
 add_subdirectory(Projects/NovaForge)
 

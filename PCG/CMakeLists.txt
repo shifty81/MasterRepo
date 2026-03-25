@@ -59,6 +59,8 @@ set(PCG_SOURCES
     Structures/StructureGenerator/StructureGenerator.cpp
     # Advanced PCG: AI rule generation, validation, live preview
     Advanced/PCGAdvanced.cpp
+    # Noise — fractal Brownian motion (fBm), turbulence, ridged-multi noise generators
+    Noise/FractalNoise/FractalNoise.cpp
 )
 
 add_library(PCGLib STATIC ${PCG_SOURCES})

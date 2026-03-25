@@ -47,7 +47,7 @@ void PerfProfilerPanel::OnDraw(const UI::UIStyle& style) {
     {
         std::ostringstream ss;
         ss << std::fixed << std::setprecision(3)
-           << "Avg frame time: " << prof.AverageFrameTimeUs() << " us";
+           << "Avg frame time: " << prof.AvgFrameTimeMs() << " ms";
         UI::Label lbl(ss.str());
         lbl.SetBounds({0, rowY, 500, 20});
         // [RENDER: lbl, colour = style.textPrimary]
@@ -63,7 +63,7 @@ void PerfProfilerPanel::OnDraw(const UI::UIStyle& style) {
         hdr.OnEvent(UI::WidgetEvent::None, 0, rowY);
         rowY += 22;
 
-        auto allStats = prof.AllScopeStats();
+        auto allStats = prof.GetAllStats();
         // Sort by avg descending so hottest scopes appear first
         std::sort(allStats.begin(), allStats.end(),
                   [](const ScopeStats& a, const ScopeStats& b) {
@@ -76,7 +76,7 @@ void PerfProfilerPanel::OnDraw(const UI::UIStyle& style) {
                 << std::right << std::setw(8)  << std::fixed << std::setprecision(1) << s.avgUs
                 << std::setw(9) << s.minUs
                 << std::setw(9) << s.maxUs
-                << std::setw(7) << s.sampleCount;
+                << std::setw(7) << s.callCount;
 
             UI::Label scopeLbl(row.str());
             scopeLbl.SetBounds({0, rowY, 700, 18});
@@ -95,7 +95,7 @@ void PerfProfilerPanel::OnDraw(const UI::UIStyle& style) {
         hdr2.OnEvent(UI::WidgetEvent::None, 0, rowY);
         rowY += 22;
 
-        auto samples = prof.LastFrameSamples();
+        auto samples = prof.GetLastFrameSamples();
         for (const ProfileSample& ps : samples) {
             std::string indent(static_cast<size_t>(ps.depth * 2), ' ');
             std::ostringstream row;

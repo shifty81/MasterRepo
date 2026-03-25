@@ -79,7 +79,7 @@ void MemoryProfilerPanel::OnDraw(const UI::UIStyle& style) {
             row << std::left  << std::setw(26) << ts.tag
                 << std::right << std::setw(9)  << (ts.liveBytes / 1024)
                 << std::setw(10) << (ts.peakBytes / 1024)
-                << std::setw(7)  << ts.allocationCount;
+                << std::setw(7)  << ts.liveCount;
 
             UI::Label lbl(row.str());
             lbl.SetBounds({0, rowY, 600, 18});
@@ -147,7 +147,7 @@ void MemoryProfilerPanel::OnDraw(const UI::UIStyle& style) {
             if (a != b) {
                 SnapshotDiff diff = DiffSnapshots(m_impl->snapshots[a], m_impl->snapshots[b]);
 
-                for (const auto& [tag, delta] : diff.deltaByTag) {
+                for (const auto& [tag, delta] : diff.deltaBytes) {
                     std::ostringstream row;
                     row << std::left  << std::setw(26) << tag
                         << std::right << std::showpos << (static_cast<int64_t>(delta) / 1024)

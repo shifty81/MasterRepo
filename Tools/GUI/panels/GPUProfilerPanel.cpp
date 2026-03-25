@@ -50,7 +50,7 @@ void GPUProfilerPanel::OnDraw(const UI::UIStyle& style) {
     }
 
     GPUProfiler& prof = *m_impl->profiler;
-    const GPUFrame* last = prof.LastFrame();
+    const GPUFrame* last = prof.GetLastFrame();
 
     float rowY = 30.f;
 
@@ -70,8 +70,8 @@ void GPUProfilerPanel::OnDraw(const UI::UIStyle& style) {
 
     // ── Peak / average ───────────────────────────────────────────────────────
     {
-        double avg  = prof.AverageFrameTime();
-        double peak = prof.PeakFrameTime();
+        double avg  = prof.AverageFrameTimeMs();
+        double peak = prof.PeakFrameTimeMs();
         std::ostringstream ss;
         ss << "Avg: " << avg << " ms   Peak: " << peak << " ms";
         UI::Label statsLbl(ss.str());
@@ -94,7 +94,7 @@ void GPUProfilerPanel::OnDraw(const UI::UIStyle& style) {
             std::ostringstream row;
             row.width(26);
             row << std::left << (indent + z.label);
-            row << z.gpuTimeMs;
+            row << z.durationMs;
 
             UI::Label zoneLbl(row.str());
             zoneLbl.SetBounds({0, rowY, 500, 18});
@@ -107,7 +107,7 @@ void GPUProfilerPanel::OnDraw(const UI::UIStyle& style) {
 
     // ── ASCII bar chart — last N frame times ─────────────────────────────────
     {
-        auto history = prof.FrameHistory(Impl::kBarWidth);
+        auto history = prof.GetFrameHistory(Impl::kBarWidth);
         if (!history.empty()) {
             UI::Label barTitle("Frame history:");
             barTitle.SetBounds({0, rowY, 300, 20});

@@ -49,9 +49,25 @@ target_compile_features(EditorLib PUBLIC cxx_std_20)
 target_link_libraries(EditorLib PUBLIC UILib)
 
 # AtlasEditor executable
+# Links every subsystem library so the editor has full access to all engine,
+# runtime, AI, IDE, tools and builder features.
 add_executable(AtlasEditor main.cpp)
 target_include_directories(AtlasEditor PRIVATE ${CMAKE_SOURCE_DIR})
 target_compile_features(AtlasEditor PRIVATE cxx_std_20)
-target_link_libraries(AtlasEditor PRIVATE EditorLib AtlasEngine CoreLib RuntimeLib)
+target_link_libraries(AtlasEditor PRIVATE
+    EditorLib
+    AtlasEngine
+    CoreLib
+    VersionLib
+    RuntimeLib
+    BuilderLib
+    PCGLib
+    IDELib
+    ToolsLib
+    ToolsGUI
+    AILib
+    AgentsLib
+    TrainingDataLib
+)
 
 message(STATUS "  EditorLib configured with ${CMAKE_CURRENT_SOURCE_DIR}")
