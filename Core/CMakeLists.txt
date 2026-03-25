@@ -46,6 +46,8 @@ add_library(CoreLib STATIC
     Compression/DataCompressor/DataCompressor.cpp
     # Phase 32 — thread-safe LRU cache with eviction callbacks (header-only, compiled stub)
     Cache/LRUCache/LRUCache.cpp
+    # Phase 33 — file-change watcher with polling and tag-based callbacks
+    HotReload/HotReloadManager/HotReloadManager.cpp
 )
 
 target_compile_features(CoreLib PUBLIC cxx_std_20)

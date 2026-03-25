@@ -32,6 +32,8 @@ set(IDE_SOURCES
     Search/CodeSearchEngine/CodeSearchEngine.cpp
     # Phase 32 — code refactoring panel (rename, extract, move)
     Refactor/RefactorPanel/RefactorPanel.cpp
+    # Phase 33 — console log filter with regex/text support
+    Console/ConsoleFilter/ConsoleFilter.cpp
 )
 
 add_library(IDELib STATIC ${IDE_SOURCES})
