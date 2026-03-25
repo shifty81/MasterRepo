@@ -45,6 +45,12 @@ Logs/Build/*
 Logs/Agent/*
 Logs/AI/*
 Logs/Server/*
+Logs/Backup/*
+!Logs/README.md
+!Logs/Build/.gitkeep
+!Logs/Agent/.gitkeep
+!Logs/AI/.gitkeep
+!Logs/Server/.gitkeep
 
 # Workspace state (local-only)
 WorkspaceState/*.json
