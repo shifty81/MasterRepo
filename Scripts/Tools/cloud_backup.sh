@@ -170,7 +170,7 @@ DEFAULT_EXCLUDES=(
     "*.o"
     "*.a"
     "*.so"
-    "*.dylib"
+    "*.pdb"
     "*.dll"
     "CMakeFiles/"
     "CMakeCache.txt"
