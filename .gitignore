@@ -58,6 +58,7 @@ WorkspaceState/*.json
 # Temp / cache
 Experiments/Temp/
 Cache/
+!Core/Cache/
 *.tmp
 
 # CMake build artifacts
