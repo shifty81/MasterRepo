@@ -50,20 +50,35 @@ _WD_SENTINEL=""     # Path to the sentinel file used to signal the loop to stop
 _WD_BUILD_PID=""    # PID of the cmake/MSBuild process being watched
 
 # ── Detect GNU coreutils timeout (once, at source time) ───────────────────────
-# Windows has a TIMEOUT.EXE that ignores the COMMAND argument and exits 0.
-# GNU coreutils timeout exits 124 when the timer fires — use that to tell them
-# apart.  We redirect stdin from /dev/null so TIMEOUT.EXE does not block
-# waiting for a keypress when stdin is not a terminal.
+# Windows ships TIMEOUT.EXE in System32 which opens the real console device
+# (CONIN$) for keyboard input — stdin redirection from /dev/null does NOT
+# prevent it from blocking.  The safe strategy is:
+#   1. Check /usr/bin/timeout first: that path belongs to GNU coreutils in
+#      MSYS2 and Git for Windows and is never the Windows built-in.
+#   2. If not found there, check whether 'timeout' in PATH resolves to a
+#      Windows path (System32 / Windows); if so, skip the probe entirely.
+#   3. Only run the 0.1-second probe when the resolved path looks safe.
 #
 # IMPORTANT: this file is sourced by scripts that run with 'set -e'.  We MUST
 # capture the timeout exit code via '|| _to_ec=$?' so that the expected
 # non-zero exit (124) does not abort the calling script through set -e.
 _WD_TIMEOUT_CMD=""
-if command -v timeout &>/dev/null; then
-    _to_ec=0
-    timeout 0.1 sleep 1 </dev/null 2>/dev/null || _to_ec=$?
-    [[ "${_to_ec}" -eq 124 ]] && _WD_TIMEOUT_CMD="timeout"
-    unset _to_ec
+if [[ -x "/usr/bin/timeout" ]]; then
+    _WD_TIMEOUT_CMD="/usr/bin/timeout"
+elif command -v timeout &>/dev/null; then
+    _to_path="$(command -v timeout 2>/dev/null || true)"
+    case "${_to_path}" in
+        */System32/*|*/system32/*|*/Windows/*|*/windows/*)
+            # Windows TIMEOUT.EXE — do not probe; leave _WD_TIMEOUT_CMD empty.
+            ;;
+        *)
+            _to_ec=0
+            timeout 0.1 sleep 1 </dev/null 2>/dev/null || _to_ec=$?
+            [[ "${_to_ec}" -eq 124 ]] && _WD_TIMEOUT_CMD="${_to_path}"
+            unset _to_ec
+            ;;
+    esac
+    unset _to_path
 fi
 
 # ── _wd_safe_run: run a diagnostic command with an optional time limit ─────────

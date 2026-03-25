@@ -221,8 +221,14 @@ source "${SCRIPT_DIR}/detect_compiler.sh"
 if [[ "${CXX_FOUND}" == "true" ]]; then
     info "  c++ compiler: ${CXX_NAME}"
 else
-    error "  No C++ compiler found — see instructions above"
-    ENV_OK=false
+    # detect_compiler.sh could not locate a compiler in PATH (most commonly
+    # because vswhere.exe requires GNU coreutils 'timeout' which is not yet
+    # installed, or MSVC is not on PATH).  CMake has its own detection logic
+    # and will find MSVC/MinGW at configure time.  Downgrade to a warning so
+    # the pipeline can proceed; a real missing compiler will fail at cmake.
+    warn "  No C++ compiler found by detect_compiler.sh — CMake will attempt its own detection."
+    warn "  If the build fails, run from a VS Developer Command Prompt or install"
+    warn "  GNU coreutils (e.g. MSYS2: pacman -S coreutils) and retry."
 fi
 check_tool git required
 check_tool cppcheck optional

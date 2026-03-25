@@ -38,6 +38,35 @@ _first_line_of() {
     printf '%s' "${_s}"
 }
 
+# ── Early GNU timeout detection ───────────────────────────────────────────────
+# Done once here at the TOP so it can guard _try_cxx (Steps 1–2) as well as
+# the Windows-specific vswhere / vcvarsall calls (Step 3).
+#
+# Windows ships TIMEOUT.EXE in System32 which opens the real console device
+# (CONIN$) for keyboard input — stdin redirection from /dev/null does NOT
+# prevent it from blocking.  The safe strategy:
+#   1. Prefer /usr/bin/timeout (GNU coreutils in MSYS2 / Git for Windows).
+#   2. Skip any timeout that resolves to a Windows System32/Windows path.
+#   3. Only run the 0.1-second probe when the path looks safe.
+_DC_TIMEOUT_CMD=""
+if [[ -x "/usr/bin/timeout" ]]; then
+    _DC_TIMEOUT_CMD="/usr/bin/timeout"
+elif command -v timeout &>/dev/null; then
+    _dc_to_path="$(command -v timeout 2>/dev/null || true)"
+    case "${_dc_to_path}" in
+        */System32/*|*/system32/*|*/Windows/*|*/windows/*)
+            # Windows TIMEOUT.EXE — skip; leave _DC_TIMEOUT_CMD empty.
+            ;;
+        *)
+            _dc_to_ec=0
+            timeout 0.1 sleep 1 </dev/null 2>/dev/null || _dc_to_ec=$?
+            [[ "${_dc_to_ec}" -eq 124 ]] && _DC_TIMEOUT_CMD="${_dc_to_path}"
+            unset _dc_to_ec
+            ;;
+    esac
+    unset _dc_to_path
+fi
+
 # ── Helper: try a single candidate ───────────────────────────────────────────
 _try_cxx() {
     local cmd="$1"
@@ -47,7 +76,14 @@ _try_cxx() {
         # On Windows, SIGPIPE is not reliably delivered to native processes,
         # so the subprocess can hang indefinitely on a broken pipe.
         # Use _first_line_of (bash parameter expansion) instead.
-        _out="$("${cmd}" --version 2>&1 || true)"
+        # Wrap with a timeout (if available) so a hung compiler wrapper
+        # does not block the entire build script.
+        if [[ -n "${_DC_TIMEOUT_CMD}" ]]; then
+            # shellcheck disable=SC2086  # intentional word-splitting
+            _out="$(${_DC_TIMEOUT_CMD} 10 "${cmd}" --version 2>&1 || true)"
+        else
+            _out="$("${cmd}" --version 2>&1 || true)"
+        fi
         ver="$(_first_line_of "${_out}")"
         [[ -z "${ver}" ]] && ver="(version unknown)"
         CXX_FOUND=true
@@ -75,7 +111,12 @@ _try_cl() {
 
 # ── Step 1: honour $CXX if already set ───────────────────────────────────────
 if [[ -n "${CXX:-}" ]] && command -v "${CXX}" &>/dev/null; then
-    _cxx1_out="$("${CXX}" --version 2>&1 || true)"
+    if [[ -n "${_DC_TIMEOUT_CMD}" ]]; then
+        # shellcheck disable=SC2086  # intentional word-splitting
+        _cxx1_out="$(${_DC_TIMEOUT_CMD} 10 "${CXX}" --version 2>&1 || true)"
+    else
+        _cxx1_out="$("${CXX}" --version 2>&1 || true)"
+    fi
     ver="$(_first_line_of "${_cxx1_out}")"
     CXX_FOUND=true
     CXX_NAME="${CXX}: ${ver}"
@@ -97,38 +138,24 @@ fi
 # (WINDIR is set in Git Bash / MSYS2).
 if [[ "${CXX_FOUND}" == "false" && -n "${WINDIR:-}" ]]; then
 
-    # Detect GNU coreutils timeout BEFORE calling any external Windows tools.
-    # Both vswhere.exe and vcvarsall.bat can hang indefinitely (slow VS install,
-    # license check, network drive).  Windows' built-in TIMEOUT.EXE ignores the
-    # COMMAND argument and exits 0; GNU coreutils timeout exits 124 when the
-    # timer fires — use that as a reliable discriminator.
-    # Redirect stdin from /dev/null so TIMEOUT.EXE does not block waiting for
-    # a keypress when stdin is not a terminal.
+    # _vcvars_timeout re-uses the early _DC_TIMEOUT_CMD detection above with a
+    # longer duration (60 s) appropriate for vswhere and vcvarsall.bat.
     _vcvars_timeout=""
-    if command -v timeout &>/dev/null; then
-        _to_ec=0
-        timeout 0.1 sleep 1 </dev/null 2>/dev/null || _to_ec=$?
-        [[ "${_to_ec}" -eq 124 ]] && _vcvars_timeout="timeout 60"
-        unset _to_ec
-    fi
+    [[ -n "${_DC_TIMEOUT_CMD}" ]] && _vcvars_timeout="${_DC_TIMEOUT_CMD} 60"
 
     # ${PROGRAMFILES(X86)} contains parentheses, which are not valid in bash
-    # variable names.  Read the value via cmd.exe and fall back to the
-    # well-known default path when cmd.exe is unavailable or times out.
-    # Capture ALL output first; do NOT pipe to 'tr' or any other process.
-    # On Windows, SIGPIPE is not reliably delivered to native processes, so a
-    # pipe from cmd.exe can hang indefinitely.  Strip CR/LF with bash built-ins.
-    # Guard with timeout (if available) to prevent hang in corrupted or
-    # enterprise environments.
+    # variable names.  Read the value via cmd.exe when a safe timeout is
+    # available.  Without a timeout, fall straight to the well-known default
+    # path — cmd.exe on some Windows configurations opens CONIN$ and can hang
+    # even when stdin is redirected.
+    # Capture ALL output first; strip CR/LF with bash built-ins (no pipe).
+    _pfiles_x86="${PROGRAMFILES:-C:/Program Files} (x86)"
     if [[ -n "${_vcvars_timeout}" ]]; then
         # shellcheck disable=SC2086  # intentional word-splitting
         _pfiles_x86_raw="$(${_vcvars_timeout} cmd.exe /c "echo %PROGRAMFILES(X86)%" 2>/dev/null || true)"
-    else
-        _pfiles_x86_raw="$(cmd.exe /c "echo %PROGRAMFILES(X86)%" 2>/dev/null || true)"
-    fi
-    _pfiles_x86="$(_first_line_of "${_pfiles_x86_raw}")"
-    if [[ -z "${_pfiles_x86}" || "${_pfiles_x86}" == "%PROGRAMFILES(X86)%" ]]; then
-        _pfiles_x86="${PROGRAMFILES:-C:/Program Files} (x86)"
+        _pf="$(_first_line_of "${_pfiles_x86_raw}")"
+        [[ -n "${_pf}" && "${_pf}" != "%PROGRAMFILES(X86)%" ]] && _pfiles_x86="${_pf}"
+        unset _pfiles_x86_raw _pf
     fi
 
     # Locate vswhere.exe — it ships with VS 2017+ and Build Tools
