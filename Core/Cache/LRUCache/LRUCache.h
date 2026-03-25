@@ -28,6 +28,7 @@
  *   - No heap allocation per entry — all nodes live in a fixed-size pool array.
  */
 
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
