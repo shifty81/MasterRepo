@@ -19,6 +19,8 @@ set(EDITOR_SOURCES
     UI/EditorLayout.cpp
     Overlay/OverlaySystem.cpp
     BuilderEditor/BuilderEditor.cpp
+    # Phase 37.11 — ghost-part snap preview for build-mode EditorRenderer viewport
+    BuilderEditor/GhostPartPreview.cpp
     MaterialEditor/MaterialEditor.cpp
     PCGEditor/PCGEditor.cpp
     Panels/Profiler/ProfilerPanel.cpp

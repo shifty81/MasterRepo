@@ -61,6 +61,8 @@ set(PCG_SOURCES
     Advanced/PCGAdvanced.cpp
     # Noise — fractal Brownian motion (fBm), turbulence, ridged-multi noise generators
     Noise/FractalNoise/FractalNoise.cpp
+    # Phase 37.09 — procedural narrative engine: dynamic dialogue, events, story arcs
+    Narrative/NarrativeEngine.cpp
 )
 
 add_library(PCGLib STATIC ${PCG_SOURCES})

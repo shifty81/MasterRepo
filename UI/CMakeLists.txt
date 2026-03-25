@@ -8,6 +8,8 @@ add_library(UILib STATIC
     Widgets/Widget.cpp
     Themes/Theme.cpp
     Themes/UIStyle.cpp
+    # Phase 37.10 — full UI theme manager with hot-reload, transitions, and game presets
+    Themes/ThemeManager.cpp
     Layouts/Layout.cpp
     Layouts/UILayoutSolver.cpp
     Animation/UIAnimation.cpp

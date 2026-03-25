@@ -26,8 +26,8 @@
 | AI Agent System (Phase 5) | 12/12 | 0 | 12 |
 | Builder–NovaForge Integration (Phase 36) | 9/9 | 0 | 9 |
 | Audit: Undocumented Subsystems (Phase 35) | 37/37 | 0 | 37 |
-| Suggested Next Features (Phase 37) | 0/12 | 12 | 12 |
-| **TOTAL** | **189/201** | **12** | **201** |
+| Suggested Next Features (Phase 37) | 12/12 | 0 | 12 |
+| **TOTAL** | **201/201** | **0** | **201** |
 
 ---
 
@@ -871,18 +871,18 @@ All three paths converge for the final product.
 
 | # | Task | Priority | Description | Suggested Output |
 |---|------|----------|-------------|-----------------|
-| [ ] 37.01 | Multiplayer sync | High | Client–server ECS delta sync, lag compensation, rollback netcode | `Engine/Net/` + `Runtime/StateSync/` |
-| [ ] 37.02 | Economy system | High | Dynamic market prices, trade routes, scarcity, faction supply chains | `Runtime/Economy/MarketSystem.h` |
-| [ ] 37.03 | Faction & reputation | High | Allegiances, diplomatic states, AI faction behaviour | `Runtime/Factions/FactionSystem.h` |
-| [ ] 37.04 | Ship-to-ship combat | High | Targeting, weapon arcs, shield facings, missile guidance | `Runtime/Combat/CombatSystem.h` |
-| [ ] 37.05 | Player progression | Medium | XP, tech unlocks, talent points feeding `SkillTree` | `Runtime/Gameplay/ProgressionSystem.h` |
-| [ ] 37.06 | Modding / Lua hooks | Medium | `LuaBinding` hooks for game events, items, PCG rules, AI triggers | `Core/Scripting/ModLoader.h` |
-| [ ] 37.07 | Environmental hazards | Medium | Radiation zones, asteroid fields, gravity wells, nebula effects | `Runtime/Hazards/HazardSystem.h` |
-| [ ] 37.08 | AI fleet intelligence | Medium | Formation flying, escort/intercept, patrol routes for NPC fleets | `Runtime/AI/FleetController.h` |
-| [ ] 37.09 | Procedural narrative | Medium | Dynamic dialogue driven by player actions, reputation, and quests | `PCG/Narrative/NarrativeEngine.h` |
-| [ ] 37.10 | Full UI theme system | Low | Apply `UIStyle` live; ship-HUD vs station-HUD skins | `UI/Themes/ThemeManager.h` |
-| [ ] 37.11 | Build-mode preview | Low | Ghost-part snap preview in EditorRenderer viewport | `Editor/BuilderEditor/` extension |
-| [ ] 37.12 | Integration test suite | Low | CTest target: core game loop, builder, PCG, save/load | `Tests/Integration/` |
+| [x] 37.01 | Multiplayer sync | High | Client–server ECS delta sync, lag compensation, rollback netcode | `Engine/Net/` + `Runtime/StateSync/` |
+| [x] 37.02 | Economy system | High | Dynamic market prices, trade routes, scarcity, faction supply chains | `Runtime/Economy/MarketSystem.h` |
+| [x] 37.03 | Faction & reputation | High | Allegiances, diplomatic states, AI faction behaviour | `Runtime/Factions/FactionSystem.h` |
+| [x] 37.04 | Ship-to-ship combat | High | Targeting, weapon arcs, shield facings, missile guidance | `Runtime/Combat/CombatSystem.h` |
+| [x] 37.05 | Player progression | Medium | XP, tech unlocks, talent points feeding `SkillTree` | `Runtime/Gameplay/ProgressionSystem.h` |
+| [x] 37.06 | Modding / Lua hooks | Medium | `LuaBinding` hooks for game events, items, PCG rules, AI triggers | `Core/Scripting/ModLoader.h` |
+| [x] 37.07 | Environmental hazards | Medium | Radiation zones, asteroid fields, gravity wells, nebula effects | `Runtime/Hazards/HazardSystem.h` |
+| [x] 37.08 | AI fleet intelligence | Medium | Formation flying, escort/intercept, patrol routes for NPC fleets | `Runtime/AI/FleetController.h` |
+| [x] 37.09 | Procedural narrative | Medium | Dynamic dialogue driven by player actions, reputation, and quests | `PCG/Narrative/NarrativeEngine.h` |
+| [x] 37.10 | Full UI theme system | Low | Apply `UIStyle` live; ship-HUD vs station-HUD skins | `UI/Themes/ThemeManager.h` |
+| [x] 37.11 | Build-mode preview | Low | Ghost-part snap preview in EditorRenderer viewport | `Editor/BuilderEditor/` extension |
+| [x] 37.12 | Integration test suite | Low | CTest target: core game loop, builder, PCG, save/load | `Tests/Integration/` |
 
 ---
 

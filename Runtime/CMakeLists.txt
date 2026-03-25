@@ -55,6 +55,18 @@ add_library(RuntimeLib STATIC
     Damage/DamageSystem/DamageSystem.cpp
     # Phase 36 — full builder-NovaForge integration (ships, stations, interiors, damage, crafting gate)
     BuilderRuntime/NovaForgeBuilderIntegration.cpp
+    # Phase 37.02 — dynamic economy: markets, prices, trade routes, supply chains
+    Economy/MarketSystem.cpp
+    # Phase 37.03 — faction allegiances, diplomacy, and player reputation
+    Factions/FactionSystem.cpp
+    # Phase 37.04 — ship-to-ship combat: targeting, arcs, shields, missiles
+    Combat/CombatSystem.cpp
+    # Phase 37.05 — player progression: XP, levels, tech tree, talent points
+    Gameplay/ProgressionSystem.cpp
+    # Phase 37.07 — environmental hazards: radiation, asteroids, gravity wells, nebulae
+    Hazards/HazardSystem.cpp
+    # Phase 37.08 — AI fleet intelligence: formations, patrol, escort, intercept
+    AI/FleetController.cpp
 )
 
 target_include_directories(RuntimeLib PUBLIC ${CMAKE_SOURCE_DIR})
