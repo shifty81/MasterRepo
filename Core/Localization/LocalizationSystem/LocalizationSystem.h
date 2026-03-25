@@ -51,7 +51,7 @@ public:
     std::string T(const std::string& key) const;
 
     // Translate with printf-style format arguments.
-    std::string Tf(const std::string& key, ...) const;
+    std::string Tf(std::string key, ...) const;
 
     // Registered locale ids.
     std::vector<LocaleInfo> AvailableLocales() const;

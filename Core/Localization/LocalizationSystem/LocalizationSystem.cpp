@@ -98,7 +98,7 @@ std::string LocalizationSystem::T(const std::string& key) const {
     return key;
 }
 
-std::string LocalizationSystem::Tf(const std::string& key, ...) const {
+std::string LocalizationSystem::Tf(std::string key, ...) const {
     std::string fmt = T(key);
     va_list args;
     va_start(args, key);

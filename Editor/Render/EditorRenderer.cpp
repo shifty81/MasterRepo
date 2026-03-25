@@ -7,6 +7,10 @@
 #include "IDE/CodeEditor/CodeEditor.h"
 #include "IDE/AIChat/AIChat.h"
 #include "Engine/Core/Logger.h"
+#ifdef _WIN32
+#  define WIN32_LEAN_AND_MEAN
+#  include <windows.h>   // must precede GL/gl.h on Windows (defines WINGDIAPI/APIENTRY)
+#endif
 #include <GL/gl.h>
 #include <cmath>
 #include <cstring>

@@ -70,29 +70,4 @@ struct Theme {
     void ApplyTo(WidgetStyle& style, WidgetType type) const;
 };
 
-// ──────────────────────────────────────────────────────────────
-// ThemeManager — non-singleton; pass by reference
-// ──────────────────────────────────────────────────────────────
-
-class ThemeManager {
-public:
-    ThemeManager();
-
-    void RegisterTheme(Theme theme);
-    bool SetActiveTheme(const std::string& name);
-
-    const Theme& GetActiveTheme() const;
-    const Theme* GetTheme(const std::string& name) const;
-
-    std::vector<std::string> ThemeNames() const;
-
-    // Built-in factory themes
-    static Theme MakeDarkTheme();
-    static Theme MakeLightTheme();
-
-private:
-    std::unordered_map<std::string, Theme> m_themes;
-    std::string                            m_activeName;
-};
-
 } // namespace UI
