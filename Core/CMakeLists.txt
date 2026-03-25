@@ -48,6 +48,8 @@ add_library(CoreLib STATIC
     Cache/LRUCache/LRUCache.cpp
     # Phase 33 — file-change watcher with polling and tag-based callbacks
     HotReload/HotReloadManager/HotReloadManager.cpp
+    # Phase 34 — multi-language string lookup with locale switching
+    Localization/LocalizationSystem/LocalizationSystem.cpp
 )
 
 target_compile_features(CoreLib PUBLIC cxx_std_20)

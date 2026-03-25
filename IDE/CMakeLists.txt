@@ -34,6 +34,8 @@ set(IDE_SOURCES
     Refactor/RefactorPanel/RefactorPanel.cpp
     # Phase 33 — console log filter with regex/text support
     Console/ConsoleFilter/ConsoleFilter.cpp
+    # Phase 34 — file-path navigation breadcrumb bar
+    Breadcrumb/BreadcrumbBar/BreadcrumbBar.cpp
 )
 
 add_library(IDELib STATIC ${IDE_SOURCES})

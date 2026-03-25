@@ -98,6 +98,8 @@ add_library(AtlasEngine STATIC
     Animation/AnimBlendTree/AnimBlendTree.cpp
     # Phase 33 — per-entity tick scheduling with priority lanes and budget control
     Sim/EntityScheduler/EntityScheduler.cpp
+    # Phase 34 — ray-AABB/sphere/plane/triangle intersection and scene query
+    Raycast/RaycastSystem/RaycastSystem.cpp
 )
 
 target_include_directories(AtlasEngine PUBLIC ${CMAKE_SOURCE_DIR})

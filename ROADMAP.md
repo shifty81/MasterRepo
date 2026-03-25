@@ -819,7 +819,7 @@ These rules are **locked in** across all phases (from implement2.md):
 
 ---
 
-## Appendix C — Phases 18–32 (Completed)
+## Appendix C — Phases 18–34 (Completed)
 
 <details>
 <summary>Click to expand full phase history</summary>
@@ -841,5 +841,7 @@ These rules are **locked in** across all phases (from implement2.md):
 | 30 | AssetStreamer, DecalSystem, QuestGraphGen, ReplayRecorder, LSPDiagnostics, BinarySerializer |
 | 31 | CraftingSystem, LightManager, TextureGenerator, GPUProfiler, CodeSearchEngine, DataCompressor + 13 NFE ports |
 | 32 | AudioMixer, AnimBlendTree, StructureGenerator, TextureAtlasPacker, RefactorPanel, LRUCache |
+| 33 | AssetBrowser (`Tools/AssetTools/AssetBrowser`), ConsoleFilter (`IDE/Console/ConsoleFilter`), HotReloadManager (`Core/HotReload/HotReloadManager`), ToolsGUI layer (`Tools/GUI`: IToolPanel + ToolsApp + 8 panels) |
+| 34 | LocalizationSystem (`Core/Localization/LocalizationSystem`), RaycastSystem (`Engine/Raycast/RaycastSystem`), BreadcrumbBar (`IDE/Breadcrumb/BreadcrumbBar`), ChangeTracker (`Tools/ChangeTracker/ChangeTracker`), StreamingResponse (`AI/StreamingResponse`) |
 
 </details>

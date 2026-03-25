@@ -38,6 +38,8 @@ add_library(AILib STATIC
     Arbiter/Arbiter.cpp
     # AI-LV-01: Ollama HTTP client for local LLM inference
     OllamaClient/OllamaClient.cpp
+    # Phase 34 — chunked/streaming AI response handler
+    StreamingResponse/StreamingResponse.cpp
 )
 target_include_directories(AILib PUBLIC ${CMAKE_SOURCE_DIR})
 target_compile_features(AILib PUBLIC cxx_std_20)

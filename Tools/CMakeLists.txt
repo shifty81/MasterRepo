@@ -44,6 +44,8 @@ set(TOOLS_SOURCES
     Packing/TextureAtlasPacker/TextureAtlasPacker.cpp
     # Phase 33 — asset browser
     AssetTools/AssetBrowser/AssetBrowser.cpp
+    # Phase 34 — directory-level file-change tracker with diff summaries
+    ChangeTracker/ChangeTracker/ChangeTracker.cpp
 )
 
 add_library(ToolsLib STATIC ${TOOLS_SOURCES})
