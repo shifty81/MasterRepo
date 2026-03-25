@@ -86,6 +86,11 @@ add_subdirectory(TrainingData)
 # Phase 10: Game projects
 add_subdirectory(Projects/NovaForge)
 
+# Phase 37.12: Integration tests (CTest target)
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(Tests/Integration)
+endif()
 # ==============================================================================
 # Status
 # ==============================================================================

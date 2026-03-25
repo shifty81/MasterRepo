@@ -10,6 +10,8 @@
  *   NF-07  AIMinerStateMachine ticking each frame
  *   NF-08  SaveSystem F5 quicksave / F9 quickload
  *   NF-09  AudioEngine background music + SFX
+ *   NF-BLD NovaForgeBuilderIntegration — full in-game build mode for ships,
+ *           stations, and all player-assembled structures (Phase 36)
  */
 #include "Engine/Core/Engine.h"
 #include "Engine/Audio/AudioEngine.h"
@@ -20,6 +22,7 @@
 #include "Runtime/Inventory/Inventory.h"
 #include "Runtime/Crafting/CraftingSystem/CraftingSystem.h"
 #include "Runtime/BuilderRuntime/BuilderRuntime.h"
+#include "Runtime/BuilderRuntime/NovaForgeBuilderIntegration.h"
 #include "Runtime/SaveLoad/SaveLoad.h"
 #include "Runtime/Sim/AIMinerStateMachine/AIMinerStateMachine.h"
 #include "PCG/Structures/StructureGenerator/StructureGenerator.h"
@@ -185,12 +188,133 @@ int main() {
     Engine::Core::Logger::Info("NF-04: CraftingSystem ready — "
         + std::to_string(crafting.Stats().totalRecipes) + " recipes loaded");
 
-    // ── NF-05: Builder runtime ───────────────────────────────────────────
-    // BuilderRuntime requires Assembly + PartLibrary; create stubs for wiring
-    Runtime::BuilderRuntime builder;
-    // builder.Init(&assembly, &partLib);  — full wiring when Assembly is loaded
+    // ── NF-05 / NF-BLD: Builder integration (ships, stations, structures) ──
+    //
+    // NovaForgeBuilderIntegration wires:
+    //   Builder::PartLibrary       — catalogue loaded from Parts/*.json
+    //   Builder::Assembly          — placed parts + snap/weld links
+    //   Builder::InteriorNode      — interior module slots
+    //   Builder::SnapRules         — compatibility validation
+    //   Builder::BuilderDamageSystem — per-part HP tracking
+    //   Runtime::BuilderRuntime    — in-game place/remove/weld loop
+    Runtime::NovaForgeBuilderIntegration builderIntegration;
+
+    // Load part catalogue from project Parts directory
+    size_t partsLoaded = builderIntegration.LoadPartLibrary("Projects/NovaForge/Parts");
+    Engine::Core::Logger::Info("NF-BLD: Loaded " + std::to_string(partsLoaded)
+        + " part definitions");
+
+    // Load ship templates — creates a pre-populated BuildSession for each
+    size_t shipsLoaded = builderIntegration.LoadShipTemplates("Projects/NovaForge/Ships");
+    Engine::Core::Logger::Info("NF-BLD: Loaded " + std::to_string(shipsLoaded)
+        + " ship templates as build sessions");
+
+    // Open a blank station build session for the starting station
+    uint32_t stationSessionId = builderIntegration.OpenBuildSession(
+        Runtime::BuildTargetType::Station, "Starter Station");
+    Engine::Core::Logger::Info("NF-BLD: Station build session #"
+        + std::to_string(stationSessionId) + " created");
+
+    // Set up snap compatibilities for all NovaForge part types
+    builderIntegration.RegisterSnapCompatibility("hull",     "deck");
+    builderIntegration.RegisterSnapCompatibility("engine",   "thruster");
+    builderIntegration.RegisterSnapCompatibility("weapon",   "hardpoint");
+    builderIntegration.RegisterSnapCompatibility("interior", "interior");
+
+    // Crafting gate — only allow placing parts if the player has materials
+    // TODO: full implementation should check exact recipe materials per part type
+    builderIntegration.SetCraftingGate([&](uint32_t partDefId, uint32_t qty) -> bool {
+        // Simplified check: require any iron ore in inventory.
+        // A full implementation would query the part's recipe ingredient list.
+        return inventory.FindItem("iron_ore") != nullptr;
+    });
+    builderIntegration.SetConsumePart([&](uint32_t /*partDefId*/, uint32_t /*qty*/) {
+        // Consume one iron ore per part placed (simplified material cost).
+        inventory.RemoveItem("iron_ore", 1);
+    });
+
+    // Wire builder event callbacks to the logger
+    Runtime::BuilderIntegrationCallbacks builderCallbacks;
+    builderCallbacks.onPartPlaced = [](uint32_t sess, uint32_t inst) {
+        Engine::Core::Logger::Info("Builder: part placed inst=" + std::to_string(inst)
+            + " session=" + std::to_string(sess));
+    };
+    builderCallbacks.onPartRemoved = [](uint32_t sess, uint32_t inst) {
+        Engine::Core::Logger::Info("Builder: part removed inst=" + std::to_string(inst));
+    };
+    builderCallbacks.onWelded = [](uint32_t sess, uint32_t a, uint32_t b) {
+        Engine::Core::Logger::Info("Builder: welded " + std::to_string(a)
+            + " → " + std::to_string(b));
+    };
+    builderCallbacks.onPartDestroyed = [](uint32_t sess,
+                                          const Builder::PartHealthState& s) {
+        Engine::Core::Logger::Warn("Builder: part DESTROYED inst="
+            + std::to_string(s.instanceId));
+    };
+    builderCallbacks.onSessionSaved = [](uint32_t sess) {
+        Engine::Core::Logger::Info("Builder: session " + std::to_string(sess) + " saved");
+    };
+    builderIntegration.SetCallbacks(std::move(builderCallbacks));
+
+    // Add default interior slots to the station build session.
+    // Positions in local station space (metres from centre).
+    // TODO: load slot layout from station template JSON for data-driven configuration.
+    builderIntegration.SetActive(stationSessionId);
+    {
+        constexpr float kBridgeHeight    =  5.0f;
+        constexpr float kPowerOffset     =  5.0f;
+        constexpr float kHabitatOffset   = -5.0f;
+        constexpr float kStorageDepth    = -5.0f;
+
+        // Bridge slot
+        Builder::ModuleSlot bridgeSlot;
+        bridgeSlot.x = 0; bridgeSlot.y = kBridgeHeight; bridgeSlot.z = 0;
+        bridgeSlot.allowedTypes = { Builder::ModuleType::Bridge };
+        bridgeSlot.size = Builder::ModuleSize::M;
+        builderIntegration.AddInteriorSlot(bridgeSlot);
+
+        // Power plant slot
+        Builder::ModuleSlot powerSlot;
+        powerSlot.x = kPowerOffset; powerSlot.y = 0; powerSlot.z = 0;
+        powerSlot.allowedTypes = { Builder::ModuleType::PowerPlant };
+        powerSlot.size = Builder::ModuleSize::M;
+        builderIntegration.AddInteriorSlot(powerSlot);
+
+        // Habitat slot
+        Builder::ModuleSlot habitatSlot;
+        habitatSlot.x = kHabitatOffset; habitatSlot.y = 0; habitatSlot.z = 0;
+        habitatSlot.allowedTypes = { Builder::ModuleType::Habitat,
+                                      Builder::ModuleType::MedBay };
+        habitatSlot.size = Builder::ModuleSize::L;
+        builderIntegration.AddInteriorSlot(habitatSlot);
+
+        // Storage slot
+        Builder::ModuleSlot storageSlot;
+        storageSlot.x = 0; storageSlot.y = kStorageDepth; storageSlot.z = 0;
+        storageSlot.allowedTypes = { Builder::ModuleType::Storage };
+        storageSlot.size = Builder::ModuleSize::L;
+        builderIntegration.AddInteriorSlot(storageSlot);
+
+        // Place a default power plant so the station starts with power
+        Builder::InteriorModule powerMod;
+        powerMod.id   = 1;
+        powerMod.type = Builder::ModuleType::PowerPlant;
+        powerMod.size = Builder::ModuleSize::M;
+        powerMod.tier = 1;
+        powerMod.name = "Basic Power Plant";
+        powerMod.health = powerMod.maxHealth = 500.0f;
+        builderIntegration.PlaceModule(1, powerMod);  // slot 1 = power slot
+    }
+
+    Engine::Core::Logger::Info("NF-BLD: Interior slots configured — "
+        + std::to_string(builderIntegration.InteriorSlotCount()) + " slots, "
+        + std::to_string(builderIntegration.InteriorModuleCount()) + " modules placed");
+
+    // Switch active session back to the first ship for player ship building
+    if (shipsLoaded > 0) builderIntegration.SetActive(1);
+
     bool builderActive = false;
-    Engine::Core::Logger::Info("NF-05: BuilderRuntime ready — F2 to toggle");
+    Engine::Core::Logger::Info("NF-05: Builder ready — F2 toggles build mode");
 
     // ── NF-06: PCG space station ─────────────────────────────────────────
     PCG::StructureGenerator pcgGen;
@@ -251,6 +375,16 @@ int main() {
         data.jsonPayload = ss.str();
         bool ok = saveSystem.QuickSave(data, saveDir);
         Engine::Core::Logger::Info(ok ? "NF-08: QuickSave OK" : "NF-08: QuickSave FAILED");
+
+        // Also save builder sessions
+        for (uint32_t sid : builderIntegration.AllSessionIds()) {
+            Runtime::BuildSession* sess = builderIntegration.GetSession(sid);
+            if (sess && sess->dirty) {
+                std::string bldPath = saveDir + "/build_session_"
+                    + std::to_string(sid) + ".json";
+                builderIntegration.SaveSession(sid, bldPath);
+            }
+        }
     };
 
     auto QuickLoad = [&]() {
@@ -292,9 +426,9 @@ int main() {
         // this frame-callback only reflects the flag set externally.
         // (Demo: the actual toggle is driven by keyboard input registered via glfwSetKeyCallback.)
 
-        // NF-05: builder mode tick
+        // NF-05 / NF-BLD: builder mode tick
         if (builderActive) {
-            builder.Tick(dt);
+            builderIntegration.Tick(dt);
         }
 
         // NF-09: SFX on mining — fire once each time a new integer-second boundary is crossed

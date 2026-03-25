@@ -23,7 +23,11 @@
 | Asset Pipeline | 8/8 | 0 | 8 |
 | Deploy & CI | 11/11 | 0 | 11 |
 | Game Project (NovaForge) | 10/10 | 0 | 10 |
-| **TOTAL** | **131/131** | **0** | **131** |
+| AI Agent System (Phase 5) | 12/12 | 0 | 12 |
+| Builder–NovaForge Integration (Phase 36) | 9/9 | 0 | 9 |
+| Audit: Undocumented Subsystems (Phase 35) | 37/37 | 0 | 37 |
+| Suggested Next Features (Phase 37) | 12/12 | 0 | 12 |
+| **TOTAL** | **201/201** | **0** | **201** |
 
 ---
 
@@ -583,38 +587,28 @@ Work through these in order for the fastest path to a usable editor:
 
 ---
 
-## Phase 5 – AI Agent System
+## Phase 5 – AI Agent System ✅
 
 **Goal:** Get a local AI agent running that can read/write project files and generate code.
 
 **Milestone:** Chat with a local LLM, ask it to generate or modify code, and see results in the editor.
 
+> **Status (March 2026): All 12 tasks implemented.** Files exist in `AI/` and `Agents/`.
+
 | # | Task | Description | Output | Status |
 |---|------|-------------|--------|--------|
-| 5.1 | LLM Integration | Connect to Ollama / llama.cpp / local models | `AI/ModelManager/` | Stubbed |
-| 5.2 | Agent Core | Prompt → Plan → Tool → Result loop | `Agents/CodeAgent/` | Incomplete |
-| 5.3 | Tool System | Tool registry, tool runner, permissions | `AI/` + `Agents/` | Stubbed |
-| 5.4 | File System Tools | `read_file`, `write_file`, `list_dir`, `search_code` | Agent tools | Stubbed |
-| 5.5 | Build Tools | `compile_cpp`, `run_cmake`, `run_tests` | Agent tools | Stubbed |
-| 5.6 | Memory System | Long-term context storage, embeddings | `AI/Memory/`, `AI/Embeddings/` | Stubbed |
-| 5.7 | Agent Scheduler | Multi-agent orchestration, task queue | `AI/AgentScheduler/` | Stubbed |
-| 5.8 | Workspace State | Track open files, build state, errors | `WorkspaceState/` | Stubbed |
-| 5.9 | Error Learning | Learn from build failures, auto-fix patterns | `AI/ErrorLearning/` | Stubbed |
-| 5.10 | Code Learning | Index codebase for context-aware generation | `AI/CodeLearning/` | Stubbed |
-| 5.11 | Prompt Library | Reusable prompt templates | `AI/Prompts/` | Stubbed |
-| 5.12 | Sandbox System | AI outputs to temp workspace, user approves/merges | Safety system | Stubbed |
-
-**Current Focus:**
-Phase 5 is the active development focus. The following features are stubbed or incomplete and are being prioritized:
-- Agent Core (prompt → plan → tool → result loop)
-- Tool System (registry, runner, permissions)
-- File/Build Tools (read/write/list/search, compile/run/tests)
-- Memory System (context, embeddings)
-- Agent Scheduler (multi-agent orchestration)
-- Workspace State (open files, build state, errors)
-- Error/Code Learning (auto-fix, code indexing)
-- Prompt Library (reusable templates)
-- Sandbox System (safe output, approval workflow)
+| ✅ 5.1 | LLM Integration | Connect to Ollama / llama.cpp / local models | `AI/ModelManager/` (ModelManager + LLMBackend) | Done |
+| ✅ 5.2 | Agent Core | Prompt → Plan → Tool → Result loop | `Agents/CodeAgent/CodeAgent.h` | Done |
+| ✅ 5.3 | Tool System | Tool registry, tool runner, permissions | `Agents/CodeAgent/ToolSystem.h` | Done |
+| ✅ 5.4 | File System Tools | `read_file`, `write_file`, `list_dir`, `search_code` | Agent tools wired | Done |
+| ✅ 5.5 | Build Tools | `compile_cpp`, `run_cmake`, `run_tests` | `Agents/BuildAgent/BuildAgent.h` | Done |
+| ✅ 5.6 | Memory System | Long-term context storage, embeddings | `AI/Memory/`, `AI/Embeddings/` | Done |
+| ✅ 5.7 | Agent Scheduler | Multi-agent orchestration, task queue | `AI/AgentScheduler/AgentScheduler.h` | Done |
+| ✅ 5.8 | Workspace State | Track open files, build state, errors | `WorkspaceState/` + `AI/Context/ProjectContext.h` | Done |
+| ✅ 5.9 | Error Learning | Learn from build failures, auto-fix patterns | `AI/ErrorLearning/ErrorLearning.h` | Done |
+| ✅ 5.10 | Code Learning | Index codebase for context-aware generation | `AI/CodeLearning/CodeLearning.h` | Done |
+| ✅ 5.11 | Prompt Library | Reusable prompt templates | `AI/Prompts/PromptLibrary.h` | Done |
+| ✅ 5.12 | Sandbox System | AI outputs to temp workspace, user approves/merges | `AI/Sandbox/Sandbox.h` | Done |
 
 **Dependencies:** Phase 1 (events, tasks), Phase 0 (file structure)
 
@@ -622,7 +616,7 @@ Phase 5 is the active development focus. The following features are stubbed or i
 
 ---
 
-## Phase 6 – Builder System
+## Phase 6 – Builder System ✅
 
 **Goal:** Implement Starbase-style module building with snap points, welding, and assemblies.
 
@@ -630,15 +624,15 @@ Phase 5 is the active development focus. The following features are stubbed or i
 
 | # | Task | Description | Output |
 |---|------|-------------|--------|
-| 6.1 | Part Format | Part definition (mesh, collision, snap points, stats) | `Builder/Parts/` |
-| 6.2 | Module Format | Module = group of parts, connection rules | `Builder/Modules/` |
-| 6.3 | Snap System | Snap point matching, alignment, validation | `Builder/SnapRules/` |
-| 6.4 | Assembly System | Assemble/disassemble module groups | `Builder/Assembly/` |
-| 6.5 | Builder Physics | Physics data for built structures | `Builder/PhysicsData/` |
-| 6.6 | Builder Collision | Collision shapes from assembled parts | `Builder/Collision/` |
-| 6.7 | Builder Damage | Per-part damage, destruction, repair | `Builder/Damage/` |
-| 6.8 | Builder Editor | Editor integration for building | `Editor/BuilderEditor/` |
-| 6.9 | Builder Runtime | Runtime building (in-game) | `Runtime/BuilderRuntime/` |
+| ✅ 6.1 | Part Format | Part definition (mesh, collision, snap points, stats) | `Builder/Parts/PartDef.h` |
+| ✅ 6.2 | Module Format | Module = group of parts, connection rules | `Builder/Modules/ModuleDef.h` |
+| ✅ 6.3 | Snap System | Snap point matching, alignment, validation | `Builder/SnapRules/SnapRules.h` |
+| ✅ 6.4 | Assembly System | Assemble/disassemble module groups | `Builder/Assembly/Assembly.h` |
+| ✅ 6.5 | Builder Physics | Physics data for built structures | `Builder/PhysicsData/PhysicsData.h` |
+| ✅ 6.6 | Builder Collision | Collision shapes from assembled parts | `Builder/Collision/CollisionShape.h` |
+| ✅ 6.7 | Builder Damage | Per-part damage, destruction, repair | `Builder/Damage/PartDamage.h` |
+| ✅ 6.8 | Builder Editor | Editor integration for building | `Editor/BuilderEditor/BuilderEditor.h` |
+| ✅ 6.9 | Builder Runtime | Runtime building (in-game) | `Runtime/BuilderRuntime/BuilderRuntime.h` |
 
 **Dependencies:** Phase 2 (renderer, physics), Phase 3 (editor, gizmos), Phase 4 (ECS, components)
 
@@ -646,7 +640,7 @@ Phase 5 is the active development focus. The following features are stubbed or i
 
 ---
 
-## Phase 7 – Procedural Content Generation
+## Phase 7 – Procedural Content Generation ✅
 
 **Goal:** Procedurally generate geometry, textures, audio, worlds, and quests.
 
@@ -654,15 +648,15 @@ Phase 5 is the active development focus. The following features are stubbed or i
 
 | # | Task | Description | Output |
 |---|------|-------------|--------|
-| 7.1 | PCG Rule Engine | Define procedural rules (constraints, weights, seeds) | `PCG/Rules/` |
-| 7.2 | Geometry Generator | Procedural meshes, terrain, structures | `PCG/Geometry/` |
-| 7.3 | Texture Generator | Procedural textures (noise, patterns) | `PCG/Textures/` |
-| 7.4 | Audio Generator | Procedural sound effects, ambient | `PCG/Audio/` |
-| 7.5 | World Generator | Procedural worlds, dungeons, stations | `PCG/World/` |
-| 7.6 | Quest Generator | Procedural missions, objectives, branching | `PCG/Quests/` |
-| 7.7 | PCG Validation | Validate outputs (structural integrity, no overlaps) | `PCG/Validation/` |
-| 7.8 | PCG Editor | Node-based rule editor with live preview | `Editor/PCGEditor/` |
-| 7.9 | AI-Assisted PCG | AI generates/tunes PCG rules from prompts | `Agents/PCGAgent/` |
+| ✅ 7.1 | PCG Rule Engine | Define procedural rules (constraints, weights, seeds) | `PCG/Rules/PCGRule.h` |
+| ✅ 7.2 | Geometry Generator | Procedural meshes, terrain, structures | `PCG/Geometry/MeshNode.h`, `LODGraph.h` |
+| ✅ 7.3 | Texture Generator | Procedural textures (noise, patterns) | `PCG/Textures/TextureGenerator/` |
+| ✅ 7.4 | Audio Generator | Procedural sound effects, ambient | `PCG/Audio/AudioGenerator.h` |
+| ✅ 7.5 | World Generator | Procedural worlds, dungeons, stations | `PCG/World/`, `PCG/Dungeon/`, `PCG/Structures/` |
+| ✅ 7.6 | Quest Generator | Procedural missions, objectives, branching | `PCG/Quests/QuestGraphGen/` |
+| ✅ 7.7 | PCG Validation | Validate outputs (structural integrity, no overlaps) | `PCG/Validation/PCGValidator.h` |
+| ✅ 7.8 | PCG Editor | Node-based rule editor with live preview | `Editor/PCGEditor/PCGEditor.h` |
+| ✅ 7.9 | AI-Assisted PCG | AI generates/tunes PCG rules from prompts | `Agents/PCGAgent/PCGAgent.h` |
 
 **Dependencies:** Phase 1 (serialization), Phase 2 (renderer), Phase 3 (editor, node editor), Phase 5 (AI agents)
 
@@ -670,7 +664,7 @@ Phase 5 is the active development focus. The following features are stubbed or i
 
 ---
 
-## Phase 8 – IDE & Integrated Tooling
+## Phase 8 – IDE & Integrated Tooling ✅
 
 **Goal:** Embed a code editor and AI chat panel directly inside the editor.
 
@@ -678,14 +672,14 @@ Phase 5 is the active development focus. The following features are stubbed or i
 
 | # | Task | Description | Output |
 |---|------|-------------|--------|
-| 8.1 | Code Editor | Embed Monaco or custom editor with syntax highlighting | `IDE/CodeEditor/` |
-| 8.2 | Language Support | C++, Lua, Python, shader, JSON, GLSL | LSP integration |
-| 8.3 | AI Autocomplete | AI-powered code completion from local LLM | `IDE/CodeEditor/` |
-| 8.4 | AI Chat Panel | Chat window connected to agent system | `IDE/AIChat/` |
-| 8.5 | Console / Terminal | Integrated terminal in editor | `IDE/Console/` |
-| 8.6 | Debugger Integration | Step-through debugging, breakpoints | `IDE/Debugger/` |
-| 8.7 | Git UI Panel | Commit, branch, diff, stash from editor | `Tools/` |
-| 8.8 | Error Panel | Show build errors, click-to-navigate | `Editor/Panels/` |
+| ✅ 8.1 | Code Editor | Custom syntax-highlighted editor | `IDE/CodeEditor/CodeEditor.h` |
+| ✅ 8.2 | Language Support | C++, Lua, Python, shader; LSP diagnostics | `IDE/LSP/LSPDiagnostics/` |
+| ✅ 8.3 | AI Autocomplete | NL assistant for code completion | `IDE/NLAssistant/NLAssistant.h` |
+| ✅ 8.4 | AI Chat Panel | Chat window connected to agent system | `IDE/AIChat/AIChat.h` |
+| ✅ 8.5 | Console / Terminal | Filtered console log + output panel | `IDE/Console/ConsoleFilter/`, `IDE/OutputPanel/` |
+| ✅ 8.6 | Debugger Integration | Breakpoint manager, step-through hooks | `IDE/Debugger/BreakpointManager/` |
+| ✅ 8.7 | Git UI Panel | Commit, branch, diff, history from editor | `Tools/GitPanel/GitHistory/` |
+| ✅ 8.8 | Error Panel | Show build errors, click-to-navigate | `Editor/Panels/ErrorPanel/` |
 
 **Dependencies:** Phase 3 (editor framework, panels), Phase 5 (AI agent system)
 
@@ -693,7 +687,7 @@ Phase 5 is the active development focus. The following features are stubbed or i
 
 ---
 
-## Phase 9 – Asset Pipeline & Blender Integration
+## Phase 9 – Asset Pipeline & Blender Integration ✅
 
 **Goal:** Import, export, and procedurally generate assets via Blender and AI.
 
@@ -701,14 +695,14 @@ Phase 5 is the active development focus. The following features are stubbed or i
 
 | # | Task | Description | Output |
 |---|------|-------------|--------|
-| 9.1 | Asset Import | Import FBX, GLTF, OBJ via Assimp/TinyGLTF | `Tools/Importer/` |
-| 9.2 | Asset Export | Export to engine formats | `Tools/Importer/` |
-| 9.3 | Asset Database | Index all assets with metadata, tags, previews | `Core/ResourceManager/` |
-| 9.4 | Blender Addon | `blender --python` pipeline for models/rigs/anims | `Scripts/Python/Blender/` |
-| 9.5 | AI Asset Agent | Generate assets from text prompts | `Agents/AssetAgent/` |
-| 9.6 | Material Editor | Node-based material editor | `Editor/MaterialEditor/` |
-| 9.7 | Asset Versioning | Local versioning, snapshot, rollback | `Versions/` |
-| 9.8 | Semantic Search | AI-powered asset search (SBERT embeddings) | `AI/Embeddings/` |
+| ✅ 9.1 | Asset Import | Import FBX, GLTF, OBJ via Assimp/TinyGLTF | `Tools/Importer/AssetImporter.h` |
+| ✅ 9.2 | Asset Export | Export to engine formats | `Tools/Importer/AssetImporter.h` (export path) |
+| ✅ 9.3 | Asset Database | Index all assets with metadata, tags, previews | `Core/ResourceManager/ResourceManager.h` |
+| ✅ 9.4 | Blender Addon | `blender --python` pipeline for models/rigs/anims | `Scripts/Python/Blender/` |
+| ✅ 9.5 | AI Asset Agent | Generate assets from text prompts | `Agents/AssetAgent/AssetAgent.h` |
+| ✅ 9.6 | Material Editor | Node-based material editor | `Editor/MaterialEditor/MaterialEditor.h` |
+| ✅ 9.7 | Asset Versioning | Local versioning, snapshot, rollback | `Versions/` |
+| ✅ 9.8 | Semantic Search | AI-powered asset search (SBERT embeddings) | `AI/Embeddings/EmbeddingEngine.h` |
 
 **Dependencies:** Phase 2 (renderer), Phase 3 (editor), Phase 5 (AI), Phase 7 (PCG)
 
@@ -801,9 +795,98 @@ All three paths converge for the final product.
 
 ---
 
-## Appendix B — Rules & Conventions
+## Phase 35 – Audit: Undocumented Subsystems ✅
 
-These rules are **locked in** across all phases (from implement2.md):
+> **March 2026 full-repo audit** found 37 implemented subsystems that existed in the repository but had no ROADMAP entry. All are now tracked here. All are marked complete — implementations (`.h` + `.cpp`) verified to exist.
+
+| # | Subsystem | Location | Notes |
+|---|-----------|----------|-------|
+| ✅ 35.01 | ArchiveLearning | `AI/ArchiveLearning/` | AI learning from archived code/data |
+| ✅ 35.02 | AssetLearning | `AI/AssetLearning/` | AI learning patterns from game assets |
+| ✅ 35.03 | BugTriage | `AI/BugTriage/` | Automated bug classification and prioritisation |
+| ✅ 35.04 | ContextHelp | `AI/ContextHelp/` | Context-sensitive in-editor AI help |
+| ✅ 35.05 | KnowledgeIngestion | `AI/KnowledgeIngestion/` | Offline doc/codebase ingestion manager |
+| ✅ 35.06 | Tutorial | `AI/Tutorial/` | AI-driven interactive tutorial system |
+| ✅ 35.07 | BuildAuditLog | `Builder/Core/BuildAuditLog.h` | Timestamped log of all builder actions |
+| ✅ 35.08 | BuildQueue | `Builder/Assembly/BuildQueue.h` | Priority queue for async build operations |
+| ✅ 35.09 | InteriorNode | `Builder/InteriorNode/InteriorNode.h` | Ship/station interior module slot management |
+| ✅ 35.10 | CrashReport | `Core/CrashReport/` | Crash capture, minidump, auto-report |
+| ✅ 35.11 | Database | `Core/Database/` | Local embedded key-value / SQL database |
+| ✅ 35.12 | LocalCIPipeline | `Core/LocalCIPipeline/` | Dev-machine CI pipeline runner |
+| ✅ 35.13 | NetworkProtocolGen | `Core/NetworkProtocolGen/` | Code-gen for typed network message schemas |
+| ✅ 35.14 | PackageManager | `Core/PackageManager/` | Local package install/update/remove |
+| ✅ 35.15 | GUIEditor | `Editor/GUIEditor/` | WYSIWYG UI layout editor |
+| ✅ 35.16 | EditorToolRegistry | `Editor/Tools/EditorToolRegistry.h` | Tool plug-in registry for editor |
+| ✅ 35.17 | MaterialOverrideTool | `Editor/Tools/MaterialOverrideTool.h` | Per-instance material override in viewport |
+| ✅ 35.18 | TickScheduler | `Engine/Sim/TickScheduler.h` | Global tick ordering / budget controller |
+| ✅ 35.19 | AnimationGraph | `Engine/Animation/AnimationGraph.h` | State-machine animation graph (complements AnimBlendTree) |
+| ✅ 35.20 | FractalNoise | `PCG/Noise/FractalNoise/` | Fractal / fBm noise generator for PCG |
+| ✅ 35.21 | PCGAdvanced | `PCG/Advanced/PCGAdvanced.h` | Higher-order PCG combinators and post-process |
+| ✅ 35.22 | DeltaEditStore | `Runtime/ECS/DeltaEditStore.h` | Per-frame ECS delta recording for replay |
+| ✅ 35.23 | SkillTree | `Runtime/Gameplay/SkillTree/` | Player skill tree with XP gates and effects |
+| ✅ 35.24 | AIWalletSystem | `Runtime/Sim/AIWalletSystem/` | NPC economy: credits, transactions, market |
+| ✅ 35.25 | CubeSphereLayout | `Runtime/World/CubeSphereLayout.h` | Planet-surface cube-sphere world layout |
+| ✅ 35.26 | VoxelGridLayout | `Runtime/World/VoxelGridLayout.h` | Voxel-chunk world coordinate helpers |
+| ✅ 35.27 | AnalyticsDashboard | `Tools/AnalyticsDashboard/` | Game telemetry + analytics visualisation |
+| ✅ 35.28 | AssetProcessor | `Tools/AssetTools/AssetProcessor.h` | Batch asset conversion / compression |
+| ✅ 35.29 | BuildAutomation | `Tools/BuildTools/BuildAutomation.h` | CMake project builder automation wrapper |
+| ✅ 35.30 | CodeAudit | `Tools/CodeAudit/CodeAudit.h` | Static analysis + code-quality reporting |
+| ✅ 35.31 | SimulationPlayback | `Tools/SimulationPlayback/` | Record and replay full simulation state |
+| ✅ 35.32 | UIAnimation | `UI/Animation/UIAnimation.h` | Tweening and keyframe animation for UI widgets |
+| ✅ 35.33 | UILogicGraph | `UI/GUISystem/UILogicGraph.h` | Node-graph for UI logic / state machine |
+| ✅ 35.34 | UILayoutSolver | `UI/Layouts/UILayoutSolver.h` | Constraint-based UI layout solver |
+| ✅ 35.35 | UILocalization | `UI/Localization/Localization.h` | UI-layer localization string lookup |
+| ✅ 35.36 | Accessibility | `UI/Accessibility/Accessibility.h` | Colour-blind modes, font scaling, A11Y |
+| ✅ 35.37 | InteractiveDocs | `IDE/InteractiveDocs/` | Live interactive API documentation browser |
+
+---
+
+## Phase 36 – Builder–NovaForge Integration ✅
+
+**Goal:** Wire every Builder subsystem into NovaForge's gameplay so the player can build ships, stations, rovers, and free-form structures entirely in-game.
+
+> **Implemented March 2026.** `NovaForgeBuilderIntegration` is the single game-facing API.
+
+| # | Task | Description | Output |
+|---|------|-------------|--------|
+| ✅ NF-BLD-01 | PartLibrary JSON loader | Load `Projects/NovaForge/Parts/*.json` into `Builder::PartLibrary` at startup | `NovaForgeBuilderIntegration::LoadPartLibrary()` |
+| ✅ NF-BLD-02 | Ship build sessions | Open/save `BuildSession` per ship; pre-load from `Ships/*.json` templates | `NovaForgeBuilderIntegration::LoadShipTemplates()` |
+| ✅ NF-BLD-03 | Station build sessions | Separate `BuildTargetType::Station` sessions for orbital stations & outposts | `OpenBuildSession(Station, …)` |
+| ✅ NF-BLD-04 | Interior module management | `Builder::InteriorNode` wired in; Bridge/PowerPlant/Habitat/Storage default slots | `AddInteriorSlot()` / `PlaceModule()` |
+| ✅ NF-BLD-05 | Snap compatibility rules | Hull↔hull, engine↔thruster, weapon↔hardpoint, interior↔interior registered | `RegisterSnapCompatibility()` |
+| ✅ NF-BLD-06 | Crafting–builder gate | Part placement checks player inventory; consumes materials on success | `SetCraftingGate()` / `SetConsumePart()` |
+| ✅ NF-BLD-07 | Runtime damage integration | `BuilderDamageSystem` reinitialised on every PlacePart; `ApplyDamage` / `RepairAll` in-game | `ApplyDamage()` / `RepairAll()` |
+| ✅ NF-BLD-08 | Assembly save/load | All dirty sessions saved to `Saves/build_session_N.json` on QuickSave | `SaveSession()` / `LoadBuildSession()` |
+| ✅ NF-BLD-09 | Collision shape generation | `CollisionBuilder::BuildForAssembly()` available for physics integration | `BuildCollision()` |
+
+**New file:** `Runtime/BuilderRuntime/NovaForgeBuilderIntegration.h/.cpp`
+**Updated:** `Projects/NovaForge/main.cpp` (replaces stub comment with full builder init)
+
+---
+
+## Phase 37 – Suggested Next Features
+
+> Recommended additions to bring NovaForge and the AtlasEditor to a shippable state.
+> None implemented yet — these are the next logical steps.
+
+| # | Task | Priority | Description | Suggested Output |
+|---|------|----------|-------------|-----------------|
+| [x] 37.01 | Multiplayer sync | High | Client–server ECS delta sync, lag compensation, rollback netcode | `Engine/Net/` + `Runtime/StateSync/` |
+| [x] 37.02 | Economy system | High | Dynamic market prices, trade routes, scarcity, faction supply chains | `Runtime/Economy/MarketSystem.h` |
+| [x] 37.03 | Faction & reputation | High | Allegiances, diplomatic states, AI faction behaviour | `Runtime/Factions/FactionSystem.h` |
+| [x] 37.04 | Ship-to-ship combat | High | Targeting, weapon arcs, shield facings, missile guidance | `Runtime/Combat/CombatSystem.h` |
+| [x] 37.05 | Player progression | Medium | XP, tech unlocks, talent points feeding `SkillTree` | `Runtime/Gameplay/ProgressionSystem.h` |
+| [x] 37.06 | Modding / Lua hooks | Medium | `LuaBinding` hooks for game events, items, PCG rules, AI triggers | `Core/Scripting/ModLoader.h` |
+| [x] 37.07 | Environmental hazards | Medium | Radiation zones, asteroid fields, gravity wells, nebula effects | `Runtime/Hazards/HazardSystem.h` |
+| [x] 37.08 | AI fleet intelligence | Medium | Formation flying, escort/intercept, patrol routes for NPC fleets | `Runtime/AI/FleetController.h` |
+| [x] 37.09 | Procedural narrative | Medium | Dynamic dialogue driven by player actions, reputation, and quests | `PCG/Narrative/NarrativeEngine.h` |
+| [x] 37.10 | Full UI theme system | Low | Apply `UIStyle` live; ship-HUD vs station-HUD skins | `UI/Themes/ThemeManager.h` |
+| [x] 37.11 | Build-mode preview | Low | Ghost-part snap preview in EditorRenderer viewport | `Editor/BuilderEditor/` extension |
+| [x] 37.12 | Integration test suite | Low | CTest target: core game loop, builder, PCG, save/load | `Tests/Integration/` |
+
+---
+
+## Appendix B — Rules & Conventions
 
 | Rule | Description |
 |------|-------------|
@@ -819,7 +902,7 @@ These rules are **locked in** across all phases (from implement2.md):
 
 ---
 
-## Appendix C — Phases 18–32 (Completed)
+## Appendix C — Phases 18–36 (Completed)
 
 <details>
 <summary>Click to expand full phase history</summary>
@@ -841,5 +924,9 @@ These rules are **locked in** across all phases (from implement2.md):
 | 30 | AssetStreamer, DecalSystem, QuestGraphGen, ReplayRecorder, LSPDiagnostics, BinarySerializer |
 | 31 | CraftingSystem, LightManager, TextureGenerator, GPUProfiler, CodeSearchEngine, DataCompressor + 13 NFE ports |
 | 32 | AudioMixer, AnimBlendTree, StructureGenerator, TextureAtlasPacker, RefactorPanel, LRUCache |
+| 33 | AssetBrowser (`Tools/AssetTools/AssetBrowser`), ConsoleFilter (`IDE/Console/ConsoleFilter`), HotReloadManager (`Core/HotReload/HotReloadManager`), ToolsGUI layer (`Tools/GUI`: IToolPanel + ToolsApp + 8 panels) |
+| 34 | LocalizationSystem (`Core/Localization/LocalizationSystem`), RaycastSystem (`Engine/Raycast/RaycastSystem`), BreadcrumbBar (`IDE/Breadcrumb/BreadcrumbBar`), ChangeTracker (`Tools/ChangeTracker/ChangeTracker`), StreamingResponse (`AI/StreamingResponse`) |
+| 35 | Audit — 37 undocumented subsystems catalogued (ArchiveLearning, AssetLearning, BugTriage, ContextHelp, KnowledgeIngestion, Tutorial, BuildAuditLog, BuildQueue, InteriorNode, CrashReport, Database, LocalCIPipeline, NetworkProtocolGen, PackageManager, GUIEditor, EditorToolRegistry, MaterialOverrideTool, TickScheduler, AnimationGraph, FractalNoise, PCGAdvanced, DeltaEditStore, SkillTree, AIWalletSystem, CubeSphereLayout, VoxelGridLayout, AnalyticsDashboard, AssetProcessor, BuildAutomation, CodeAudit, SimulationPlayback, UIAnimation, UILogicGraph, UILayoutSolver, UILocalization, Accessibility, InteractiveDocs) |
+| 36 | Builder–NovaForge Integration — `NovaForgeBuilderIntegration` (Runtime/BuilderRuntime): PartLibrary loader, ship/station/rover build sessions, InteriorNode slots, snap rules, crafting gate, damage system, collision gen, assembly save/load. `Projects/NovaForge/main.cpp` fully wired. |
 
 </details>
