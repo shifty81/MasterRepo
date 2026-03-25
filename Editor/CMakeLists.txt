@@ -41,6 +41,12 @@ set(EDITOR_SOURCES
     Tools/EntityInspectorTool.cpp
     # NFE — material parameter override tool
     Tools/MaterialOverrideTool.cpp
+    # EI-10 — project new/open dialog
+    Panels/ProjectDialog/ProjectDialog.cpp
+    # PL-02 — editor settings / preferences panel
+    Panels/Settings/SettingsPanel.cpp
+    # PL-06 — Ctrl+P quick-open overlay
+    Panels/QuickOpen/QuickOpen.cpp
 )
 
 add_library(EditorLib STATIC ${EDITOR_SOURCES})

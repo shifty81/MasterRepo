@@ -1,5 +1,5 @@
 {
-  "name": "MainScene",
+  "name": "DefaultScene",
   "version": 1,
   "skybox": "Assets/Skyboxes/space_01.hdr",
   "entities": [

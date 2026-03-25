@@ -1,4 +1,5 @@
 #pragma once
+#include "Editor/NodeEditors/NodeEditor.h"
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -68,6 +69,8 @@ private:
 
 class MaterialEditorPanel {
 public:
+    MaterialEditorPanel();
+
     void CreateDefaultPBR();
 
     MaterialGraph&       GetGraph()       { return m_graph; }
@@ -80,8 +83,23 @@ public:
     void MoveNode(uint32_t id, float x, float y);
     void DeleteSelected();
 
+    // ── PL-04: NodeEditor-based graph editing ─────────────────────────
+    /// Add a node to both MaterialGraph and the visual NodeEditor.
+    uint32_t AddVisualNode(const std::string& name, const std::string& category,
+                           const std::vector<MaterialPin>& inputs,
+                           const std::vector<MaterialPin>& outputs,
+                           float x = 0.f, float y = 0.f);
+
+    /// Connect two nodes in both graphs.
+    bool ConnectVisual(uint32_t fromNode, uint32_t fromPin,
+                       uint32_t toNode,   uint32_t toPin);
+
+    NodeEditor&       GetNodeEditor()       { return m_nodeEditor; }
+    const NodeEditor& GetNodeEditor() const { return m_nodeEditor; }
+
 private:
     MaterialGraph m_graph;
+    NodeEditor    m_nodeEditor;
     uint32_t      m_selectedNodeId = 0;
 };
 

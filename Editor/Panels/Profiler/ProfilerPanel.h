@@ -1,9 +1,9 @@
 #pragma once
 #include <cstdint>
+#include <functional>
+#include <numeric>
 #include <string>
 #include <vector>
-#include <algorithm>
-#include <numeric>
 
 namespace Editor {
 
@@ -69,6 +69,24 @@ public:
     bool IsPaused() const    { return m_paused; }
     void SetPaused(bool p)   { m_paused = p; }
 
+    // ── PL-03: Live data source ──────────────────────────────
+    /// Query function called by Tick() each frame to fill live stats.
+    struct LiveStats {
+        float    cpuMs     = 0.f;
+        float    gpuMs     = 0.f;
+        float    memoryMB  = 0.f;
+        uint32_t entities  = 0;
+        uint32_t drawCalls = 0;
+        uint64_t triangles = 0;
+    };
+    using LiveDataFn = std::function<LiveStats()>;
+    void SetLiveDataSource(LiveDataFn fn)  { m_liveDataFn = std::move(fn); }
+
+    /// Call once per game frame to automatically record live stats.
+    void Tick(float dt);
+
+    bool HasLiveData() const { return static_cast<bool>(m_liveDataFn); }
+
 private:
     uint32_t                 m_maxHistory;
     bool                     m_paused       = false;
@@ -76,6 +94,9 @@ private:
     bool                     m_frameOpen    = false;
     std::vector<FrameStats>  m_frames;      // circular, capped at m_maxHistory
     std::vector<ProfileSample> m_samples;  // all samples across stored frames
+    LiveDataFn               m_liveDataFn;
+    uint32_t                 m_frameCounter = 0;
+    float                    m_tickAccum    = 0.f;
 };
 
 } // namespace Editor

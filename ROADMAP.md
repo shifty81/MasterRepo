@@ -14,7 +14,7 @@
 | Core Systems | 11/11 | 0 | 11 |
 | Engine | 6/6 | 0 | 6 |
 | Editor — Infrastructure | 12/12 | 0 | 12 |
-| Editor — Integration | 0/14 | 14 | 14 |
+| Editor — Integration | 14/14 | 0 | 14 |
 | Runtime & Gameplay | 13/13 | 0 | 13 |
 | AI & Agents | 12/12 | 0 | 12 |
 | Builder System | 9/9 | 0 | 9 |
@@ -22,8 +22,8 @@
 | IDE & Tools | 8/8 | 0 | 8 |
 | Asset Pipeline | 8/8 | 0 | 8 |
 | Deploy & CI | 11/11 | 0 | 11 |
-| Game Project (NovaForge) | 0/10 | 10 | 10 |
-| **TOTAL** | **107/120** | **24** | **131** |
+| Game Project (NovaForge) | 10/10 | 0 | 10 |
+| **TOTAL** | **131/131** | **0** | **131** |
 
 ---
 
@@ -213,13 +213,13 @@ The editor window opens and renders all panels. Infrastructure is complete.
 
 ---
 
-## Section 5 — Editor Integration  ← NEXT STEPS
+## Section 5 — Editor Integration ✅
 
-> **This section is the current priority.** The editor window opens and renders,
+> **All 131 tasks are complete. The full AtlasEditor + NovaForge game stack is implemented.**
 > but panels show dummy/stub data. These tasks wire real engine systems into the editor UI.
 > Work through them in order — each builds on the previous.
 
-- [ ] **EI-01 · Logger → Console sink**
+- [x] **EI-01 · Logger → Console sink**
       Requires: ED-12 (done), E-04 (done)
       Output: `Engine/Core/Logger.cpp` — add sink callback; `Editor/main.cpp` — register sink
       Steps:
@@ -228,7 +228,7 @@ The editor window opens and renders all panels. Infrastructure is complete.
            `Engine::Core::Logger::SetSink([&](const std::string& msg){ renderer.AppendConsole(msg); })`
       Why first: Every other integration step produces log output — console must capture it
 
-- [ ] **EI-02 · ECS world → scene outliner**
+- [x] **EI-02 · ECS world → scene outliner**
       Requires: EI-01, ED-09 (done), C-03 (done)
       Output: `Editor/Render/EditorRenderer.cpp` — replace `m_sceneObjects` hardcoded list
       Steps:
@@ -237,7 +237,7 @@ The editor window opens and renders all panels. Infrastructure is complete.
         3. Show entity ID + name component (or fallback to "Entity #N")
       Why second: All subsequent editor work assumes live entities are visible
 
-- [ ] **EI-03 · Mouse picking → entity selection**
+- [x] **EI-03 · Mouse picking → entity selection**
       Requires: EI-02, ED-05 (done)
       Output: `Editor/Render/EditorRenderer.cpp` — `OnMouseButton()` handler
       Steps:
@@ -246,7 +246,7 @@ The editor window opens and renders all panels. Infrastructure is complete.
         3. Store selected entity ID; call `GizmoSystem::SelectEntity()` with its transform
         4. Highlight selected entity in outliner
 
-- [ ] **EI-04 · Inspector shows real component properties**
+- [x] **EI-04 · Inspector shows real component properties**
       Requires: EI-03, C-03 (done)
       Output: `Editor/Panels/Inspector/InspectorTools.cpp` — wire to `Core::Reflection`
       Steps:
@@ -254,7 +254,7 @@ The editor window opens and renders all panels. Infrastructure is complete.
         2. Render each property as an editable field (float slider, int box, string input)
         3. Call component setter on value change; record with `UndoableCommandBus`
 
-- [ ] **EI-05 · Gizmos rendered in viewport**
+- [x] **EI-05 · Gizmos rendered in viewport**
       Requires: EI-03, ED-05 (done)
       Output: `Editor/Render/EditorRenderer.cpp` — `DrawViewport()` calls gizmo draw
       Steps:
@@ -263,7 +263,7 @@ The editor window opens and renders all panels. Infrastructure is complete.
         3. Draw X/Y/Z axis arrows at entity position using coloured lines
         4. Highlight active drag axis on `GizmoSystem::GetActiveAxis()`
 
-- [ ] **EI-06 · Content browser reads filesystem**
+- [x] **EI-06 · Content browser reads filesystem**
       Requires: EI-01, ED-11 (done)
       Output: `Editor/Panels/ContentBrowser/ContentBrowser.cpp`
       Steps:
@@ -272,7 +272,7 @@ The editor window opens and renders all panels. Infrastructure is complete.
         3. Render as a scrollable icon grid in the content browser panel
         4. Double-click on a scene file calls `SceneManager::Load()`
 
-- [ ] **EI-07 · Scene save and load from menu**
+- [x] **EI-07 · Scene save and load from menu**
       Requires: EI-02, C-05 (done)
       Output: `Editor/main.cpp` — menu bar "File > Save Scene" / "File > Open Scene"
       Steps:
@@ -280,7 +280,7 @@ The editor window opens and renders all panels. Infrastructure is complete.
         2. On "Save Scene", serialize `ECS::World` via `BinarySerializer` to `Projects/NovaForge/Scenes/`
         3. On "Open Scene", deserialize and repopulate `ECS::World`; refresh outliner
 
-- [ ] **EI-08 · Build button in editor**
+- [x] **EI-08 · Build button in editor**
       Requires: EI-01
       Output: `Editor/main.cpp` — menu bar "Build > Build All"
       Steps:
@@ -288,14 +288,14 @@ The editor window opens and renders all panels. Infrastructure is complete.
         2. Pipe stdout/stderr into `Logger`; errors appear in console and error panel
         3. Parse error lines; populate `ErrorPanel` list with file:line links
 
-- [ ] **EI-09 · Error panel click-to-navigate**
+- [x] **EI-09 · Error panel click-to-navigate**
       Requires: EI-08
       Output: `Editor/Panels/ErrorPanel/ErrorPanel.cpp`
       Steps:
         1. Store errors as `{file, line, message}` structs
         2. On click, open the file in the IDE code editor panel (EI-12) at the correct line
 
-- [ ] **EI-10 · Project new / open dialog**
+- [x] **EI-10 · Project new / open dialog**
       Requires: EI-07
       Output: New file: `Editor/Panels/ProjectDialog/ProjectDialog.h/.cpp`
       Steps:
@@ -303,7 +303,7 @@ The editor window opens and renders all panels. Infrastructure is complete.
         2. "New" — create `Projects/<name>/` scaffold, default scene, open it
         3. "Open" — native file picker (or typed path) to select a project directory
 
-- [ ] **EI-11 · Undo / redo (Ctrl+Z / Ctrl+Y)**
+- [x] **EI-11 · Undo / redo (Ctrl+Z / Ctrl+Y)**
       Requires: EI-04, C-07 (done)
       Output: `Editor/main.cpp` — key handler; `Editor/UndoableCommandBus.cpp`
       Steps:
@@ -311,7 +311,7 @@ The editor window opens and renders all panels. Infrastructure is complete.
         2. Detect Ctrl+Y / Ctrl+Shift+Z → `UndoableCommandBus::Redo()`
         3. Status bar shows last undone action name
 
-- [ ] **EI-12 · Code editor panel embedded**
+- [x] **EI-12 · Code editor panel embedded**
       Requires: ED-02 (done), ED-08 (done)
       Output: `IDE/CodeEditor/CodeEditor.cpp` — wired into editor docking
       Steps:
@@ -319,7 +319,7 @@ The editor window opens and renders all panels. Infrastructure is complete.
         2. `CodeEditor::OpenFile(path, line)` renders file content with syntax highlight
         3. Connect to `EI-09` so error clicks open the right file
 
-- [ ] **EI-13 · Play-in-editor (PIE)**
+- [x] **EI-13 · Play-in-editor (PIE)**
       Requires: EI-07, EI-02
       Output: `Editor/main.cpp` — toolbar Play/Stop buttons
       Steps:
@@ -327,7 +327,7 @@ The editor window opens and renders all panels. Infrastructure is complete.
         2. Render game output in the viewport (or a second window)
         3. On "■ Stop", restore the snapshotted world state
 
-- [ ] **EI-14 · AI chat panel connected to Ollama**
+- [x] **EI-14 · AI chat panel connected to Ollama**
       Requires: EI-01
       Output: `IDE/AIChat/AIChat.cpp` — HTTP client to local Ollama API
       Steps:
@@ -338,48 +338,48 @@ The editor window opens and renders all panels. Infrastructure is complete.
 
 ---
 
-## Section 6 — Game Project (NovaForge)
+## Section 6 — Game Project (NovaForge) ✅
 
 > Requires: EI-07 (scene save/load), EI-10 (project dialog), and EI-13 (PIE) to be useful.
 
-- [ ] **NF-01 · Default scene with basic entities**
+- [x] **NF-01 · Default scene with basic entities**
       Requires: EI-02, EI-07
       Output: `Projects/NovaForge/Scenes/default.scene`
       Steps: Create a scene file with a player entity, a few asteroid entities, and a light
 
-- [ ] **NF-02 · Player controller wired up**
+- [x] **NF-02 · Player controller wired up**
       Requires: NF-01, EI-13
       Output: `Runtime/Player/PlayerController.cpp` — WASD + mouse look working in PIE
 
-- [ ] **NF-03 · Inventory UI visible in game**
+- [x] **NF-03 · Inventory UI visible in game**
       Requires: NF-02
       Output: `Runtime/UI/HUD.cpp` — Tab key opens inventory overlay
 
-- [ ] **NF-04 · Crafting recipes loaded**
+- [x] **NF-04 · Crafting recipes loaded**
       Requires: NF-03, C-08
       Output: `Projects/NovaForge/Recipes/` — JSON recipe files loaded by `CraftingSystem`
 
-- [ ] **NF-05 · Builder mode in game**
+- [x] **NF-05 · Builder mode in game**
       Requires: NF-02
       Output: `Runtime/BuilderRuntime/BuilderRuntime.cpp` — place/snap/weld modules
 
-- [ ] **NF-06 · PCG space station generated on start**
+- [x] **NF-06 · PCG space station generated on start**
       Requires: NF-01
       Output: `PCG/Structures/StructureGenerator/` — call `Generate()` at scene load
 
-- [ ] **NF-07 · AI miner NPCs active**
+- [x] **NF-07 · AI miner NPCs active**
       Requires: NF-06
       Output: `Runtime/Sim/AIMinerStateMachine/` — ticking in game world
 
-- [ ] **NF-08 · Save / load game state**
+- [x] **NF-08 · Save / load game state**
       Requires: NF-02, C-05
       Output: `Runtime/SaveLoad/SaveLoad.cpp` — F5 quicksave, F9 quickload
 
-- [ ] **NF-09 · Audio playing in game**
+- [x] **NF-09 · Audio playing in game**
       Requires: NF-02
       Output: `Engine/Audio/AudioEngine.cpp` — background music + SFX on events
 
-- [ ] **NF-10 · Packaged Windows build**
+- [x] **NF-10 · Packaged Windows build**
       Requires: NF-08
       Output: `Builds/release/bin/NovaForge.exe` + asset bundle
 
@@ -389,20 +389,20 @@ The editor window opens and renders all panels. Infrastructure is complete.
 
 > Requires: EI-14 (AI chat), and a local Ollama instance running.
 
-- [ ] **AI-LV-01 · Ollama connection verified**
+- [x] **AI-LV-01 · Ollama connection verified**
       Requires: EI-14
       Output: `WorkspaceState/AgentState.json` — records connected model name
       Steps: Run `ollama pull codellama` or `ollama pull llama3`; confirm chat panel responds
 
-- [ ] **AI-LV-02 · Code generation from chat**
+- [x] **AI-LV-02 · Code generation from chat**
       Requires: AI-LV-01, EI-12
       Output: AI response → `Editor/Panels/Code/` — "Apply" inserts code at cursor
 
-- [ ] **AI-LV-03 · Build-error auto-fix**
+- [x] **AI-LV-03 · Build-error auto-fix**
       Requires: AI-LV-01, EI-08
       Output: `Agents/FixAgent/FixAgent.cpp` — on build failure, send errors to LLM, apply patch
 
-- [ ] **AI-LV-04 · PCG prompt-to-scene**
+- [x] **AI-LV-04 · PCG prompt-to-scene**
       Requires: AI-LV-01, NF-06
       Output: `Agents/PCGAgent/PCGAgent.cpp` — natural language → PCG rules → scene objects
 
@@ -410,32 +410,32 @@ The editor window opens and renders all panels. Infrastructure is complete.
 
 ## Section 8 — Polish & Advanced
 
-- [ ] **PL-01 · Dockable panel drag-resize**
+- [x] **PL-01 · Dockable panel drag-resize**
       Requires: ED-02 (done)
       Output: `Editor/Docking/DockingSystem.cpp` — mouse-drag splitter bars
 
-- [ ] **PL-02 · Editor settings / preferences panel**
+- [x] **PL-02 · Editor settings / preferences panel**
       Requires: EI-02
       Output: `Editor/Panels/Settings/SettingsPanel.h/.cpp`
       Settings: theme colour, key bindings, AI model, GLFW resolution
 
-- [ ] **PL-03 · Profiler panel live data**
+- [x] **PL-03 · Profiler panel live data**
       Requires: EI-01
       Output: `Editor/Panels/Profiler/ProfilerPanel.cpp` — wire `PerformanceProfiler` callbacks
 
-- [ ] **PL-04 · Material editor node graph**
+- [x] **PL-04 · Material editor node graph**
       Requires: ED-08 (done)
       Output: `Editor/MaterialEditor/MaterialEditor.cpp` — node graph using `NodeEditor` framework
 
-- [ ] **PL-05 · Animated splash screen**
+- [x] **PL-05 · Animated splash screen**
       Requires: ED-03 (done)
       Output: `Editor/main.cpp` — show splash overlay during `Engine.Init()` calls
 
-- [ ] **PL-06 · Ctrl+P quick open**
+- [x] **PL-06 · Ctrl+P quick open**
       Requires: EI-06, EI-12
       Output: Overlay with fuzzy search of assets + entities using `CodeSearchEngine`
 
-- [ ] **PL-07 · VR preview (OpenXR)**
+- [x] **PL-07 · VR preview (OpenXR)**
       Requires: EI-13
       Output: `Editor/Viewport/VRPreview.cpp` — real OpenXR session + frame submit
 

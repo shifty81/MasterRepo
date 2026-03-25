@@ -49,10 +49,33 @@ public:
     void SetActivePanel(uint32_t id);
     uint32_t ActivePanel() const { return m_activeID; }
 
+    // ── PL-01: Mouse-drag splitter / resize support ───────────────────
+    /// Feed raw mouse events; returns true if a drag is in progress.
+    bool OnMouseMove  (double x, double y);
+    bool OnMouseButton(int btn, bool pressed, double x, double y);
+
+    bool IsDragging()         const { return m_dragging; }
+    uint32_t DraggedPanel()   const { return m_dragPanelID; }
+    bool IsResizing()         const { return m_resizing; }
+
     using PanelClosedFn = std::function<void(uint32_t id)>;
     void SetPanelClosedCallback(PanelClosedFn fn);
 
 private:
+    // Drag / resize state
+    bool     m_dragging    = false;
+    bool     m_resizing    = false;
+    uint32_t m_dragPanelID = 0;
+    double   m_dragStartX  = 0.0;
+    double   m_dragStartY  = 0.0;
+    float    m_dragOriginX = 0.f;
+    float    m_dragOriginY = 0.f;
+    float    m_dragOriginW = 0.f;
+    float    m_dragOriginH = 0.f;
+    bool     m_resizeRight  = false; // dragging right edge
+    bool     m_resizeBottom = false; // dragging bottom edge
+
+    static constexpr float kEdgeSlop = 6.f; // pixels near edge that triggers resize
     uint32_t           m_nextID    = 1;
     uint32_t           m_activeID  = 0;
     std::vector<DockPanel> m_panels;
