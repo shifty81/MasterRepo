@@ -41,6 +41,8 @@ set(EDITOR_SOURCES
     Tools/EntityInspectorTool.cpp
     # NFE — material parameter override tool
     Tools/MaterialOverrideTool.cpp
+    # EI-10 — project new/open dialog
+    Panels/ProjectDialog/ProjectDialog.cpp
 )
 
 add_library(EditorLib STATIC ${EDITOR_SOURCES})
