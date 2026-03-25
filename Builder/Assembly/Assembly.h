@@ -37,6 +37,9 @@ public:
     size_t PartCount() const { return m_parts.size(); }
     size_t LinkCount() const { return m_linkCount; }
 
+    /// Read-only span of all placed parts (use for iteration instead of ID probing).
+    const std::vector<PlacedPart>& GetAllParts() const { return m_parts; }
+
     // These require the caller to supply per-part mass/hp via a lookup table.
     // Lightweight versions that work only from stored PlacedPart data.
     float CalculateTotalMass(const std::vector<std::pair<uint32_t,float>>& defMasses) const;

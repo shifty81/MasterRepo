@@ -5,17 +5,15 @@ namespace Builder {
 
 void BuilderDamageSystem::InitFromAssembly(const Assembly& assembly, const PartLibrary& library) {
     m_states.clear();
-    for (uint32_t id = 1; id <= static_cast<uint32_t>(assembly.PartCount() * 2 + 1); ++id) {
-        const PlacedPart* pp = assembly.GetPart(id);
-        if (!pp) continue;
-        const PartDef* def = library.Get(pp->defId);
+    for (const auto& pp : assembly.GetAllParts()) {
+        const PartDef* def = library.Get(pp.defId);
         float hp = def ? def->stats.hitpoints : 100.0f;
         PartHealthState s;
-        s.instanceId = pp->instanceId;
+        s.instanceId = pp.instanceId;
         s.currentHP  = hp;
         s.maxHP      = hp;
         s.destroyed  = false;
-        m_states[pp->instanceId] = s;
+        m_states[pp.instanceId] = s;
     }
 }
 
