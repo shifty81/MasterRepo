@@ -103,9 +103,23 @@ void ChangeTracker::Unwatch(const std::string& pathOrDir) {
     v.erase(std::remove_if(v.begin(), v.end(),
                            [&](const WatchSpec& s){ return s.path == pathOrDir; }),
             v.end());
-    // Remove snapshot entries under this path
+    // Remove snapshot entries whose paths are under this directory or match exactly
+    const fs::path base(pathOrDir);
     for (auto it = m_impl->snapshot.begin(); it != m_impl->snapshot.end(); ) {
-        if (it->first.find(pathOrDir) == 0) it = m_impl->snapshot.erase(it);
+        const fs::path entryPath(it->first);
+        // Match if paths are equal or the entry is inside the watched directory
+        bool match = (entryPath == base);
+        if (!match) {
+            // Check if base is a proper prefix (i.e. a parent directory)
+            auto baseStr = base.string();
+            auto entryStr = entryPath.string();
+            if (entryStr.size() > baseStr.size() &&
+                entryStr[baseStr.size()] == fs::path::preferred_separator &&
+                entryStr.compare(0, baseStr.size(), baseStr) == 0) {
+                match = true;
+            }
+        }
+        if (match) it = m_impl->snapshot.erase(it);
         else ++it;
     }
 }
@@ -123,9 +137,6 @@ static void CollectFiles(const WatchSpec& spec,
         out[spec.path] = { GetModifiedMs(spec.path), GetSizeBytes(spec.path) };
         return;
     }
-    auto iter = spec.recursive
-        ? fs::recursive_directory_iterator(spec.path, ec)
-        : fs::recursive_directory_iterator(fs::path{spec.path} / ".", ec);
     // Use a directory_iterator for non-recursive
     if (!spec.recursive) {
         for (const auto& de : fs::directory_iterator(spec.path, ec)) {

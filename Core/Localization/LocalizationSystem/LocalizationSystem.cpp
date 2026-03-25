@@ -100,12 +100,18 @@ std::string LocalizationSystem::T(const std::string& key) const {
 
 std::string LocalizationSystem::Tf(const std::string& key, ...) const {
     std::string fmt = T(key);
-    char buf[2048] = {};
     va_list args;
     va_start(args, key);
-    std::vsnprintf(buf, sizeof(buf), fmt.c_str(), args);
+    // Determine required buffer size
+    va_list args2;
+    va_copy(args2, args);
+    int needed = std::vsnprintf(nullptr, 0, fmt.c_str(), args2);
+    va_end(args2);
+    if (needed < 0) { va_end(args); return fmt; }
+    std::string result(static_cast<size_t>(needed), '\0');
+    std::vsnprintf(&result[0], static_cast<size_t>(needed) + 1, fmt.c_str(), args);
     va_end(args);
-    return buf;
+    return result;
 }
 
 std::vector<LocaleInfo> LocalizationSystem::AvailableLocales() const {
