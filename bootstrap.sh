@@ -32,6 +32,9 @@ fi
 # Duplicate all output (stdout + stderr) to the log file so that even if the
 # console window closes, the full bootstrap output is preserved on disk.
 exec > >(tee -a "${_BOOT_LOG}") 2>&1
+# Ensure the tee process finishes flushing before script exits
+_BOOT_TEE_PID=$!
+trap 'wait ${_BOOT_TEE_PID} 2>/dev/null || true' EXIT
 
 # ---------------------------
 # 1. Detect OS

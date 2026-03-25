@@ -114,8 +114,8 @@ elif [[ -n "${LOG_FILE}" && -f "${LOG_FILE}" ]]; then
     fi
 
     # Extract error lines from the log
-    local_errors=""
-    local_errors="$(grep -iE '(error[^(]*:|FAILED|fatal error|cannot find|undefined reference)' \
+    error_lines=""
+    error_lines="$(grep -iE '(error[^(]*:|FAILED|fatal error|cannot find|undefined reference)' \
                     "${LOG_FILE}" | head -50 || true)"
 
     ISSUE_BODY="$(cat <<BODY
@@ -128,7 +128,7 @@ elif [[ -n "${LOG_FILE}" && -f "${LOG_FILE}" ]]; then
 ## Error Summary
 
 \`\`\`
-${local_errors:-No specific error lines found — see full log below.}
+${error_lines:-No specific error lines found — see full log below.}
 \`\`\`
 
 ## Last 200 Lines of Build Log
