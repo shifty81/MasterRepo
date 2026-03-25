@@ -31,6 +31,14 @@ warn()    { echo -e "${YELLOW}[EXPORT]${NC} $*"; }
 error()   { echo -e "${RED}[EXPORT ERROR]${NC} $*" >&2; }
 section() { echo -e "\n${CYAN}${BOLD}── $* ──${NC}\n"; }
 
+# ── Source shared logging library ─────────────────────────────────────────────
+_EXPORT_SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+# shellcheck source=Scripts/Tools/lib_log.sh
+source "${_EXPORT_SCRIPT_DIR}/lib_log.sh"
+log_init "export_builds"
+# shellcheck source=Scripts/Tools/lib_watchdog.sh
+source "${_EXPORT_SCRIPT_DIR}/lib_watchdog.sh"
+
 _wait_for_user() {
     echo ""
     echo -e "${BOLD}Press [Enter] to close...${NC}"
@@ -51,10 +59,12 @@ _cmake_run() {
     "$@" >> "${log_file}" 2>&1 &
     local _pid=$!
     local _rc=0
+    watchdog_start "${log_file}" "${WATCHDOG_TIMEOUT:-600}" "${_pid}"
     while kill -0 "${_pid}" 2>/dev/null; do
         sleep 0.5 2>/dev/null || true
     done
     wait "${_pid}" || _rc=$?
+    watchdog_stop
     return "${_rc}"
 }
 
@@ -206,6 +216,13 @@ echo -e "  ❌ Failed:  ${#FAILED[@]}   — ${FAILED[*]:-none}"
 echo -e "  ⏭  Skipped: ${#SKIPPED[@]}  — ${SKIPPED[*]:-none}"
 echo -e "${BOLD}═══════════════════════════════════════${NC}"
 
+if [[ ${#FAILED[@]} -gt 0 ]]; then
+    echo ""
+    echo -e "  ${YELLOW}To submit a bug report with logs:${NC}"
+    echo -e "    bash Scripts/Tools/submit_issue.sh --log \"$(log_file)\""
+fi
+
+log_finish
 _wait_for_user
 [[ ${#FAILED[@]} -gt 0 ]] && exit 1
 exit 0

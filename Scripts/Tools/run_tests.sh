@@ -11,6 +11,11 @@ BUILD_DEBUG="${REPO_ROOT}/Builds/debug"
 BUILD_RELEASE="${REPO_ROOT}/Builds/release"
 JOBS="$(nproc 2>/dev/null || echo 4)"
 
+# ── Source shared logging library ─────────────────────────────────────────────
+# shellcheck source=Scripts/Tools/lib_log.sh
+source "$(dirname "${BASH_SOURCE[0]}")/lib_log.sh"
+log_init "run_tests"
+
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
@@ -37,8 +42,15 @@ _print_summary_and_wait() {
         *)      echo -e "  ${YELLOW}⚠  Test run did not complete${NC}" ;;
     esac
     [[ -n "${_TEST_BUILD_DIR}" ]] && echo -e "  Build dir: ${_TEST_BUILD_DIR}"
+    echo -e "  Log file: $(log_file)"
+    if [[ "${_TEST_RESULT}" == "FAIL" ]]; then
+        echo ""
+        echo -e "  ${YELLOW}To submit a bug report with logs:${NC}"
+        echo -e "    bash Scripts/Tools/submit_issue.sh --log \"$(log_file)\""
+    fi
     echo -e "${BOLD}═══════════════════════════════════════════${NC}"
     echo ""
+    log_finish
     echo -e "${BOLD}Press [Enter] to close...${NC}"
     read -r -p "" 2>/dev/null || true
 }

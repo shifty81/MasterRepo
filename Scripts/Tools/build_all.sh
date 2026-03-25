@@ -33,6 +33,21 @@ REPORT_FILE="${LOG_DIR}/build_all_${TIMESTAMP}_report.md"
 BUILD_DEBUG="${REPO_ROOT}/Builds/debug"
 BUILD_RELEASE="${REPO_ROOT}/Builds/release"
 
+# ── Source shared logging & watchdog libraries ────────────────────────────────
+# lib_log provides timestamped, leveled logging to Logs/Build/.
+# lib_watchdog monitors for build hangs (no output for N seconds).
+# Note: build_all.sh also has its own animated display layer (_log) that
+# routes messages to file-only while the display is active.  The shared lib
+# is initialised here so that a separate *_build_all_<ts>.log is created in
+# the standard format, and watchdog_start/stop are available.
+_BUILD_ALL_SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+# shellcheck source=Scripts/Tools/lib_log.sh
+source "${_BUILD_ALL_SCRIPT_DIR}/lib_log.sh"
+LOG_CONSOLE=false   # build_all has its own animated console — keep lib_log file-only
+log_init "build_all"
+# shellcheck source=Scripts/Tools/lib_watchdog.sh
+source "${_BUILD_ALL_SCRIPT_DIR}/lib_watchdog.sh"
+
 # ── Colours ($'...' embeds real ESC bytes so plain printf works) ───────────────
 GREEN=$'\033[0;32m';  YELLOW=$'\033[1;33m'; RED=$'\033[0;31m'
 CYAN=$'\033[0;36m';   BOLD=$'\033[1m';      DIM=$'\033[2m'
@@ -365,6 +380,9 @@ _cmake_bg() {
     "$@" >> "${plog}" 2>&1 &
     local _pid=$!
 
+    # Start watchdog to detect hangs during cmake/MSBuild
+    watchdog_start "${plog}" "${WATCHDOG_TIMEOUT:-600}" "${_pid}"
+
     while kill -0 "${_pid}" 2>/dev/null; do
         _draw_display "${t0}" "${sest}"
         sleep 0.5 2>/dev/null || true
@@ -372,6 +390,7 @@ _cmake_bg() {
 
     local _rc=0
     wait "${_pid}" || _rc=$?
+    watchdog_stop
 
     local elapsed=$(( SECONDS - t0 ))
     _STAGE_ELAPSED[$sidx]="${elapsed}"
@@ -656,9 +675,14 @@ printf "  Report : %s\n\n" "${REPORT_FILE}"
 
 if [[ ${#FAIL[@]} -gt 0 ]]; then
     printf "%b\n" "${RED}[build_all ERROR]${NC} Build had failures. Check the log above."
+    printf "\n"
+    printf "  ${YELLOW}To submit a bug report with logs:${NC}\n"
+    printf "    bash Scripts/Tools/submit_issue.sh --log \"%s\"\n\n" "${LOG_FILE}"
+    log_finish
     _wait_for_user
     exit 1
 fi
 
+log_finish
 _wait_for_user
 exit 0

@@ -14,6 +14,15 @@ TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 JOBS="$(nproc 2>/dev/null || echo 4)"
 _BUILD_START="${SECONDS}"
 
+# ── Source shared logging library ─────────────────────────────────────────────
+# shellcheck source=Scripts/Tools/lib_log.sh
+source "$(dirname "${BASH_SOURCE[0]}")/lib_log.sh"
+log_init "build"
+
+# ── Source watchdog library ───────────────────────────────────────────────────
+# shellcheck source=Scripts/Tools/lib_watchdog.sh
+source "$(dirname "${BASH_SOURCE[0]}")/lib_watchdog.sh"
+
 # ── Colours ───────────────────────────────────────────────────────────────────
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -50,7 +59,14 @@ _print_summary_and_wait() {
     fi
     echo -e "${BOLD}═══════════════════════════════════════════${NC}"
     echo -e "  Log dir: ${LOG_DIR}"
+    echo -e "  Log file: $(log_file)"
+    if [[ ${#_FAIL[@]} -gt 0 ]]; then
+        echo ""
+        echo -e "  ${YELLOW}To submit a bug report with logs:${NC}"
+        echo -e "  ${DIM:-}  bash Scripts/Tools/submit_issue.sh --log \"$(log_file)\"${NC}"
+    fi
     echo ""
+    log_finish
     echo -e "${BOLD}Press [Enter] to close...${NC}"
     read -r -p "" 2>/dev/null || true
 }
@@ -85,10 +101,13 @@ _cmake_run() {
     "$@" >> "${log_file}" 2>&1 &
     local _pid=$!
     local _rc=0
+    # Start watchdog to detect hangs during cmake/MSBuild
+    watchdog_start "${log_file}" "${WATCHDOG_TIMEOUT:-600}" "${_pid}"
     while kill -0 "${_pid}" 2>/dev/null; do
         sleep 0.5 2>/dev/null || true
     done
     wait "${_pid}" || _rc=$?
+    watchdog_stop
     return "${_rc}"
 }
 

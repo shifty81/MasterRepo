@@ -37,6 +37,14 @@ warn()    { echo -e "${YELLOW}[CI]${NC} $*"; }
 error()   { echo -e "${RED}[CI ERROR]${NC} $*" >&2; }
 section() { echo -e "\n${CYAN}${BOLD}══ $* ══${NC}\n"; }
 
+# ── Source shared logging library ─────────────────────────────────────────────
+_CI_SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+# shellcheck source=Scripts/Tools/lib_log.sh
+source "${_CI_SCRIPT_DIR}/lib_log.sh"
+log_init "ci_pipeline"
+# shellcheck source=Scripts/Tools/lib_watchdog.sh
+source "${_CI_SCRIPT_DIR}/lib_watchdog.sh"
+
 # ── Pause until the user presses Enter (keeps the terminal window open) ────────
 _wait_for_user() {
     echo ""
@@ -59,10 +67,12 @@ _cmake_run() {
     "$@" >> "${log_file}" 2>&1 &
     local _pid=$!
     local _rc=0
+    watchdog_start "${log_file}" "${WATCHDOG_TIMEOUT:-600}" "${_pid}"
     while kill -0 "${_pid}" 2>/dev/null; do
         sleep 0.5 2>/dev/null || true
     done
     wait "${_pid}" || _rc=$?
+    watchdog_stop
     return "${_rc}"
 }
 
@@ -391,6 +401,14 @@ echo -e "  ✅ Passed:  ${#STAGES_PASSED[@]}"
 echo -e "  ❌ Failed:  ${#STAGES_FAILED[@]}"
 echo -e "  ⏭  Skipped: ${#STAGES_SKIPPED[@]}"
 echo -e "${BOLD}═══════════════════════════════════════${NC}"
+
+if [[ ${#STAGES_FAILED[@]} -gt 0 ]]; then
+    echo ""
+    echo -e "  ${YELLOW}To submit a bug report with logs:${NC}"
+    echo -e "    bash Scripts/Tools/submit_issue.sh --log \"$(log_file)\""
+fi
+
+log_finish
 
 if [[ ${#STAGES_FAILED[@]} -gt 0 ]]; then
     exit 1

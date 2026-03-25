@@ -13,6 +13,29 @@
 
 set -e
 
+ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# ── Logging ──────────────────────────────────────────────────────────────────
+# Ensure Logs/Build exists before we tee into it
+mkdir -p "${ROOT_DIR}/Logs/Build"
+_BOOT_TS="$(date +%Y%m%d_%H%M%S)"
+_BOOT_LOG="${ROOT_DIR}/Logs/Build/bootstrap_${_BOOT_TS}.log"
+
+# Source shared logging library if available
+if [[ -f "${ROOT_DIR}/Scripts/Tools/lib_log.sh" ]]; then
+    # shellcheck source=Scripts/Tools/lib_log.sh
+    source "${ROOT_DIR}/Scripts/Tools/lib_log.sh"
+    log_init "bootstrap"
+    _BOOT_LOG="$(log_file)"
+fi
+
+# Duplicate all output (stdout + stderr) to the log file so that even if the
+# console window closes, the full bootstrap output is preserved on disk.
+exec > >(tee -a "${_BOOT_LOG}") 2>&1
+# Ensure the tee process finishes flushing before script exits
+_BOOT_TEE_PID=$!
+trap 'wait ${_BOOT_TEE_PID} 2>/dev/null || true' EXIT
+
 # ---------------------------
 # 1. Detect OS
 # ---------------------------
@@ -20,8 +43,8 @@ OS="$(uname -s)"
 echo "=== MasterRepo Bootstrap ==="
 echo "Detected OS: $OS"
 
-ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 echo "Project root: $ROOT_DIR"
+echo "Log file: ${_BOOT_LOG}"
 
 # ---------------------------
 # 2. Check Required Tools
@@ -283,6 +306,8 @@ fi
 echo ""
 echo "=== Bootstrap Complete ==="
 echo ""
+echo "Bootstrap log saved to: ${_BOOT_LOG}"
+echo ""
 echo "Next steps:"
 echo "  1. Review ROADMAP.md for the full implementation plan"
 echo "  2. Start with Phase 0 tasks (see ROADMAP.md)"
@@ -293,3 +318,8 @@ echo "  - Install Ollama for local AI: curl -fsSL https://ollama.ai/install.sh |
 echo "  - Pull a coding model: ollama pull deepseek-coder"
 echo "  - Activate Python env: source venv/bin/activate"
 echo ""
+
+# Finish logging if lib_log was sourced
+if [[ -n "${_LIB_LOG_LOADED:-}" ]]; then
+    log_finish
+fi

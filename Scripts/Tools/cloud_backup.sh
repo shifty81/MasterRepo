@@ -47,6 +47,11 @@ warn()    { echo -e "${YELLOW}[BACKUP]${NC} $*"; }
 error()   { echo -e "${RED}[BACKUP ERROR]${NC} $*" >&2; }
 section() { echo -e "\n${CYAN}${BOLD}── $* ──${NC}\n"; }
 
+# ── Source shared logging library ─────────────────────────────────────────────
+# shellcheck source=Scripts/Tools/lib_log.sh
+source "$(dirname "${BASH_SOURCE[0]}")/lib_log.sh"
+log_init "cloud_backup"
+
 # ── Paths ─────────────────────────────────────────────────────────────────────
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"

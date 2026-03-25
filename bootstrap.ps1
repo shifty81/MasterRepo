@@ -11,11 +11,26 @@
 
 $ErrorActionPreference = "Stop"
 
+$ROOT_DIR = Split-Path -Parent $MyInvocation.MyCommand.Path
+
+# ── Logging ──────────────────────────────────────────────────────────────────
+# Capture ALL bootstrap output to a log file so nothing is lost if the
+# console window closes unexpectedly.
+$LogDir = Join-Path $ROOT_DIR "Logs\Build"
+if (-not (Test-Path $LogDir)) {
+    New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
+}
+$BootTimestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+$BootLog = Join-Path $LogDir "bootstrap_$BootTimestamp.log"
+
+# Start transcript — captures everything to the log file
+Start-Transcript -Path $BootLog -Append | Out-Null
+
 Write-Host "=== MasterRepo Bootstrap ===" -ForegroundColor Cyan
 Write-Host "Detected OS: Windows"
 
-$ROOT_DIR = Split-Path -Parent $MyInvocation.MyCommand.Path
 Write-Host "Project root: $ROOT_DIR"
+Write-Host "Log file: $BootLog" -ForegroundColor DarkGray
 
 # ---------------------------
 # 1. Check Required Tools
@@ -155,6 +170,8 @@ Write-Host ""
 Write-Host ""
 Write-Host "=== Bootstrap Complete ===" -ForegroundColor Cyan
 Write-Host ""
+Write-Host "Bootstrap log saved to: $BootLog" -ForegroundColor DarkGray
+Write-Host ""
 Write-Host "Next steps:"
 Write-Host "  1. Launch the editor (recommended):"
 Write-Host "     cmake --preset windows-x64-debug    # configure (downloads GLFW if needed)"
@@ -175,3 +192,6 @@ Write-Host "  - Install Ollama for local AI: https://ollama.ai/download"
 Write-Host "  - Pull a coding model: ollama pull deepseek-coder"
 Write-Host "  - Activate Python env: .\venv\Scripts\Activate.ps1"
 Write-Host ""
+
+# Stop transcript logging
+try { Stop-Transcript | Out-Null } catch { }
