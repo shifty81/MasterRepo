@@ -175,7 +175,7 @@ ARTIFACT_DIR="${OUTPUT_DIR}/artifacts"
 
 mkdir -p "${OUTPUT_DIR}" "${ARTIFACT_DIR}"
 
-CMAKE_JOBS="$(nproc 2>/dev/null || echo 4)"
+CMAKE_JOBS="${NUMBER_OF_PROCESSORS:-4}"
 
 # ── Stage tracking ────────────────────────────────────────────────────────────
 STAGES_PASSED=()

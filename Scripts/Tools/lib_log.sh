@@ -93,7 +93,7 @@ log_init() {
         echo "  Started: $(date '+%Y-%m-%d %H:%M:%S')"
         echo "  PID:     $$"
         echo "  Host:    $(hostname 2>/dev/null || echo unknown)"
-        echo "  OS:      $(uname -s 2>/dev/null || echo unknown)"
+        echo "  OS:      Windows (Git Bash / MSYS2)"
         echo "  User:    $(whoami 2>/dev/null || echo unknown)"
         echo "  Level:   ${LOG_LEVEL}"
         echo "============================================================"
@@ -217,15 +217,15 @@ log_diagnostics() {
     {
         echo "--- date ---"
         date 2>/dev/null || true
-        echo "--- uname -a ---"
-        uname -a 2>/dev/null || true
+        echo "--- Windows version ---"
+        cmd.exe /c "ver" 2>/dev/null || true
         echo "--- env (filtered) ---"
-        env | grep -iE '^(PATH|CXX|CC|CMAKE|MSYS|MINGW|VCINSTALL|VS|PROGRAMFILES|OS|COMSPEC|HOME|USER|HOSTNAME)' 2>/dev/null || true
+        env | grep -iE '^(PATH|CXX|CC|CMAKE|MSYS|MINGW|VCINSTALL|VS|PROGRAMFILES|OS|COMSPEC|HOME|USER|HOSTNAME|NUMBER_OF_PROCESSORS)' 2>/dev/null || true
         echo "--- disk usage ---"
         df -h . 2>/dev/null || true
         echo "--- memory ---"
-        free -h 2>/dev/null || cat /proc/meminfo 2>/dev/null | head -5 || true
-        echo "--- running processes (top 20 by CPU) ---"
-        ps aux --sort=-%cpu 2>/dev/null | head -20 || tasklist 2>/dev/null | head -20 || true
+        wmic OS get FreePhysicalMemory,TotalVisibleMemorySize /Value 2>/dev/null || true
+        echo "--- running processes ---"
+        tasklist /FO TABLE 2>/dev/null | head -25 || true
     } >> "${_LOG_FILE}" 2>&1
 }

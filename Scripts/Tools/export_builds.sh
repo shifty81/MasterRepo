@@ -24,7 +24,7 @@
 #   PRESET ...       One or more preset names (or 'all')
 #   --no-package     Skip creating .zip archives
 #   --output DIR     Override Builds/Packages output directory
-#   --jobs N         Parallel compile jobs (default: nproc)
+#   --jobs N         Parallel compile jobs (default: %NUMBER_OF_PROCESSORS%)
 #   --clean          Remove existing build dirs before building
 #   --no-wait        Skip interactive "Press [Enter]" pause
 #   --help
@@ -86,7 +86,7 @@ _cmake_run() {
 
 # ── Defaults ──────────────────────────────────────────────────────────────────
 PACKAGE_DIR="${REPO_ROOT}/Builds/Packages"
-JOBS="$(nproc 2>/dev/null || echo 4)"
+JOBS="${NUMBER_OF_PROCESSORS:-4}"
 DO_PACKAGE=true
 CLEAN=false
 ALL_PRESETS=("windows-x64" "windows-x64-debug")

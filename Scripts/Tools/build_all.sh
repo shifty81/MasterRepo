@@ -48,7 +48,7 @@
 #   --debug-only    Build Debug only
 #   --release-only  Build Release only
 #   --clean         Remove existing build dirs before building
-#   --jobs N        Parallel compile jobs (default: nproc)
+#   --jobs N        Parallel compile jobs (default: %NUMBER_OF_PROCESSORS%)
 #   --no-wait       Skip interactive "Press [Enter]" pause
 #   --help
 #
@@ -116,7 +116,7 @@ _wait_for_user() {
 DO_DEBUG=true
 DO_RELEASE=true
 DO_CLEAN=false
-JOBS="$(nproc 2>/dev/null || echo 4)"
+JOBS="${NUMBER_OF_PROCESSORS:-4}"
 START_SECS="${SECONDS}"
 
 # ── Argument parsing ──────────────────────────────────────────────────────────
@@ -137,7 +137,7 @@ Options:
   --debug-only      Build Debug only
   --release-only    Build Release only
   --clean           Remove existing build directories before building
-  --jobs N          Parallel compile jobs (default: nproc = ${JOBS})
+  --jobs N          Parallel compile jobs (default: %NUMBER_OF_PROCESSORS% = ${JOBS})
   --no-wait         Skip the interactive "Press [Enter] to close" pause
   --help            Show this message
 

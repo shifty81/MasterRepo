@@ -223,10 +223,10 @@ _watchdog_report() {
         fi
         echo '```'
         echo ""
-        echo "## Running Processes (top 20 by CPU)"
+        echo "## Running Processes"
         echo ""
         echo '```'
-        _wd_safe_run 5 ps aux --sort=-%cpu | head -20
+        _wd_safe_run 5 tasklist /FO TABLE | head -30
         echo '```'
         echo ""
         echo "## Disk Usage"
@@ -238,11 +238,7 @@ _watchdog_report() {
         echo "## Memory"
         echo ""
         echo '```'
-        if [[ -f /proc/meminfo ]]; then
-            head -10 /proc/meminfo 2>/dev/null || true
-        else
-            _wd_safe_run 5 free -h
-        fi
+        _wd_safe_run 5 wmic OS get FreePhysicalMemory,TotalVisibleMemorySize /Value
         echo '```'
         echo ""
         echo "## Environment (filtered)"

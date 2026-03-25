@@ -44,7 +44,7 @@ BUILD_DEBUG="${REPO_ROOT}/Builds/debug"
 BUILD_RELEASE="${REPO_ROOT}/Builds/release"
 LOG_DIR="${REPO_ROOT}/Logs/Build"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
-JOBS="$(nproc 2>/dev/null || echo 4)"
+JOBS="${NUMBER_OF_PROCESSORS:-4}"
 BUILD_START="${SECONDS}"
 NO_WAIT=false
 

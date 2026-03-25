@@ -12,7 +12,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 BUILD_DEBUG="${REPO_ROOT}/Builds/debug"
 BUILD_RELEASE="${REPO_ROOT}/Builds/release"
-JOBS="$(nproc 2>/dev/null || echo 4)"
+JOBS="${NUMBER_OF_PROCESSORS:-4}"
 
 # ── Source shared logging library ─────────────────────────────────────────────
 # shellcheck source=Scripts/Tools/lib_log.sh
