@@ -203,12 +203,53 @@ uint32_t MaterialEditorPanel::GetSelectedNodeId() const { return m_selectedNodeI
 void MaterialEditorPanel::MoveNode(uint32_t id, float x, float y) {
     MaterialNode* n = m_graph.GetNode(id);
     if (n) { n->x = x; n->y = y; }
+    // Keep visual NodeEditor in sync
+    auto& nodes = const_cast<std::vector<GraphNode>&>(m_nodeEditor.Nodes());
+    for (auto& gn : nodes) {
+        if (gn.id == id) { gn.x = x; gn.y = y; break; }
+    }
 }
 
 void MaterialEditorPanel::DeleteSelected() {
     if (m_selectedNodeId == 0) return;
     m_graph.RemoveNode(m_selectedNodeId);
+    m_nodeEditor.RemoveNode(m_selectedNodeId);
     m_selectedNodeId = 0;
+}
+
+// ── PL-04: NodeEditor-backed visual graph API ──────────────────────────────
+
+MaterialEditorPanel::MaterialEditorPanel() {
+    // Default constructor — graph is empty; call CreateDefaultPBR() to populate.
+}
+
+uint32_t MaterialEditorPanel::AddVisualNode(const std::string& name,
+                                             const std::string& category,
+                                             const std::vector<MaterialPin>& inputs,
+                                             const std::vector<MaterialPin>& outputs,
+                                             float x, float y) {
+    // Add to MaterialGraph (authoritative data)
+    uint32_t matId = m_graph.AddNode(name, category, inputs, outputs);
+
+    // Mirror in NodeEditor for visual display / selection
+    uint32_t visId = m_nodeEditor.AddNode(category, name, x, y);
+    for (const auto& p : inputs)
+        m_nodeEditor.AddPin(visId, p.name, false);
+    for (const auto& p : outputs)
+        m_nodeEditor.AddPin(visId, p.name, true);
+
+    // Update position in MaterialGraph node
+    auto* mn = m_graph.GetNode(matId);
+    if (mn) { mn->x = x; mn->y = y; }
+
+    return matId;
+}
+
+bool MaterialEditorPanel::ConnectVisual(uint32_t fromNode, uint32_t fromPin,
+                                         uint32_t toNode,   uint32_t toPin) {
+    bool ok = m_graph.AddEdge(fromNode, fromPin, toNode, toPin);
+    if (ok) m_nodeEditor.Connect(fromNode, fromPin, toNode, toPin);
+    return ok;
 }
 
 } // namespace Editor

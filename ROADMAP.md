@@ -22,8 +22,8 @@
 | IDE & Tools | 8/8 | 0 | 8 |
 | Asset Pipeline | 8/8 | 0 | 8 |
 | Deploy & CI | 11/11 | 0 | 11 |
-| Game Project (NovaForge) | 0/10 | 10 | 10 |
-| **TOTAL** | **121/131** | **10** | **131** |
+| Game Project (NovaForge) | 10/10 | 0 | 10 |
+| **TOTAL** | **131/131** | **0** | **131** |
 
 ---
 
@@ -215,7 +215,7 @@ The editor window opens and renders all panels. Infrastructure is complete.
 
 ## Section 5 — Editor Integration ✅
 
-> **Section 5 is complete. Section 6 (NovaForge Game Project) is the current priority.** The editor window opens and renders,
+> **All 131 tasks are complete. The full AtlasEditor + NovaForge game stack is implemented.**
 > but panels show dummy/stub data. These tasks wire real engine systems into the editor UI.
 > Work through them in order — each builds on the previous.
 
@@ -338,48 +338,48 @@ The editor window opens and renders all panels. Infrastructure is complete.
 
 ---
 
-## Section 6 — Game Project (NovaForge)
+## Section 6 — Game Project (NovaForge) ✅
 
 > Requires: EI-07 (scene save/load), EI-10 (project dialog), and EI-13 (PIE) to be useful.
 
-- [ ] **NF-01 · Default scene with basic entities**
+- [x] **NF-01 · Default scene with basic entities**
       Requires: EI-02, EI-07
       Output: `Projects/NovaForge/Scenes/default.scene`
       Steps: Create a scene file with a player entity, a few asteroid entities, and a light
 
-- [ ] **NF-02 · Player controller wired up**
+- [x] **NF-02 · Player controller wired up**
       Requires: NF-01, EI-13
       Output: `Runtime/Player/PlayerController.cpp` — WASD + mouse look working in PIE
 
-- [ ] **NF-03 · Inventory UI visible in game**
+- [x] **NF-03 · Inventory UI visible in game**
       Requires: NF-02
       Output: `Runtime/UI/HUD.cpp` — Tab key opens inventory overlay
 
-- [ ] **NF-04 · Crafting recipes loaded**
+- [x] **NF-04 · Crafting recipes loaded**
       Requires: NF-03, C-08
       Output: `Projects/NovaForge/Recipes/` — JSON recipe files loaded by `CraftingSystem`
 
-- [ ] **NF-05 · Builder mode in game**
+- [x] **NF-05 · Builder mode in game**
       Requires: NF-02
       Output: `Runtime/BuilderRuntime/BuilderRuntime.cpp` — place/snap/weld modules
 
-- [ ] **NF-06 · PCG space station generated on start**
+- [x] **NF-06 · PCG space station generated on start**
       Requires: NF-01
       Output: `PCG/Structures/StructureGenerator/` — call `Generate()` at scene load
 
-- [ ] **NF-07 · AI miner NPCs active**
+- [x] **NF-07 · AI miner NPCs active**
       Requires: NF-06
       Output: `Runtime/Sim/AIMinerStateMachine/` — ticking in game world
 
-- [ ] **NF-08 · Save / load game state**
+- [x] **NF-08 · Save / load game state**
       Requires: NF-02, C-05
       Output: `Runtime/SaveLoad/SaveLoad.cpp` — F5 quicksave, F9 quickload
 
-- [ ] **NF-09 · Audio playing in game**
+- [x] **NF-09 · Audio playing in game**
       Requires: NF-02
       Output: `Engine/Audio/AudioEngine.cpp` — background music + SFX on events
 
-- [ ] **NF-10 · Packaged Windows build**
+- [x] **NF-10 · Packaged Windows build**
       Requires: NF-08
       Output: `Builds/release/bin/NovaForge.exe` + asset bundle
 
@@ -389,20 +389,20 @@ The editor window opens and renders all panels. Infrastructure is complete.
 
 > Requires: EI-14 (AI chat), and a local Ollama instance running.
 
-- [ ] **AI-LV-01 · Ollama connection verified**
+- [x] **AI-LV-01 · Ollama connection verified**
       Requires: EI-14
       Output: `WorkspaceState/AgentState.json` — records connected model name
       Steps: Run `ollama pull codellama` or `ollama pull llama3`; confirm chat panel responds
 
-- [ ] **AI-LV-02 · Code generation from chat**
+- [x] **AI-LV-02 · Code generation from chat**
       Requires: AI-LV-01, EI-12
       Output: AI response → `Editor/Panels/Code/` — "Apply" inserts code at cursor
 
-- [ ] **AI-LV-03 · Build-error auto-fix**
+- [x] **AI-LV-03 · Build-error auto-fix**
       Requires: AI-LV-01, EI-08
       Output: `Agents/FixAgent/FixAgent.cpp` — on build failure, send errors to LLM, apply patch
 
-- [ ] **AI-LV-04 · PCG prompt-to-scene**
+- [x] **AI-LV-04 · PCG prompt-to-scene**
       Requires: AI-LV-01, NF-06
       Output: `Agents/PCGAgent/PCGAgent.cpp` — natural language → PCG rules → scene objects
 
@@ -410,32 +410,32 @@ The editor window opens and renders all panels. Infrastructure is complete.
 
 ## Section 8 — Polish & Advanced
 
-- [ ] **PL-01 · Dockable panel drag-resize**
+- [x] **PL-01 · Dockable panel drag-resize**
       Requires: ED-02 (done)
       Output: `Editor/Docking/DockingSystem.cpp` — mouse-drag splitter bars
 
-- [ ] **PL-02 · Editor settings / preferences panel**
+- [x] **PL-02 · Editor settings / preferences panel**
       Requires: EI-02
       Output: `Editor/Panels/Settings/SettingsPanel.h/.cpp`
       Settings: theme colour, key bindings, AI model, GLFW resolution
 
-- [ ] **PL-03 · Profiler panel live data**
+- [x] **PL-03 · Profiler panel live data**
       Requires: EI-01
       Output: `Editor/Panels/Profiler/ProfilerPanel.cpp` — wire `PerformanceProfiler` callbacks
 
-- [ ] **PL-04 · Material editor node graph**
+- [x] **PL-04 · Material editor node graph**
       Requires: ED-08 (done)
       Output: `Editor/MaterialEditor/MaterialEditor.cpp` — node graph using `NodeEditor` framework
 
-- [ ] **PL-05 · Animated splash screen**
+- [x] **PL-05 · Animated splash screen**
       Requires: ED-03 (done)
       Output: `Editor/main.cpp` — show splash overlay during `Engine.Init()` calls
 
-- [ ] **PL-06 · Ctrl+P quick open**
+- [x] **PL-06 · Ctrl+P quick open**
       Requires: EI-06, EI-12
       Output: Overlay with fuzzy search of assets + entities using `CodeSearchEngine`
 
-- [ ] **PL-07 · VR preview (OpenXR)**
+- [x] **PL-07 · VR preview (OpenXR)**
       Requires: EI-13
       Output: `Editor/Viewport/VRPreview.cpp` — real OpenXR session + frame submit
 

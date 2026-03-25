@@ -7,7 +7,7 @@
 #include "Runtime/Components/Components.h"
 #include <iostream>
 #include <filesystem>
-#include <GLFW/glfw3.h>  // for glfwGetTime
+#include <GLFW/glfw3.h>  // for glfwGetTime; also brings in gl.h on all platforms
 
 int main() {
     std::cout << "[Editor] Working directory: "
@@ -42,6 +42,52 @@ int main() {
     if (!window.Init()) {
         std::cerr << "[Editor] Failed to open window\n";
         return 1;
+    }
+
+    // ── PL-05: Animated splash screen ──────────────────────────────────────
+    // Show a brief loading splash while the engine initializes.
+    // The splash is rendered via direct GL calls before EditorRenderer starts.
+    {
+        double splashStart = glfwGetTime();
+        double splashDuration = 2.5; // seconds
+        while (glfwGetTime() - splashStart < splashDuration && !window.ShouldClose()) {
+            window.PollEvents();
+            double t = glfwGetTime() - splashStart;
+            float progress = (float)(t / splashDuration);
+
+            glViewport(0, 0, winCfg.width, winCfg.height);
+            glClearColor(0.05f, 0.05f, 0.08f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            // Draw a simple progress bar via GL quads
+            glMatrixMode(GL_PROJECTION); glLoadIdentity();
+            glOrtho(0.0, winCfg.width, winCfg.height, 0.0, -1.0, 1.0);
+            glMatrixMode(GL_MODELVIEW);  glLoadIdentity();
+
+            float bx = winCfg.width  * 0.2f;
+            float by = winCfg.height * 0.56f;
+            float bw = winCfg.width  * 0.6f;
+            float bh = 8.f;
+
+            // Background bar
+            glColor4f(0.15f, 0.15f, 0.20f, 1.f);
+            glBegin(GL_QUADS);
+            glVertex2f(bx, by); glVertex2f(bx + bw, by);
+            glVertex2f(bx + bw, by + bh); glVertex2f(bx, by + bh);
+            glEnd();
+
+            // Progress fill (blue → cyan wave)
+            float r = 0.0f + 0.1f * progress;
+            float g = 0.5f * progress;
+            float b = 0.85f;
+            glColor4f(r, g, b, 1.f);
+            glBegin(GL_QUADS);
+            glVertex2f(bx, by); glVertex2f(bx + bw * progress, by);
+            glVertex2f(bx + bw * progress, by + bh); glVertex2f(bx, by + bh);
+            glEnd();
+
+            window.SwapBuffers();
+        }
     }
 
     if (!renderer.Init(winCfg.width, winCfg.height)) {

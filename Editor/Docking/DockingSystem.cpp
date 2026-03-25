@@ -121,4 +121,72 @@ const EditorMode* EditorModeRegistry::ActiveMode() const {
     return nullptr;
 }
 
+// ── PL-01: Mouse drag/resize splitter bars ────────────────────────────────
+
+bool DockingSystem::OnMouseButton(int btn, bool pressed, double x, double y) {
+    if (btn != 0) return false;
+
+    if (pressed) {
+        // Check if mouse is near an edge of a floating panel to initiate resize,
+        // or inside a panel's title bar to initiate a move/drag.
+        for (auto& p : m_panels) {
+            if (!p.visible) continue;
+
+            float fx = (float)x, fy = (float)y;
+            bool inPanel = (fx >= p.x && fx < p.x + p.width &&
+                            fy >= p.y && fy < p.y + p.height);
+            if (!inPanel) continue;
+
+            bool nearRight  = (fx >= p.x + p.width  - kEdgeSlop);
+            bool nearBottom = (fy >= p.y + p.height - kEdgeSlop);
+
+            m_dragStartX  = x;
+            m_dragStartY  = y;
+            m_dragOriginX = p.x;
+            m_dragOriginY = p.y;
+            m_dragOriginW = p.width;
+            m_dragOriginH = p.height;
+            m_dragPanelID = p.id;
+
+            if ((nearRight || nearBottom) && p.resizable) {
+                m_resizing     = true;
+                m_dragging     = false;
+                m_resizeRight  = nearRight;
+                m_resizeBottom = nearBottom;
+            } else {
+                // Title bar drag (top 20px of panel)
+                if (fy < p.y + 20.f) {
+                    m_dragging = true;
+                    m_resizing = false;
+                    p.dockPos  = DockPosition::Floating;
+                }
+            }
+            SetActivePanel(p.id);
+            return m_dragging || m_resizing;
+        }
+    } else {
+        m_dragging = m_resizing = false;
+        m_dragPanelID = 0;
+    }
+    return false;
+}
+
+bool DockingSystem::OnMouseMove(double x, double y) {
+    if (!m_dragging && !m_resizing) return false;
+    DockPanel* p = GetPanel(m_dragPanelID);
+    if (!p) { m_dragging = m_resizing = false; return false; }
+
+    float dx = (float)(x - m_dragStartX);
+    float dy = (float)(y - m_dragStartY);
+
+    if (m_dragging) {
+        p->x = m_dragOriginX + dx;
+        p->y = m_dragOriginY + dy;
+    } else if (m_resizing) {
+        if (m_resizeRight)  p->width  = std::max(80.f, m_dragOriginW + dx);
+        if (m_resizeBottom) p->height = std::max(40.f, m_dragOriginH + dy);
+    }
+    return true;
+}
+
 } // namespace Editor

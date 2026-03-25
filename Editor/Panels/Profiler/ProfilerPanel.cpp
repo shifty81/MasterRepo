@@ -132,4 +132,19 @@ void ProfilerPanel::SetMaxHistory(uint32_t n) {
         m_frames.erase(m_frames.begin());
 }
 
+// ── PL-03: Live data tick ─────────────────────────────────────────────────
+void ProfilerPanel::Tick(float dt) {
+    if (m_paused || !m_liveDataFn) return;
+
+    m_tickAccum += dt;
+    // Record one frame per tick (or throttle to ~60 Hz)
+    if (m_tickAccum < 0.016f && m_frameCounter > 0) return;
+    m_tickAccum = 0.f;
+
+    LiveStats s = m_liveDataFn();
+    BeginFrame(m_frameCounter++);
+    EndFrame(s.cpuMs, s.gpuMs, s.memoryMB,
+             s.entities, s.drawCalls, s.triangles);
+}
+
 } // namespace Editor
