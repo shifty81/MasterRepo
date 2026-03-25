@@ -59,18 +59,14 @@ _try_cxx() {
 }
 
 # ── Helper: try MSVC cl.exe ───────────────────────────────────────────────────
+# NEVER execute cl.exe synchronously during detection — it can hang
+# indefinitely when the VS environment is not initialized (no vcvarsall).
+# A simple existence check via 'command -v' is sufficient; CMake will
+# handle the actual compiler invocation with its own timeout and env setup.
 _try_cl() {
     if command -v cl &>/dev/null; then
-        # Capture ALL cmd.exe output first; do NOT pipe directly to 'head -1'.
-        # On Windows, SIGPIPE is not reliably delivered to native processes
-        # (cmd.exe, cl.exe), so 'head -1' exiting can leave the writer hanging
-        # indefinitely on a broken pipe.  Extract the first line in pure bash.
-        local ver _out
-        _out="$(cmd.exe /c "cl 2>&1" 2>/dev/null || true)"
-        ver="$(_first_line_of "${_out}")"
-        [[ -z "${ver}" ]] && ver="(version unknown)"
         CXX_FOUND=true
-        CXX_NAME="cl (MSVC): ${ver}"
+        CXX_NAME="cl (MSVC)"
         export CXX="cl"
         return 0
     fi
@@ -110,18 +106,26 @@ if [[ "${CXX_FOUND}" == "false" && -n "${WINDIR:-}" ]]; then
     # a keypress when stdin is not a terminal.
     _vcvars_timeout=""
     if command -v timeout &>/dev/null; then
-        timeout 0.1 sleep 1 </dev/null 2>/dev/null; _to_ec=$?
+        _to_ec=0
+        timeout 0.1 sleep 1 </dev/null 2>/dev/null || _to_ec=$?
         [[ "${_to_ec}" -eq 124 ]] && _vcvars_timeout="timeout 60"
         unset _to_ec
     fi
 
     # ${PROGRAMFILES(X86)} contains parentheses, which are not valid in bash
     # variable names.  Read the value via cmd.exe and fall back to the
-    # well-known default path when cmd.exe is unavailable.
+    # well-known default path when cmd.exe is unavailable or times out.
     # Capture ALL output first; do NOT pipe to 'tr' or any other process.
     # On Windows, SIGPIPE is not reliably delivered to native processes, so a
     # pipe from cmd.exe can hang indefinitely.  Strip CR/LF with bash built-ins.
-    _pfiles_x86_raw="$(cmd.exe /c "echo %PROGRAMFILES(X86)%" 2>/dev/null || true)"
+    # Guard with timeout (if available) to prevent hang in corrupted or
+    # enterprise environments.
+    if [[ -n "${_vcvars_timeout}" ]]; then
+        # shellcheck disable=SC2086  # intentional word-splitting
+        _pfiles_x86_raw="$(${_vcvars_timeout} cmd.exe /c "echo %PROGRAMFILES(X86)%" 2>/dev/null || true)"
+    else
+        _pfiles_x86_raw="$(cmd.exe /c "echo %PROGRAMFILES(X86)%" 2>/dev/null || true)"
+    fi
     _pfiles_x86="$(_first_line_of "${_pfiles_x86_raw}")"
     if [[ -z "${_pfiles_x86}" || "${_pfiles_x86}" == "%PROGRAMFILES(X86)%" ]]; then
         _pfiles_x86="${PROGRAMFILES:-C:/Program Files} (x86)"
