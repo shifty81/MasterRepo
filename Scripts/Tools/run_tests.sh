@@ -3,13 +3,16 @@
 # MasterRepo — run_tests.sh   (Windows / Git Bash / MSYS2)
 # Discovers the CMake build directory and runs ctest with verbose output.
 # Build directories match build_all.sh: Builds/debug and Builds/release
+#
+# Hang fix: 'read -r -p ""' is now guarded by _is_interactive() so the
+# script never blocks in CI, scheduled tasks, or non-interactive invocations.
 # =============================================================================
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 BUILD_DEBUG="${REPO_ROOT}/Builds/debug"
 BUILD_RELEASE="${REPO_ROOT}/Builds/release"
-JOBS="$(nproc 2>/dev/null || echo 4)"
+JOBS="${NUMBER_OF_PROCESSORS:-4}"
 
 # ── Source shared logging library ─────────────────────────────────────────────
 # shellcheck source=Scripts/Tools/lib_log.sh
@@ -29,6 +32,13 @@ error() { echo -e "${RED}[test]${NC} $*" >&2; }
 _TEST_START="${SECONDS}"
 _TEST_RESULT="UNKNOWN"
 _TEST_BUILD_DIR=""
+
+# ── Interactive detection ─────────────────────────────────────────────────────
+_is_interactive() {
+    [[ "${CI:-}"   == "true" ]] && return 1
+    [[ "${TERM:-}" == "dumb" ]] && return 1
+    [[ -t 0 && -t 1 ]]
+}
 
 _print_summary_and_wait() {
     local elapsed=$(( SECONDS - _TEST_START ))
@@ -51,8 +61,11 @@ _print_summary_and_wait() {
     echo -e "${BOLD}═══════════════════════════════════════════${NC}"
     echo ""
     log_finish
-    echo -e "${BOLD}Press [Enter] to close...${NC}"
-    read -r -p "" 2>/dev/null || true
+    # Only pause when running interactively — never block in CI or pipelines.
+    if _is_interactive; then
+        echo -e "${BOLD}Press [Enter] to close...${NC}"
+        read -r -p "" 2>/dev/null || true
+    fi
 }
 
 # ── Find a build directory that contains CTestTestfile.cmake ──────────────────

@@ -1,31 +1,67 @@
 #!/usr/bin/env bash
 # =============================================================================
-# MasterRepo — build_all.sh
+# MasterRepo — build_all.sh   (Windows / Git Bash / MSYS2)
 #
 # Builds the entire project (all phases):
-#   Core → Versions → Engine → UI → Editor → Runtime → AI → Agents →
-#   Builder → PCG → IDE → Tools → Projects/NovaForge
+#   Core → Engine → Runtime → Builder → PCG → IDE → Tools → Projects
 #
 # Features:
 #   • Locked animated header: "AtlasForge" logo with per-letter wave flip
 #   • Stage list with live spinner, elapsed time, and status icons
 #   • Overall progress bar with time estimate (learned from previous runs)
-#   • cmake runs in a background process — NO pipe, so MSBuild worker-node
-#     handles can never keep a pipe open and stall the build indefinitely
+#   • cmake runs in a background process — NO pipe to cmake or MSBuild
+#
+# ── Hang vectors fixed in this script ────────────────────────────────────────
+#
+#   1. cmake piped through tee:
+#        MSBuild worker-node processes inherit any pipe write-handle.  When
+#        cmake exits the nodes stay alive, keeping the write end of the pipe
+#        open.  tee never sees EOF → script hangs forever.
+#        Fix: cmake output goes directly to a temp log file (no pipe).
+#        cmake runs as a background job; a kill-0 polling loop waits for it.
+#
+#   2. 'tail -f log &' + 'kill tail' for output streaming (earlier attempt):
+#        On Windows, SIGTERM is not reliably delivered to bash background
+#        processes; 'wait "${tail_pid}"' may never return.
+#        Fix: No streaming process — kill-0 polling only.
+#
+#   3. 'read -r -p ""' without a terminal check:
+#        In CI, scheduled tasks, or when stdin is redirected, read blocks
+#        indefinitely waiting for a line that never arrives.
+#        Fix: _is_interactive() checks [[ -t 0 && -t 1 ]], CI env var, TERM,
+#        and the --no-wait flag before any read is called.
+#
+#   4. '} | tee -a log > report' in build report section (earlier version):
+#        Unnecessary tee pipe for plain printf output.
+#        Fix: write directly to REPORT_FILE; cat to LOG_FILE afterwards.
+#
+#   5. Watchdog background-process cleanup race:
+#        Earlier version used 'disown "${_WD_PID}"' then 'wait "${_WD_PID}"'.
+#        After disown, wait behaviour is undefined in some bash versions.
+#        Fix: lib_watchdog.sh now uses a sentinel file to stop the loop
+#        cleanly; disown is no longer used.
+#
+# Usage:
+#   ./Scripts/Tools/build_all.sh [options]
+#
+# Options:
+#   --debug-only    Build Debug only
+#   --release-only  Build Release only
+#   --clean         Remove existing build dirs before building
+#   --jobs N        Parallel compile jobs (default: %NUMBER_OF_PROCESSORS%)
+#   --no-wait       Skip interactive "Press [Enter]" pause
+#   --help
 #
 # Output:
 #   Binaries  →  Builds/debug/  and  Builds/release/
-#   Logs      →  Logs/Build/build_all_<timestamp>.log
-#   Report    →  Logs/Build/build_all_<timestamp>_report.md
-#
-# Usage:
-#   ./Scripts/Tools/build_all.sh [--debug-only] [--release-only]
-#                                [--jobs N] [--clean] [--help]
+#   Log       →  Logs/Build/build_all_<ts>.log
+#   Report    →  Logs/Build/build_all_<ts>_report.md
 # =============================================================================
 set -euo pipefail
 
 # ── Resolve paths ─────────────────────────────────────────────────────────────
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 LOG_DIR="${REPO_ROOT}/Logs/Build"
 LOG_FILE="${LOG_DIR}/build_all_${TIMESTAMP}.log"
@@ -33,27 +69,21 @@ REPORT_FILE="${LOG_DIR}/build_all_${TIMESTAMP}_report.md"
 BUILD_DEBUG="${REPO_ROOT}/Builds/debug"
 BUILD_RELEASE="${REPO_ROOT}/Builds/release"
 
-# ── Source shared logging & watchdog libraries ────────────────────────────────
-# lib_log provides timestamped, leveled logging to Logs/Build/.
-# lib_watchdog monitors for build hangs (no output for N seconds).
-# Note: build_all.sh also has its own animated display layer (_log) that
-# routes messages to file-only while the display is active.  The shared lib
-# is initialised here so that a separate *_build_all_<ts>.log is created in
-# the standard format, and watchdog_start/stop are available.
-_BUILD_ALL_SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+# ── Source shared libraries ───────────────────────────────────────────────────
 # shellcheck source=Scripts/Tools/lib_log.sh
-source "${_BUILD_ALL_SCRIPT_DIR}/lib_log.sh"
-LOG_CONSOLE=false   # build_all has its own animated console — keep lib_log file-only
+source "${SCRIPT_DIR}/lib_log.sh"
+LOG_CONSOLE=false   # build_all has its own animated console output
 log_init "build_all"
 # shellcheck source=Scripts/Tools/lib_watchdog.sh
-source "${_BUILD_ALL_SCRIPT_DIR}/lib_watchdog.sh"
+source "${SCRIPT_DIR}/lib_watchdog.sh"
 
 # ── Colours ($'...' embeds real ESC bytes so plain printf works) ───────────────
 GREEN=$'\033[0;32m';  YELLOW=$'\033[1;33m'; RED=$'\033[0;31m'
 CYAN=$'\033[0;36m';   BOLD=$'\033[1m';      DIM=$'\033[2m'
 WHITE=$'\033[0;37m';  BWHITE=$'\033[1;97m'; NC=$'\033[0m'
 
-# ── Logging — while the animated display is active, go to file only ────────────
+# ── Log routing ───────────────────────────────────────────────────────────────
+# While the animated display is active, log messages go to file only.
 _STATUS_ACTIVE=false
 _log() {
     if [[ "${_STATUS_ACTIVE}" == "true" ]]; then
@@ -67,8 +97,17 @@ warn()    { _log "${YELLOW}[build_all]${NC} $*"; }
 error()   { _log "${RED}[build_all ERROR]${NC} $*"; }
 section() { _log "\n${CYAN}${BOLD}── $* ──${NC}\n"; }
 
-# ── Pause until the user presses Enter (keeps terminal window open) ────────────
+# ── Interactive detection ─────────────────────────────────────────────────────
+NO_WAIT=false
+_is_interactive() {
+    [[ "${NO_WAIT}"   == "true"  ]] && return 1
+    [[ "${CI:-}"      == "true"  ]] && return 1
+    [[ "${TERM:-}"    == "dumb"  ]] && return 1
+    [[ -t 0 && -t 1 ]]
+}
+
 _wait_for_user() {
+    _is_interactive || return 0
     printf "\n${BOLD}Press [Enter] to close...${NC}\n"
     read -r -p "" 2>/dev/null || true
 }
@@ -77,12 +116,8 @@ _wait_for_user() {
 DO_DEBUG=true
 DO_RELEASE=true
 DO_CLEAN=false
-JOBS="$(nproc 2>/dev/null || echo 4)"
+JOBS="${NUMBER_OF_PROCESSORS:-4}"
 START_SECS="${SECONDS}"
-
-GIT_HTTP_TIMEOUT=60
-GIT_LOW_SPEED_LIMIT=1000
-GIT_LOW_SPEED_TIME=30
 
 # ── Argument parsing ──────────────────────────────────────────────────────────
 while [[ $# -gt 0 ]]; do
@@ -91,23 +126,30 @@ while [[ $# -gt 0 ]]; do
         --release-only) DO_DEBUG=false   ;;
         --clean)        DO_CLEAN=true    ;;
         --jobs)         JOBS="$2"; shift ;;
+        --no-wait)      NO_WAIT=true     ;;
         --help|-h)
             cat <<EOF
 Usage: $(basename "$0") [OPTIONS]
 
-Builds the entire MasterRepo project (all phases) and writes logs.
+Builds the entire MasterRepo project (all phases).
 
 Options:
-  --debug-only      Build Debug configuration only
-  --release-only    Build Release configuration only
+  --debug-only      Build Debug only
+  --release-only    Build Release only
   --clean           Remove existing build directories before building
-  --jobs N          Parallel compile jobs (default: nproc = ${JOBS})
+  --jobs N          Parallel compile jobs (default: %NUMBER_OF_PROCESSORS% = ${JOBS})
+  --no-wait         Skip the interactive "Press [Enter] to close" pause
   --help            Show this message
 
 Output:
   Binaries  →  ${BUILD_DEBUG}/   ${BUILD_RELEASE}/
   Log       →  Logs/Build/build_all_<timestamp>.log
   Report    →  Logs/Build/build_all_<timestamp>_report.md
+
+Environment overrides:
+  CI=true          Treated as --no-wait (also set by most CI systems)
+  WATCHDOG_TIMEOUT Seconds before a stalled cmake is flagged (default: 600)
+  WATCHDOG_ACTION  "report" | "report+kill" | "report+issue" (default: report)
 EOF
             exit 0 ;;
         *) warn "Unknown option: $1" ;;
@@ -119,18 +161,18 @@ done
 mkdir -p "${LOG_DIR}"
 : > "${LOG_FILE}"
 
-# ── Stage count (configure + build per config) ────────────────────────────────
+# ── Stage count ───────────────────────────────────────────────────────────────
 _STAGE_TOTAL=0
 [[ "${DO_DEBUG}"   == "true" ]] && _STAGE_TOTAL=$(( _STAGE_TOTAL + 2 ))
 [[ "${DO_RELEASE}" == "true" ]] && _STAGE_TOTAL=$(( _STAGE_TOTAL + 2 ))
 
 if [[ "${_STAGE_TOTAL}" -eq 0 ]]; then
-    warn "Nothing to build (both --debug-only and --release-only were set)."
+    warn "Nothing to build."
     exit 0
 fi
 
-# ── Time cache — per-stage seconds from the last successful run ────────────────
-_CACHE_FILE="${REPO_ROOT}/Logs/Build/.build_time_cache"
+# ── Time cache ────────────────────────────────────────────────────────────────
+_CACHE_FILE="${LOG_DIR}/.build_time_cache"
 _TC_debug_conf=0; _TC_debug_build=0; _TC_release_conf=0; _TC_release_build=0
 
 _load_time_cache() {
@@ -172,31 +214,28 @@ _load_time_cache
 #   …+2     :  [████░░░░]  N/M stages   Total: T   ~R remaining
 #   …+3     :  (blank)
 #
-# After every draw the cursor is returned to line 1 so the next draw
-# overwrites this block in place — giving the "locked" effect.
+# After every draw the cursor returns to line 1 — "locked" update effect.
 #
 # ── Logo wave animation ────────────────────────────────────────────────────────
-# 10-frame cycle, one frame per letter offset, so all 10 letters of "AtlasForge"
-# are simultaneously at different phases — a continuous rolling wave.
+# 10-frame cycle: all 10 letters of "AtlasForge" are at different phases
+# simultaneously — a continuous rolling wave.
 #
 #   Frame 0 : BRIGHT  upright    (peak normal)
 #   Frame 1 : WHITE   upright
-#   Frame 2 : DIM     upright    (starting to tip forward)
-#   Frame 3 : DIM     "─"        (edge-on)
-#   Frame 4 : DIM     flipped    (just appeared upside-down)
+#   Frame 2 : DIM     upright
+#   Frame 3 : DIM     "─"        (edge-on, tipping forward)
+#   Frame 4 : DIM     flipped
 #   Frame 5 : WHITE   flipped
 #   Frame 6 : BRIGHT  flipped    (peak flipped)
-#   Frame 7 : WHITE   flipped    (starting to tip back)
+#   Frame 7 : WHITE   flipped
 #   Frame 8 : DIM     flipped
 #   Frame 9 : DIM     "─"        (edge-on, returning)
-
 _LOGO_N=( "A"  "t"  "l"  "a"  "s"  "F"  "o"  "r"  "g"  "e"  )
 _LOGO_F=( "∀"  "ʇ"  "l"  "ɐ"  "s"  "Ⅎ"  "o"  "ɹ"  "ᵷ"  "ǝ"  )
-_LOGO_E="─"   # the "edge-on" glyph shown at frames 3 and 9
-_ANIM_TICK=0  # incremented on every redraw
-_LC=""        # output variable used by _logo_char (avoids subshell capture)
+_LOGO_E="─"
+_ANIM_TICK=0
+_LC=""   # set by _logo_char to avoid a subshell capture
 
-# Set _LC to the coloured string for logo character IDX at animation PHASE.
 _logo_char() {
     local idx="$1" phase="$2"
     local n="${_LOGO_N[$idx]}" f="${_LOGO_F[$idx]}"
@@ -214,7 +253,6 @@ _logo_char() {
     esac
 }
 
-# Print the 3-line animated header block.
 _draw_header() {
     local i logo_str=""
     for (( i=0; i<10; i++ )); do
@@ -222,20 +260,18 @@ _draw_header() {
         logo_str+="${_LC} "
     done
     (( _ANIM_TICK++ )) || true
-
     local bd="${CYAN}${BOLD}══════════════════════════════════════════════════════════${NC}"
     printf "  %b\e[K\n"  "${bd}"
     printf "  ${CYAN}✦${NC}  %b ${CYAN}✦${NC}  ${BOLD}MasterRepo Build${NC}\e[K\n" "${logo_str}"
     printf "  %b\e[K\n"  "${bd}"
 }
 
-# ── Full status display ────────────────────────────────────────────────────────
-_SPIN_CHARS=$'/-\\|'   # spinner frames: / - \ |
+_SPIN_CHARS=$'/-\\|'
 _STAGE_DONE=0
 _SPIN_IDX=0
 _STAGE_LABELS=()
-_STAGE_STATES=()    # "pending" | "active" | "done" | "failed"
-_STAGE_ELAPSED=()   # seconds taken, filled on completion
+_STAGE_STATES=()
+_STAGE_ELAPSED=()
 DISPLAY_TOTAL_LINES=0
 
 _init_display() {
@@ -252,29 +288,22 @@ _init_display() {
         _STAGE_ELAPSED+=("0")
     done
 
-    # 3 (header) + 1 (blank) + n (stage rows) + 1 (blank) + 1 (bar) + 1 (blank)
     DISPLAY_TOTAL_LINES=$(( 7 + n ))
     _STATUS_ACTIVE=true
-    _draw_display 0 0   # initial paint — parks cursor at line 1
+    _draw_display 0 0
 }
 
-# Draw all display lines then return cursor to line 1 of the block.
 _draw_display() {
-    local step_start="$1"   # SECONDS when active stage started (0 = none)
-    local step_est="$2"     # estimated seconds for active stage  (0 = unknown)
+    local step_start="$1" step_est="$2"
     local now="${SECONDS}"
     local tot_el=$(( now - START_SECS ))
 
     local sc="${_SPIN_CHARS:$(( _SPIN_IDX % 4 )):1}"
     (( _SPIN_IDX++ )) || true
 
-    # ── Header (3 lines) ──────────────────────────────────────────────────────
     _draw_header
-
-    # ── Blank separator ────────────────────────────────────────────────────────
     printf "\e[K\n"
 
-    # ── Stage rows ────────────────────────────────────────────────────────────
     local i n="${#_STAGE_LABELS[@]}"
     for (( i=0; i<n; i++ )); do
         local state="${_STAGE_STATES[$i]}"
@@ -304,13 +333,11 @@ _draw_display() {
         printf "  %b  ${lc}%-40s${le}  %s\e[K\n" "${icon}" "${label}" "${ts}"
     done
 
-    # ── Blank separator ────────────────────────────────────────────────────────
     printf "\e[K\n"
 
-    # ── Overall progress bar ──────────────────────────────────────────────────
+    # Progress bar
     local bw=32 fill
     fill=$(( _STAGE_DONE * bw / _STAGE_TOTAL ))
-    # Add intra-stage fraction when an estimate is available
     if [[ "${step_est}" -gt 0 && "${step_start}" -gt 0 ]]; then
         local cur_el=$(( now - step_start ))
         local sw=$(( bw / _STAGE_TOTAL ))
@@ -325,7 +352,6 @@ _draw_display() {
 
     local te; printf -v te "%d:%02d" $(( tot_el/60 )) $(( tot_el%60 ))
 
-    # Total estimate (computed inline — no subshell)
     local total_est=0
     [[ "${DO_DEBUG}"   == "true" ]] && \
         total_est=$(( total_est + _TC_debug_conf   + _TC_debug_build   ))
@@ -341,29 +367,27 @@ _draw_display() {
 
     printf "  [${GREEN}%s${NC}]  %d/%d stages   Total: ${BOLD}%s${NC}   ${YELLOW}%s${NC}\e[K\n" \
         "${bar}" "${_STAGE_DONE}" "${_STAGE_TOTAL}" "${te}" "${est_str}"
-
-    # ── Blank line ────────────────────────────────────────────────────────────
     printf "\e[K\n"
 
-    # Return cursor to line 1 of this display block
+    # Return cursor to line 1 of the display block
     printf "\e[%dA\r" "${DISPLAY_TOTAL_LINES}"
 }
 
-# Erase the display block and restore normal terminal output.
 _finalize_display() {
     [[ "${_STATUS_ACTIVE}" == "true" ]] || return 0
-    # Cursor is at line 1 of the block; erase from here to end of screen.
     printf "\e[J"
     _STATUS_ACTIVE=false
 }
 
-# Clean up on Ctrl-C / SIGTERM
+# Signal handler: clean up display then exit
 trap '_finalize_display 2>/dev/null; _wait_for_user; exit 130' INT TERM
 
-# ── Run cmake in the background with the animated display ─────────────────────
-# cmake output goes directly to a temp file — NO pipe.  This means MSBuild
-# worker-node processes cannot hold a pipe write-handle open after the build
-# finishes, which was the root cause of the indefinite hang.
+# ── cmake background runner with animated display ─────────────────────────────
+# cmake output goes directly to a temp file — NO pipe.  MSBuild worker-node
+# processes cannot hold a pipe write-handle open after cmake exits.
+# A bash zombie (finished but not yet waited) still answers kill-0 successfully,
+# so the polling loop exits naturally once cmake finishes.
+# We call wait "${_pid}" after the loop to atomically collect the exit code.
 #
 # Usage: _cmake_bg  STAGE_IDX  PHASE_LOG  STEP_EST_SECS  cmake-args...
 _cmake_bg() {
@@ -372,15 +396,9 @@ _cmake_bg() {
     local t0="${SECONDS}"
     _STAGE_STATES[$sidx]="active"
 
-    # Launch cmake — output appends to the phase log, not a pipe.
-    # A bash zombie (process finished but not yet waited) still answers
-    # kill -0 with success, so the loop below exits naturally when cmake
-    # finishes.  We always call wait "${_pid}" after the loop, which
-    # atomically collects the exit code and reaps the zombie.
     "$@" >> "${plog}" 2>&1 &
     local _pid=$!
 
-    # Start watchdog to detect hangs during cmake/MSBuild
     watchdog_start "${plog}" "${WATCHDOG_TIMEOUT:-600}" "${_pid}"
 
     while kill -0 "${_pid}" 2>/dev/null; do
@@ -397,7 +415,6 @@ _cmake_bg() {
     [[ "${_rc}" -eq 0 ]] && _STAGE_STATES[$sidx]="done" \
                          || _STAGE_STATES[$sidx]="failed"
 
-    # Final redraw so completion state is visible briefly
     _draw_display "${t0}" "${sest}"
     sleep 0.1 2>/dev/null || true
 
@@ -413,7 +430,8 @@ declare -A PHASE_ERRORS
 
 run_phase() {
     local label="$1" build_dir="$2" build_type="$3"
-    local plog; plog="$(mktemp)"
+    local plog; plog="$(mktemp "${LOG_DIR}/.phase_XXXXXXXX.log" 2>/dev/null \
+                        || echo "${LOG_DIR}/.phase_$$.log")"
 
     # Map build type → stage indices and time-cache variable names
     local cidx bidx ck bk cest best
@@ -458,8 +476,8 @@ run_phase() {
     if [[ "${ok}" == "true" ]]; then
         t0="${SECONDS}"
         : > "${plog}"
-        # Detect MSBuild generator (.sln present) and disable node reuse to
-        # prevent worker-node handles from keeping plog open after cmake exits.
+        # /nodeReuse:false prevents MSBuild worker nodes from staying alive
+        # after the build and holding any inherited file handles.
         local _nr=()
         for _f in "${build_dir}"/*.sln; do
             [[ -f "${_f}" ]] && { _nr=("--" "/nodeReuse:false"); break; }
@@ -477,13 +495,13 @@ run_phase() {
     fi
 
     # Extract error lines for the Markdown report
-    PHASE_ERRORS["${label}"]=$(
+    PHASE_ERRORS["${label}"]="$(
         grep -iE "(error[^(]*:|FAILED|fatal error)" "${plog}" \
             | grep -v " 0 error" \
             | head -60 \
-        || true
-    )
-    rm -f "${plog}"
+        2>/dev/null || true
+    )"
+    rm -f "${plog}" 2>/dev/null || true
 
     if [[ "${ok}" == "true" ]]; then
         info "✅ ${label} complete."
@@ -495,76 +513,20 @@ run_phase() {
 }
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Main — environment, dependencies, build
+# Main — environment, clean, build
 # ══════════════════════════════════════════════════════════════════════════════
 section "MasterRepo — Build All  [${TIMESTAMP}]"
-info "Repo root  : ${REPO_ROOT}"
-info "Debug dir  : ${BUILD_DEBUG}"
-info "Release dir: ${BUILD_RELEASE}"
-info "Log file   : ${LOG_FILE}"
-info "Jobs       : ${JOBS}"
-printf "\n"
 
-# ── Environment check ─────────────────────────────────────────────────────────
-section "Environment"
-
-check_cmd() {
-    local cmd="$1" label="${2:-$1}"
-    if command -v "${cmd}" &>/dev/null; then
-        local _out _ver
-        _out="$("${cmd}" --version 2>&1 || true)"
-        _ver="${_out%%$'\n'*}"; _ver="${_ver%%$'\r'*}"
-        [[ -z "${_ver}" ]] && _ver="(version unknown)"
-        info "  ${label}: ${_ver}"
-    else
-        error "  ${label}: NOT FOUND (required)"
-        return 1
-    fi
-}
-
-check_cmd cmake
-if command -v git &>/dev/null; then
-    check_cmd git
-else
-    warn "  git: NOT FOUND — FetchContent (GLFW source download) will not work."
-    warn "  Install git from https://git-scm.com and re-run."
-fi
-
+# ── C++ compiler detection ────────────────────────────────────────────────────
 # shellcheck source=Scripts/Tools/detect_compiler.sh
-source "$(dirname "${BASH_SOURCE[0]}")/detect_compiler.sh" || true
+source "${SCRIPT_DIR}/detect_compiler.sh" || true
 if [[ "${CXX_FOUND}" == "true" ]]; then
-    info "  c++ compiler: ${CXX_NAME}"
+    info "Compiler: ${CXX_NAME}"
 else
-    warn "  No C++ compiler found in PATH — CMake will attempt its own detection."
-    warn "  Configure may fail; see instructions printed above."
+    warn "No C++ compiler found — CMake will attempt its own detection."
 fi
 
-# ── Dependency pre-install ────────────────────────────────────────────────────
-section "Dependencies"
-
-if command -v pacman &>/dev/null; then
-    info "  Detected MSYS2 pacman — installing build dependencies…"
-    pacman -S --noconfirm --needed \
-        mingw-w64-ucrt-x86_64-cmake \
-        mingw-w64-ucrt-x86_64-gcc \
-        mingw-w64-ucrt-x86_64-glfw \
-        git \
-        2>&1 | tee -a "${LOG_FILE}" || \
-    warn "  pacman install failed (packages may already be present)."
-else
-    info "  Git Bash (non-MSYS2): GLFW will be downloaded via CMake FetchContent."
-    info "  Ensure git is installed (https://git-scm.com) so FetchContent can clone GLFW."
-fi
-
-# ── Git network timeouts (prevents FetchContent stall) ────────────────────────
-if command -v git &>/dev/null; then
-    info "  Configuring git network timeouts…"
-    git -C "${REPO_ROOT}" config http.timeout       "${GIT_HTTP_TIMEOUT}"    2>/dev/null || true
-    git -C "${REPO_ROOT}" config http.lowSpeedLimit "${GIT_LOW_SPEED_LIMIT}" 2>/dev/null || true
-    git -C "${REPO_ROOT}" config http.lowSpeedTime  "${GIT_LOW_SPEED_TIME}"  2>/dev/null || true
-fi
-
-# ── Clean ─────────────────────────────────────────────────────────────────────
+# ── Optional clean ────────────────────────────────────────────────────────────
 if [[ "${DO_CLEAN}" == "true" ]]; then
     section "Clean"
     if [[ "${DO_DEBUG}" == "true" && -d "${BUILD_DEBUG}" ]]; then
@@ -578,9 +540,7 @@ if [[ "${DO_CLEAN}" == "true" ]]; then
     info "  Clean done."
 fi
 
-# ── Start animated build display ──────────────────────────────────────────────
-# From this point _log() only appends to the log file.  The terminal shows
-# only the animated header + stage list + progress bar, redrawn every ~0.5 s.
+# ── Start animated display ────────────────────────────────────────────────────
 printf "\n"
 _init_display
 
@@ -588,37 +548,33 @@ _init_display
 [[ "${DO_DEBUG}"   == "true" ]] && run_phase "Debug"   "${BUILD_DEBUG}"   "Debug"
 [[ "${DO_RELEASE}" == "true" ]] && run_phase "Release" "${BUILD_RELEASE}" "Release"
 
-# ── Persist timing data for the next run's estimates ──────────────────────────
 _save_time_cache
-
-# ── Restore normal terminal output ────────────────────────────────────────────
 _finalize_display
 
-# ── Symlink / copy compile_commands.json to repo root for IDE tooling ─────────
+# ── compile_commands.json symlink / copy for IDE tooling ──────────────────────
 if [[ -f "${BUILD_DEBUG}/compile_commands.json" ]]; then
     ln -sf "${BUILD_DEBUG}/compile_commands.json" \
            "${REPO_ROOT}/compile_commands.json" 2>/dev/null || \
     cp     "${BUILD_DEBUG}/compile_commands.json" \
            "${REPO_ROOT}/compile_commands.json" 2>/dev/null || true
-    info "compile_commands.json → ${BUILD_DEBUG}"
 elif [[ -f "${BUILD_RELEASE}/compile_commands.json" ]]; then
     ln -sf "${BUILD_RELEASE}/compile_commands.json" \
            "${REPO_ROOT}/compile_commands.json" 2>/dev/null || \
     cp     "${BUILD_RELEASE}/compile_commands.json" \
            "${REPO_ROOT}/compile_commands.json" 2>/dev/null || true
-    info "compile_commands.json → ${BUILD_RELEASE}"
 fi
 
 # ── Build report ──────────────────────────────────────────────────────────────
 ELAPSED=$(( SECONDS - START_SECS ))
 section "Build Summary"
 
+# Write report to file directly — no tee pipe.  cat to log file afterwards.
 {
     printf "# MasterRepo — Build All Report\n\n"
-    printf "**Date:**      %s\n"   "$(date '+%Y-%m-%d %H:%M:%S')"
-    printf "**Elapsed:**   %ds\n"  "${ELAPSED}"
-    printf "**Repo:**      %s\n"   "${REPO_ROOT}"
-    printf "**Jobs:**      %s\n\n" "${JOBS}"
+    printf "**Date:**    %s\n"   "$(date '+%Y-%m-%d %H:%M:%S')"
+    printf "**Elapsed:** %ds\n"  "${ELAPSED}"
+    printf "**Repo:**    %s\n"   "${REPO_ROOT}"
+    printf "**Jobs:**    %s\n\n" "${JOBS}"
     printf "## Results\n\n"
     printf "| Configuration | Result |\n|---------------|--------|\n"
     _has_rows=false
@@ -662,7 +618,10 @@ section "Build Summary"
     printf "\n## Log Files\n\n"
     printf "- Full log: \`%s\`\n" "${LOG_FILE}"
     printf "- Report:   \`%s\`\n" "${REPORT_FILE}"
-} | tee -a "${LOG_FILE}" > "${REPORT_FILE}"
+} > "${REPORT_FILE}"
+
+# Append report to master log (direct file copy — no pipe)
+cat "${REPORT_FILE}" >> "${LOG_FILE}" 2>/dev/null || true
 
 # ── Terminal summary ───────────────────────────────────────────────────────────
 printf "\n${BOLD}═══════════════════════════════════════════${NC}\n"
@@ -675,14 +634,12 @@ printf "  Report : %s\n\n" "${REPORT_FILE}"
 
 if [[ ${#FAIL[@]} -gt 0 ]]; then
     printf "%b\n" "${RED}[build_all ERROR]${NC} Build had failures. Check the log above."
-    printf "\n"
-    printf "  ${YELLOW}To submit a bug report with logs:${NC}\n"
+    printf "\n  ${YELLOW}To submit a bug report:${NC}\n"
     printf "    bash Scripts/Tools/submit_issue.sh --log \"%s\"\n\n" "${LOG_FILE}"
-    log_finish
-    _wait_for_user
-    exit 1
 fi
 
 log_finish
 _wait_for_user
+
+[[ ${#FAIL[@]} -gt 0 ]] && exit 1
 exit 0

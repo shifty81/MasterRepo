@@ -5,23 +5,35 @@
 # Builds one or more Windows presets and packages each into a .zip archive
 # in Builds/Packages/.
 #
-# Available presets  (defined in CMakePresets.json):
+# Available presets:
 #   windows-x64          Windows 10/11 x64 Release  (MSVC or MinGW)
 #   windows-x64-debug    Windows 10/11 x64 Debug
 #   all                  Both of the above
 #
-# Options:
-#   --no-package       Skip creating .zip archives
-#   --output DIR       Override Builds/Packages output directory
-#   --jobs N           Parallel compile jobs (default: nproc)
-#   --clean            Remove existing build dirs before building
-#   --help             Show this message
+# ── Hang vectors fixed in this script ────────────────────────────────────────
 #
-# Example:
-#   ./Scripts/Tools/export_builds.sh windows-x64
-#   ./Scripts/Tools/export_builds.sh all --no-package
+#   1. cmake piped through tee:
+#        Same MSBuild worker-node handle issue as in build.sh.
+#        Fix: cmake output → log file directly; kill-0 polling loop.
+#
+#   2. 'read -r -p ""' without a terminal check:
+#        In CI or non-interactive contexts, read blocks forever.
+#        Fix: _is_interactive() guards every read call.
+#
+# Options:
+#   PRESET ...       One or more preset names (or 'all')
+#   --no-package     Skip creating .zip archives
+#   --output DIR     Override Builds/Packages output directory
+#   --jobs N         Parallel compile jobs (default: %NUMBER_OF_PROCESSORS%)
+#   --clean          Remove existing build dirs before building
+#   --no-wait        Skip interactive "Press [Enter]" pause
+#   --help
 # =============================================================================
 set -euo pipefail
+
+SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 
 GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'
 CYAN='\033[0;36m';  BOLD='\033[1m';      NC='\033[0m'
@@ -31,54 +43,56 @@ warn()    { echo -e "${YELLOW}[EXPORT]${NC} $*"; }
 error()   { echo -e "${RED}[EXPORT ERROR]${NC} $*" >&2; }
 section() { echo -e "\n${CYAN}${BOLD}── $* ──${NC}\n"; }
 
-# ── Source shared logging library ─────────────────────────────────────────────
-_EXPORT_SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+# ── Source shared libraries ───────────────────────────────────────────────────
 # shellcheck source=Scripts/Tools/lib_log.sh
-source "${_EXPORT_SCRIPT_DIR}/lib_log.sh"
+source "${SCRIPT_DIR}/lib_log.sh"
 log_init "export_builds"
 # shellcheck source=Scripts/Tools/lib_watchdog.sh
-source "${_EXPORT_SCRIPT_DIR}/lib_watchdog.sh"
+source "${SCRIPT_DIR}/lib_watchdog.sh"
+
+# ── Interactive detection ─────────────────────────────────────────────────────
+NO_WAIT=false
+_is_interactive() {
+    [[ "${NO_WAIT}"   == "true"  ]] && return 1
+    [[ "${CI:-}"      == "true"  ]] && return 1
+    [[ "${TERM:-}"    == "dumb"  ]] && return 1
+    [[ -t 0 && -t 1 ]]
+}
 
 _wait_for_user() {
-    echo ""
-    echo -e "${BOLD}Press [Enter] to close...${NC}"
+    _is_interactive || return 0
+    printf "\n${BOLD}Press [Enter] to close...${NC}\n"
     read -r -p "" 2>/dev/null || true
 }
 
-# ── Helper: run cmake without a pipe or background streaming process ───────────
-# On Windows, MSBuild spawns persistent worker-node processes that inherit any
-# pipe write-handle, preventing tee from seeing EOF (= infinite hang).
-# The previous fix used 'tail -f "${log_file}" &' to stream output, but on
-# Windows (Git Bash / MSYS2) 'kill SIGTERM tail' is unreliable — the process
-# may not respond, causing 'wait "${_tail_pid}"' to hang indefinitely.
-# Fix: redirect output directly to the log file (no pipe, no background
-# streaming process).  Use a kill-0 polling loop — no secondary process to kill.
+# ── cmake runner ──────────────────────────────────────────────────────────────
 _cmake_run() {
     local log_file="$1"; shift
     : >> "${log_file}"
+
     "$@" >> "${log_file}" 2>&1 &
     local _pid=$!
     local _rc=0
+
     watchdog_start "${log_file}" "${WATCHDOG_TIMEOUT:-600}" "${_pid}"
     while kill -0 "${_pid}" 2>/dev/null; do
         sleep 0.5 2>/dev/null || true
     done
     wait "${_pid}" || _rc=$?
     watchdog_stop
+
     return "${_rc}"
 }
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
+# ── Defaults ──────────────────────────────────────────────────────────────────
 PACKAGE_DIR="${REPO_ROOT}/Builds/Packages"
-JOBS="$(nproc 2>/dev/null || echo 4)"
+JOBS="${NUMBER_OF_PROCESSORS:-4}"
 DO_PACKAGE=true
 CLEAN=false
-
-# Windows-only presets
 ALL_PRESETS=("windows-x64" "windows-x64-debug")
 SELECTED_PRESETS=()
 
+# ── Argument parsing ──────────────────────────────────────────────────────────
 while [[ $# -gt 0 ]]; do
     case "$1" in
         all)          SELECTED_PRESETS=("${ALL_PRESETS[@]}") ;;
@@ -86,6 +100,7 @@ while [[ $# -gt 0 ]]; do
         --output)     PACKAGE_DIR="$2"; shift ;;
         --jobs)       JOBS="$2"; shift ;;
         --clean)      CLEAN=true ;;
+        --no-wait)    NO_WAIT=true ;;
         --help|-h)
             cat <<EOF
 Usage: $(basename "$0") [PRESET ...] [OPTIONS]
@@ -97,7 +112,12 @@ Options:
   --output DIR    Override output directory (default: Builds/Packages)
   --jobs N        Parallel compile jobs
   --clean         Remove existing build dirs first
+  --no-wait       Skip interactive "Press [Enter]" pause
   --help          Show this message
+
+Environment overrides:
+  CI=true          Treated as --no-wait
+  WATCHDOG_TIMEOUT Seconds before a stalled cmake is flagged (default: 600)
 EOF
             exit 0 ;;
         -*) warn "Unknown option: $1" ;;
@@ -109,18 +129,17 @@ done
 if [[ ${#SELECTED_PRESETS[@]} -eq 0 ]]; then
     error "No presets specified.  Use a preset name or 'all'."
     error "Available: windows-x64  windows-x64-debug  all"
+    _wait_for_user
     exit 1
 fi
 
 mkdir -p "${PACKAGE_DIR}"
-
 PASSED=(); FAILED=(); SKIPPED=()
 
 build_preset() {
     local preset="$1"
     section "Building: ${preset}"
 
-    # Validate preset is a known Windows preset
     local valid=false
     local p
     for p in "${ALL_PRESETS[@]}"; do
@@ -141,7 +160,7 @@ build_preset() {
     fi
 
     # ── Configure ─────────────────────────────────────────────────────────────
-    local configure_log="${PACKAGE_DIR}/${preset}_configure.log"
+    local configure_log="${PACKAGE_DIR}/${preset}_configure_${TIMESTAMP}.log"
     info "Configuring preset '${preset}'…"
     if ! _cmake_run "${configure_log}" \
             cmake --preset "${preset}" \
@@ -152,11 +171,9 @@ build_preset() {
     fi
 
     # ── Build ─────────────────────────────────────────────────────────────────
-    local build_log="${PACKAGE_DIR}/${preset}_build.log"
+    local build_log="${PACKAGE_DIR}/${preset}_build_${TIMESTAMP}.log"
     info "Building preset '${preset}'…"
 
-    # Detect MSBuild generator (.sln present) and disable node reuse to prevent
-    # worker-node handles from keeping a pipe open after the build finishes.
     local _nr=()
     for _f in "${build_dir}"/*.sln; do
         [[ -f "${_f}" ]] && { _nr=("--" "/nodeReuse:false"); break; }
@@ -181,24 +198,23 @@ build_preset() {
         local zipfile="${PACKAGE_DIR}/${pkg_name}.zip"
 
         mkdir -p "${pkg_dir}/bin"
-
         for sub in bin lib; do
             [[ -d "${build_dir}/${sub}" ]] && \
                 cp -r "${build_dir}/${sub}/." "${pkg_dir}/${sub}/" 2>/dev/null || true
         done
-        [[ -d "${REPO_ROOT}/Config"  ]] && cp -r "${REPO_ROOT}/Config"  "${pkg_dir}/"
-        [[ -f "${REPO_ROOT}/README.md" ]] && cp "${REPO_ROOT}/README.md" "${pkg_dir}/"
+        [[ -d "${REPO_ROOT}/Config"    ]] && cp -r "${REPO_ROOT}/Config"    "${pkg_dir}/"
+        [[ -f "${REPO_ROOT}/README.md" ]] && cp    "${REPO_ROOT}/README.md" "${pkg_dir}/"
 
         if command -v zip &>/dev/null; then
             (cd "${PACKAGE_DIR}" && zip -r "${zipfile}" "${pkg_name}") && \
-                info "📦 Package: ${zipfile}" || \
-                warn "  zip failed for ${preset} — folder at ${pkg_dir}"
+                info "Package: ${zipfile}" || \
+                warn "  zip failed — folder at ${pkg_dir}"
         else
             warn "  zip not found — package folder left at ${pkg_dir}"
             warn "  Install zip: pacman -S zip  (MSYS2) or use 7-Zip"
         fi
 
-        rm -rf "${pkg_dir}"
+        rm -rf "${pkg_dir}" 2>/dev/null || true
     fi
 }
 
@@ -218,11 +234,12 @@ echo -e "${BOLD}═════════════════════�
 
 if [[ ${#FAILED[@]} -gt 0 ]]; then
     echo ""
-    echo -e "  ${YELLOW}To submit a bug report with logs:${NC}"
+    echo -e "  ${YELLOW}To submit a bug report:${NC}"
     echo -e "    bash Scripts/Tools/submit_issue.sh --log \"$(log_file)\""
 fi
 
 log_finish
 _wait_for_user
+
 [[ ${#FAILED[@]} -gt 0 ]] && exit 1
 exit 0

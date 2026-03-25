@@ -3,6 +3,9 @@
 # MasterRepo — clean.sh   (Windows / Git Bash / MSYS2)
 # Removes CMake build artifact directories.
 # Build directories match build_all.sh: Builds/debug and Builds/release
+#
+# Hang fix: 'read -r -p ""' is now guarded by _is_interactive() so the
+# script never blocks in CI, scheduled tasks, or non-interactive invocations.
 # =============================================================================
 set -euo pipefail
 
@@ -22,6 +25,13 @@ NC='\033[0m'
 
 warn() { echo -e "${YELLOW}[clean]${NC} $*"; }
 info() { echo -e "${GREEN}[clean]${NC} $*"; }
+
+# ── Interactive detection ─────────────────────────────────────────────────────
+_is_interactive() {
+    [[ "${CI:-}"   == "true" ]] && return 1
+    [[ "${TERM:-}" == "dumb" ]] && return 1
+    [[ -t 0 && -t 1 ]]
+}
 
 removed=0
 
@@ -48,5 +58,8 @@ fi
 
 log_finish
 echo ""
-echo -e "${BOLD}Press [Enter] to close...${NC}"
-read -r -p "" 2>/dev/null || true
+# Only pause when running interactively — never block in CI or pipelines.
+if _is_interactive; then
+    echo -e "${BOLD}Press [Enter] to close...${NC}"
+    read -r -p "" 2>/dev/null || true
+fi

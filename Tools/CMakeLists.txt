@@ -42,6 +42,8 @@ set(TOOLS_SOURCES
     Profiler/GPUProfiler/GPUProfiler.cpp
     # Phase 32 — texture atlas packing with Shelf and MaxRects algorithms
     Packing/TextureAtlasPacker/TextureAtlasPacker.cpp
+    # Phase 33 — asset browser
+    AssetTools/AssetBrowser/AssetBrowser.cpp
 )
 
 add_library(ToolsLib STATIC ${TOOLS_SOURCES})
@@ -50,3 +52,23 @@ target_include_directories(ToolsLib PUBLIC ${CMAKE_SOURCE_DIR})
 target_compile_features(ToolsLib PUBLIC cxx_std_20)
 
 message(STATUS "  ToolsLib configured with ${CMAKE_CURRENT_SOURCE_DIR}")
+
+# ── ToolsGUI — GUI application layer ─────────────────────────────────────────
+
+set(TOOLS_GUI_SOURCES
+    GUI/ToolsApp.cpp
+    GUI/panels/GPUProfilerPanel.cpp
+    GUI/panels/PerfProfilerPanel.cpp
+    GUI/panels/MemoryProfilerPanel.cpp
+    GUI/panels/DependencyPanel.cpp
+    GUI/panels/SymbolLocatorPanel.cpp
+    GUI/panels/GitHistoryPanel.cpp
+    GUI/panels/AtlasPackerPanel.cpp
+    GUI/panels/AssetBrowserPanel.cpp
+)
+
+add_library(ToolsGUI STATIC ${TOOLS_GUI_SOURCES})
+target_include_directories(ToolsGUI PUBLIC ${CMAKE_SOURCE_DIR})
+target_compile_features(ToolsGUI PUBLIC cxx_std_20)
+target_link_libraries(ToolsGUI PUBLIC ToolsLib UILib)
+message(STATUS "  ToolsGUI configured")

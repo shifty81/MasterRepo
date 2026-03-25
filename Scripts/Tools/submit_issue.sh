@@ -123,7 +123,7 @@ elif [[ -n "${LOG_FILE}" && -f "${LOG_FILE}" ]]; then
 
 **Date:** $(date '+%Y-%m-%d %H:%M:%S')
 **Host:** $(hostname 2>/dev/null || echo unknown)
-**OS:** $(uname -s 2>/dev/null || echo unknown)
+**OS:** Windows (Git Bash / MSYS2)
 
 ## Error Summary
 
@@ -146,8 +146,8 @@ $(env | grep -iE '^(PATH|CXX|CC|CMAKE|MSYS|MINGW|VS|OS|COMSPEC)' 2>/dev/null | s
 ## System Info
 
 \`\`\`
-$(uname -a 2>/dev/null || true)
-$(free -h 2>/dev/null || true)
+$(cmd.exe /c "ver" 2>/dev/null || true)
+$(wmic OS get FreePhysicalMemory,TotalVisibleMemorySize /Value 2>/dev/null || true)
 $(df -h . 2>/dev/null || true)
 \`\`\`
 
