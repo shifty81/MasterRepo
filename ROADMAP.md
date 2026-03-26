@@ -31,7 +31,8 @@
 | Shippable Game Foundations (Phase 39) | 10/10 | 0 | 10 |
 | Live Services & Advanced AI (Phase 40) | 10/10 | 0 | 10 |
 | Developer Experience & World Simulation (Phase 41) | 10/10 | 0 | 10 |
-| **TOTAL** | **241/241** | **0** | **241** |
+| Immersive Technologies & Live Infrastructure (Phase 42) | 10/10 | 0 | 10 |
+| **TOTAL** | **251/251** | **0** | **251** |
 
 ---
 
@@ -970,6 +971,26 @@ All three paths converge for the final product.
 
 ---
 
+## Phase 42 – Immersive Technologies & Live Infrastructure ✅
+
+> Fills key gaps in splines, weather, dialogue, input, LOD, RPC, light baking, objectives, voice,
+> and open-world streaming.  All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 42.01 | Spline System | High | Catmull-Rom + Bezier splines, arc-length param, Frenet frame, nearest-point, JSON | `Engine/Spline/SplineSystem.h/.cpp` |
+| ✅ 42.02 | Weather System | High | Procedural weather (Clear→Blizzard), smooth blend, time-of-day, thunder events | `PCG/Weather/WeatherSystem/WeatherSystem.h/.cpp` |
+| ✅ 42.03 | Conversation Graph | High | Node-graph dialogue: conditions, effects, choices, localization, JSON save/load | `Runtime/Dialogue/ConversationGraph/ConversationGraph.h/.cpp` |
+| ✅ 42.04 | Input Remapper | High | Runtime rebind: keyboard/mouse/gamepad, axis support, conflict detection, profiles | `Engine/Input/Remapping/InputRemapper.h/.cpp` |
+| ✅ 42.05 | LOD Manager | Medium | Distance-based LOD selection, cross-fade blend, screen-size mode, global bias | `Engine/Lod/LODManager/LODManager.h/.cpp` |
+| ✅ 42.06 | RPC System | Medium | Typed remote procedure calls: reliable/unreliable, broadcast/unicast, arg serialization | `Engine/Net/RPC/RPCSystem.h/.cpp` |
+| ✅ 42.07 | Light Baker | Medium | CPU path-traced lightmap baker: direct shadows, 1-bounce GI, AO, async threading | `Engine/Lighting/LightBaker/LightBaker.h/.cpp` |
+| ✅ 42.08 | Objective System | Medium | Quest objectives: conditions, time limits, chaining, persistence, reward descriptors | `Runtime/Gameplay/ObjectiveSystem/ObjectiveSystem.h/.cpp` |
+| ✅ 42.09 | Voice Manager | Low | VO line queue with priority, 3D position, subtitles, lip-sync paths, cooldowns | `Runtime/Audio/VoiceManager/VoiceManager.h/.cpp` |
+| ✅ 42.10 | Scene Streaming | High | Open-world chunk streaming: load/unload radius, memory budget, soft unload, callbacks | `Runtime/Streaming/SceneStreamingSystem/SceneStreamingSystem.h/.cpp` |
+
+---
+
 ## Appendix B — Rules & Conventions
 
 | Rule | Description |
@@ -1017,5 +1038,6 @@ All three paths converge for the final product.
 | 39 | Shippable Game Foundations — RuntimeAnalytics (Runtime), CinematicSystem (Engine), GamepadSystem (Engine/Input), GraphicsSettings (Engine), SaveGameManager (Runtime), PackagingPipeline (Builder), TelemetryReporter (Core), NetworkReplication (Engine/Net), CloudSyncManager (Core), ShipExporter (Builder). |
 | 40 | Live Services & Advanced AI — PromptTemplateEngine (AI), MultiAgentCoordinator (AI), SpatialAudio (Engine/Audio), PlanetGenerator (PCG), LeaderboardSystem (Runtime), FeatureFlagSystem (Core), TimelineEditorPanel (Editor/Panels), NotificationSystem (Runtime), NavMesh (Engine/Pathfinding), SamplingProfiler (Core/Profiling). |
 | 41 | Developer Experience & World Simulation — ShaderGraph (Engine/Shader), BehaviorTreeEditorPanel (Editor/Panels), FluidSimulation (Engine/Sim), EventReplaySystem (Core), CrowdSimulation (Runtime), DataTableSystem (Core), ProceduralAnimation (Engine/Animation), BlueprintCompiler (Builder), MinimapSystem (Runtime), GPUParticleSystem (Engine/Particles). |
+| 42 | Immersive Technologies & Live Infrastructure — SplineSystem (Engine/Spline), WeatherSystem (PCG/Weather), ConversationGraph (Runtime/Dialogue), InputRemapper (Engine/Input/Remapping), LODManager (Engine/Lod), RPCSystem (Engine/Net/RPC), LightBaker (Engine/Lighting), ObjectiveSystem (Runtime/Gameplay), VoiceManager (Runtime/Audio), SceneStreamingSystem (Runtime/Streaming). |
 
 </details>
