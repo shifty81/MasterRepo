@@ -24,8 +24,10 @@
 #include <algorithm>
 
 // ── stb_easy_font ─────────────────────────────────────────────────────────
-// Only define the implementation once per translation unit.
-#define STB_EASY_FONT_IMPLEMENTATION
+// The implementation is defined by the including .cpp file (main.cpp)
+// via #define STB_EASY_FONT_IMPLEMENTATION before including this header.
+// This prevents multiple-definition errors if the header were ever included
+// in more than one translation unit.
 #include "External/stb/stb_easy_font.h"
 
 namespace NovaForge {
@@ -45,10 +47,11 @@ struct HUDState {
 class HUD {
 public:
     // Call every render frame.  w/h are the framebuffer dimensions.
-    void Draw(int w, int h, const HUDState& s) {
-        // Accumulate FPS
+    // dt is the elapsed time since the last frame in seconds.
+    void Draw(int w, int h, const HUDState& s, double dt = 1.0 / 60.0) {
+        // Accumulate accurate FPS from real frame dt
         m_fpsFrames++;
-        m_fpsAccum += 1.0 / 60.0; // approximation; real dt not available here
+        m_fpsAccum += dt;
         if (m_fpsAccum >= 0.5) {
             m_fps = m_fpsFrames / m_fpsAccum;
             m_fpsAccum = 0; m_fpsFrames = 0;
@@ -138,9 +141,9 @@ public:
         float cx = W * 0.5f - 100.f, cy = 38.f;
         Rect(cx, cy, 200.f, H - 60.f - logHeightApprox(s) - 22.f, 0x0D0D1AFF);
         RectOutline(cx, cy, 200.f, H - 60.f - logHeightApprox(s) - 22.f, 0x2A2A4AFF);
-        Text("  3D VIEWPORT", cx + 4, cy + 4, 0x2A2A4AFF, 1.0f);
-        Text("[Game world renders here]", cx + 8, cy + 24, 0x3A3A6AFF);
-        Text("[Waiting for 3D renderer]", cx + 8, cy + 40, 0x2A3A5AFF);
+        Text("  GAME WORLD", cx + 4, cy + 4, 0x2A2A4AFF, 1.0f);
+        Text("Launch AtlasEditor", cx + 8, cy + 24, 0x3A3A6AFF);
+        Text("to design scenes", cx + 8, cy + 40, 0x2A3A5AFF);
     }
 
     // Feed new log lines in so they appear in the HUD

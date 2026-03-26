@@ -27,12 +27,15 @@
 #include "Runtime/Sim/AIMinerStateMachine/AIMinerStateMachine.h"
 #include "PCG/Structures/StructureGenerator/StructureGenerator.h"
 #include "Engine/Core/Logger.h"
+// ── NovaForgeHUD requires stb_easy_font implementation in this TU ─────────
+#define STB_EASY_FONT_IMPLEMENTATION
 #include "Projects/NovaForge/NovaForgeHUD.h"
 #include <iostream>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <chrono>
 
 // ── Simple key-state tracker (GLFW-independent polling) ────────────────────
 namespace {
@@ -479,17 +482,25 @@ int main() {
         gameHud.AppendLog(msg);
     });
 
+    // Track real frame time for accurate HUD FPS display
+    auto lastFrameTime = std::chrono::steady_clock::now();
+
     // Capture references for the render callback
     engine.SetRenderCallback([&](int w, int h) {
+        auto now = std::chrono::steady_clock::now();
+        double dt = std::chrono::duration<double>(now - lastFrameTime).count();
+        lastFrameTime = now;
+        if (dt <= 0.0 || dt > 1.0) dt = 1.0 / 60.0; // clamp outliers
+
         auto state = gameHud.BuildState(
             /* entities  */ static_cast<int>(engine.GetWorld().EntityCount()),
             /* miners    */ miners.MinerCount(),
             /* earnings  */ miners.TotalEarnings(),
             /* crafting  */ crafting.Stats().activeSessions,
             /* builder   */ builderActive,
-            /* fps       */ 0.0   // HUD tracks its own FPS internally
+            /* fps       */ 0.0  // HUD computes FPS from dt internally
         );
-        gameHud.Draw(w, h, state);
+        gameHud.Draw(w, h, state, dt);
     });
 
     engine.Run();

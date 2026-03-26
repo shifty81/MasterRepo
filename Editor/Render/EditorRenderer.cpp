@@ -63,6 +63,10 @@ static constexpr uint32_t kAxisY        = 0x55BB55FF;
 static constexpr uint32_t kAxisZ        = 0x5588E0FF;
 static constexpr uint32_t kHighlight    = 0x007ACCFF;
 
+// ── Editor defaults ────────────────────────────────────────────────────────
+static constexpr float    kRotSnapDeg   = 15.f;  // rotation snap angle (degrees)
+static constexpr char     kDefaultScenePath[] = "Projects/NovaForge/Scenes/editor_save.scene";
+
 // ── Layout constants ───────────────────────────────────────────────────────
 static constexpr float kTitleH    = 26.f;
 static constexpr float kMenuH     = 22.f;
@@ -165,7 +169,7 @@ void EditorRenderer::OnMouseMove(double x, double y) {
                 }
             } else if (m_gizmoMode == 1) { // Rotate — compose quaternion delta
                 float angle = (float)(dx * 1.5f); // degrees per pixel
-                if (m_gridSnap) angle = std::round(angle / 15.f) * 15.f;
+                if (m_gridSnap) angle = std::round(angle / kRotSnapDeg) * kRotSnapDeg;
                 Engine::Math::Vec3 axis{0, 0, 0};
                 if (m_gizmoDragAxis == 1) axis = {1, 0, 0};
                 if (m_gizmoDragAxis == 2) axis = {0, 1, 0};
@@ -307,9 +311,10 @@ void EditorRenderer::OnKey(int key, bool pressed) {
                 AppendConsole("[Info]  Redo: " + desc);
             }
         } else if (key == K_S) {
-            SaveScene("Projects/NovaForge/Scenes/editor_autosave.scene");
+            SaveScene(kDefaultScenePath);
         } else if (key == K_O) {
-            AppendConsole("[Info]  Open Scene — pick a .scene file from Projects/NovaForge/Scenes/");
+            AppendConsole("[Info]  Open Scene — loading from: " + std::string(kDefaultScenePath));
+            LoadScene(kDefaultScenePath);
         } else if (key == K_B) {
             TriggerBuild();
         }
@@ -419,7 +424,7 @@ float EditorRenderer::SnapToGrid(float v) const {
 
 // ── SaveScene — write entities to a simple JSON file ─────────────────────
 void EditorRenderer::SaveScene(const std::string& path) {
-    if (!m_world) { AppendConsole("[Warn]  No world to save"); return; }
+    if (!m_world) { AppendConsole("[Warn]  Cannot save scene: world object is null"); return; }
     try {
         // Make sure the output directory exists
         auto dir = std::filesystem::path(path).parent_path();
@@ -460,7 +465,7 @@ void EditorRenderer::SaveScene(const std::string& path) {
 
 // ── LoadScene — read entities from a simple JSON file ────────────────────
 void EditorRenderer::LoadScene(const std::string& path) {
-    if (!m_world) { AppendConsole("[Warn]  No world to load into"); return; }
+    if (!m_world) { AppendConsole("[Warn]  Cannot load scene: world object is null"); return; }
     std::ifstream f(path);
     if (!f.is_open()) {
         AppendConsole("[Error] Cannot open scene: " + path);
@@ -684,9 +689,9 @@ void EditorRenderer::DrawMenuBar(float x, float y, float w, float h) {
             if (hov && m_leftMousePressed) {
                 std::string label = item;
                 if (label.find("Save Scene") != std::string::npos) {
-                    SaveScene("Projects/NovaForge/Scenes/editor_save.scene");
+                    SaveScene(kDefaultScenePath);
                 } else if (label.find("Open Scene") != std::string::npos) {
-                    LoadScene("Projects/NovaForge/Scenes/editor_save.scene");
+                    LoadScene(kDefaultScenePath);
                 } else if (label.find("Build All") != std::string::npos
                        ||  label.find("Build Debug") != std::string::npos) {
                     TriggerBuild();
