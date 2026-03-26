@@ -49,7 +49,7 @@ class PoolAllocator {
 
     // Each slot is either an object or a free-list node.
     // We use a union-like aligned storage to overlay T and next pointer.
-    struct alignas(T) Slot {
+    struct Slot {
         alignas(T) unsigned char storage[sizeof(T)];
         Slot* next{nullptr};
     };

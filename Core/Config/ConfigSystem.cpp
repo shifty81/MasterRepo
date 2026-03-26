@@ -161,9 +161,19 @@ bool ConfigSystem::LoadFile(const std::string& path, ConfigFormat fmt, int layer
         std::error_code ec;
         auto ft = std::filesystem::last_write_time(path, ec);
         if (!ec) {
+#ifdef _WIN32
+            // MSVC: std::filesystem::_File_time_clock lacks to_sys.
+            // file_time_type ticks are 100-ns intervals from the NTFS epoch (Jan 1, 1601).
+            // duration_cast<seconds> converts those ticks → whole seconds since NTFS epoch.
+            // Subtract 11644473600 s (= 134774 days) to shift to the Unix epoch (Jan 1, 1970).
+            auto sec = std::chrono::duration_cast<std::chrono::seconds>(
+                ft.time_since_epoch()); // now in seconds since NTFS epoch
+            mtime = static_cast<std::time_t>(sec.count() - 11644473600LL);
+#else
             auto sctp = std::chrono::time_point_cast<std::chrono::seconds>(
                 std::chrono::file_clock::to_sys(ft));
             mtime = static_cast<std::time_t>(sctp.time_since_epoch().count());
+#endif
         }
         m_impl->watched.push_back({path, fmt, layer, mtime});
     }
@@ -301,9 +311,19 @@ void ConfigSystem::PollReload() {
         std::error_code ec;
         auto ft = std::filesystem::last_write_time(fw.path, ec);
         if (ec) continue;
+#ifdef _WIN32
+        // MSVC: std::filesystem::_File_time_clock lacks to_sys.
+        // file_time_type ticks are 100-ns intervals from the NTFS epoch (Jan 1, 1601).
+        // duration_cast<seconds> converts those ticks → whole seconds since NTFS epoch.
+        // Subtract 11644473600 s (= 134774 days) to shift to the Unix epoch (Jan 1, 1970).
+        auto sec = std::chrono::duration_cast<std::chrono::seconds>(
+            ft.time_since_epoch()); // now in seconds since NTFS epoch
+        std::time_t mtime = static_cast<std::time_t>(sec.count() - 11644473600LL);
+#else
         auto sctp = std::chrono::time_point_cast<std::chrono::seconds>(
             std::chrono::file_clock::to_sys(ft));
         std::time_t mtime = static_cast<std::time_t>(sctp.time_since_epoch().count());
+#endif
         if (mtime != fw.mtime) {
             fw.mtime = mtime;
             LoadFile(fw.path, fw.fmt, fw.layer);
