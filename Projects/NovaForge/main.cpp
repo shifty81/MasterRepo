@@ -93,9 +93,10 @@ int main() {
 
     // ── Engine ──────────────────────────────────────────────────────────────
     Engine::Core::EngineConfig cfg;
-    cfg.mode     = Engine::Core::EngineMode::Client;
-    cfg.assetRoot = "Projects/NovaForge/Assets";
-    cfg.tickRate  = 60;
+    cfg.mode        = Engine::Core::EngineMode::Client;
+    cfg.assetRoot   = "Projects/NovaForge/Assets";
+    cfg.windowTitle = "NovaForge";
+    cfg.tickRate    = 60;
 
     Engine::Core::Engine engine(cfg);
     engine.InitCore();
