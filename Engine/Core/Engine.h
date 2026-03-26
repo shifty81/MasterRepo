@@ -2,9 +2,14 @@
 #include <string>
 #include <cstdint>
 #include <functional>
+#include <memory>
 #include "Runtime/ECS/ECS.h"
 #include "Engine/Net/NetContext.h"
 #include "Engine/Sim/TickScheduler.h"
+
+// Forward declarations to avoid pulling GLFW/render headers into every TU
+namespace Engine::Window { class Window; }
+namespace Engine::Render { class Renderer; }
 
 namespace Engine::Core {
 
@@ -31,10 +36,11 @@ enum class Capability {
 };
 
 struct EngineConfig {
-    EngineMode mode = EngineMode::Client;
-    std::string assetRoot = "assets";
-    uint32_t tickRate = 30;
-    uint32_t maxTicks = 0; // 0 = unlimited (run forever), >0 = stop after N ticks
+    EngineMode  mode        = EngineMode::Client;
+    std::string assetRoot   = "assets";
+    std::string windowTitle = "NovaForge";
+    uint32_t    tickRate    = 30;
+    uint32_t    maxTicks    = 0; // 0 = unlimited (run forever), >0 = stop after N ticks
 };
 
 class Engine {
@@ -82,6 +88,8 @@ private:
     net::NetContext m_net;
     Sim::TickScheduler m_scheduler;
     FrameCallback m_frameCallback;
+    std::unique_ptr<::Engine::Window::Window>   m_window;
+    std::unique_ptr<::Engine::Render::Renderer> m_renderer;
 };
 
 } // namespace Engine::Core
