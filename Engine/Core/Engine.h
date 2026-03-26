@@ -68,15 +68,16 @@ public:
 
     bool Can(Capability cap) const;
 
-    /** Register a per-frame callback invoked once per tick.
-     *  Useful for editor UI drawing, asset hot-reload polling, etc. */
+    /** Register a per-frame callback invoked once per tick. */
     void SetFrameCallback(FrameCallback cb) { m_frameCallback = std::move(cb); }
 
     /** Register a render callback invoked each frame between Clear() and
-     *  SwapBuffers(). Use this to draw custom OpenGL content into the window
-     *  (e.g. a game HUD). The callback receives the current framebuffer
-     *  width and height. */
+     *  SwapBuffers(). Receives the current framebuffer width and height. */
     void SetRenderCallback(RenderCallback cb) { m_renderCallback = std::move(cb); }
+
+    /** Access the platform window so callers can register input callbacks
+     *  before Run() is called.  Returns nullptr in Server mode. */
+    ::Engine::Window::Window* GetWindow() { return m_window.get(); }
 
     /** Number of ticks executed so far. */
     uint64_t TickCount() const { return m_tickCount; }

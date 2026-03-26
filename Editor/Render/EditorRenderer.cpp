@@ -151,36 +151,39 @@ void EditorRenderer::OnMouseMove(double x, double y) {
     double dx = x - m_dragLastX;
     double dy = y - m_dragLastY;
 
-    // ── RMB: pan camera (orbit in 2-D ortho view = pan) ──────────────────
+    // ── RMB: orbit camera (rotate yaw/pitch around target) ───────────────
     if (m_rmbDown) {
-        // Only pan when the pointer is (or started) in the viewport region
-        m_camOffX += (float)dx;
-        m_camOffY += (float)dy;
-        m_mouseX    = x;
-        m_mouseY    = y;
-        m_dragLastX = x;
-        m_dragLastY = y;
+        m_vpYaw   += (float)dx * 0.4f;
+        m_vpPitch += (float)dy * 0.3f;
+        m_vpPitch  = std::max(-88.f, std::min(88.f, m_vpPitch));
+        m_mouseX   = x; m_mouseY   = y;
+        m_dragLastX = x; m_dragLastY = y;
         return;
     }
 
-    // ── MMB: pan camera ───────────────────────────────────────────────────
+    // ── MMB: pan target (camera-relative) ────────────────────────────────
     if (m_mmbDown) {
-        m_camOffX += (float)dx;
-        m_camOffY += (float)dy;
-        m_mouseX    = x;
-        m_mouseY    = y;
-        m_dragLastX = x;
-        m_dragLastY = y;
+        // Move target in the camera's right and up directions
+        float yawR = m_vpYaw   * 3.14159265f / 180.f;
+        float pitR = m_vpPitch * 3.14159265f / 180.f;
+        // right = (-cos(yaw), 0, sin(yaw)) in the orbit plane, scaled by dist
+        float speed = m_vpDist * 0.002f;
+        m_vpTargX -= (float)dx * speed * std::cos(yawR);
+        m_vpTargZ -= (float)dx * speed * std::sin(yawR);
+        m_vpTargY += (float)dy * speed * std::cos(pitR);
+        m_mouseX   = x; m_mouseY   = y;
+        m_dragLastX = x; m_dragLastY = y;
         return;
     }
 
-    // Handle gizmo drag — move entity along the dragged axis
+    // ── Gizmo drag — move entity along the dragged axis ──────────────────
     if (m_gizmoDragging && m_gizmoDragAxis != 0 &&
         m_world && m_selectedEntity != 0 && m_world->IsAlive(m_selectedEntity))
     {
         auto* tr = m_world->GetComponent<Runtime::Components::Transform>(m_selectedEntity);
         if (tr) {
-            float sensitivity = 0.05f / m_camZoom; // pixels → world units (zoom-aware)
+            // pixels → world units: scale by orbit distance so far objects aren't oversensitive
+            float sensitivity = m_vpDist * 0.001f;
             if (m_gizmoMode == 0) { // Move
                 if (m_gizmoDragAxis == 1) tr->position.x += (float)(dx * sensitivity);
                 if (m_gizmoDragAxis == 2) tr->position.y -= (float)(dy * sensitivity);
@@ -190,8 +193,8 @@ void EditorRenderer::OnMouseMove(double x, double y) {
                     tr->position.y = SnapToGrid(tr->position.y);
                     tr->position.z = SnapToGrid(tr->position.z);
                 }
-            } else if (m_gizmoMode == 1) { // Rotate — compose quaternion delta
-                float angle = (float)(dx * 1.5f); // degrees per pixel
+            } else if (m_gizmoMode == 1) { // Rotate
+                float angle = (float)(dx * 1.5f);
                 if (m_gridSnap) angle = std::round(angle / kRotSnapDeg) * kRotSnapDeg;
                 Engine::Math::Vec3 axis{0, 0, 0};
                 if (m_gizmoDragAxis == 1) axis = {1, 0, 0};
@@ -199,7 +202,7 @@ void EditorRenderer::OnMouseMove(double x, double y) {
                 if (m_gizmoDragAxis == 3) axis = {0, 0, 1};
                 auto delta = Engine::Math::Quaternion::FromAxisAngle(axis, angle);
                 tr->rotation = (tr->rotation * delta).Normalized();
-            } else if (m_gizmoMode == 2) { // Scale
+            } else { // Scale
                 float delta = (float)(dx * sensitivity);
                 if (m_gizmoDragAxis == 1) tr->scale.x = std::max(0.01f, tr->scale.x + delta);
                 if (m_gizmoDragAxis == 2) tr->scale.y = std::max(0.01f, tr->scale.y - (float)(dy * sensitivity));
@@ -271,23 +274,21 @@ void EditorRenderer::OnMouseButton(int btn, bool pressed) {
             {
                 // If an entity is selected, check if user clicked on a gizmo axis
                 if (m_selectedEntity != 0 && m_world && m_world->IsAlive(m_selectedEntity)) {
-                    float cx = m_vpX + m_vpW * 0.5f + m_camOffX;
-                    float cy = m_vpY + m_vpH * 0.5f + m_camOffY;
-                    float ex = cx, ey = cy;
                     auto* tr = m_world->GetComponent<Runtime::Components::Transform>(m_selectedEntity);
-                    if (tr) {
-                        ex = cx + tr->position.x * 20.f * m_camZoom;
-                        ey = cy - tr->position.y * 20.f * m_camZoom;
-                    }
-                    float gLen = 40.f;
-                    // Test axis hit before falling through to entity pick
-                    for (int axis = 1; axis <= 3; axis++) {
-                        if (GizmoAxisHit(ex, ey, axis, gLen)) {
-                            m_gizmoDragging = true;
-                            m_gizmoDragAxis = axis;
-                            m_dragLastX = m_mouseX;
-                            m_dragLastY = m_mouseY;
-                            return; // consumed by gizmo, don't pick entities
+                    float ex = 0.f, ey = 0.f;
+                    float posX = tr ? tr->position.x : 0.f;
+                    float posY = tr ? tr->position.y : 0.f;
+                    float posZ = tr ? tr->position.z : 0.f;
+                    if (Project3D(posX, posY, posZ, ex, ey)) {
+                        float gLen = 40.f;
+                        for (int axis = 1; axis <= 3; axis++) {
+                            if (GizmoAxisHit(ex, ey, axis, gLen)) {
+                                m_gizmoDragging = true;
+                                m_gizmoDragAxis = axis;
+                                m_dragLastX = m_mouseX;
+                                m_dragLastY = m_mouseY;
+                                return; // consumed by gizmo
+                            }
                         }
                     }
                 }
@@ -454,12 +455,15 @@ void EditorRenderer::OnKey(int key, bool pressed) {
                 ? "[Info]  Grid snap ON  (size=" + std::to_string(m_gridSize) + ")"
                 : "[Info]  Grid snap OFF");
         }
-        // F key: reset camera view to centre
+        // F key: reset 3D orbit camera to default view
         else if (key == K_F) {
-            m_camOffX = 0.f;
-            m_camOffY = 0.f;
-            m_camZoom = 1.f;
-            AppendConsole("[Info]  View reset");
+            m_vpYaw   =  35.f;
+            m_vpPitch =  30.f;
+            m_vpDist  = 200.f;
+            m_vpTargX =   8.f;
+            m_vpTargY =   0.f;
+            m_vpTargZ =   0.f;
+            AppendConsole("[Info]  View reset (3D orbit)");
         }
         // Delete selected entity
         else if (key == K_DELETE) {
@@ -492,14 +496,14 @@ void EditorRenderer::OnChar(unsigned int codepoint) {
     }
 }
 
-// ── Scroll wheel — zoom viewport when pointer is over it ──────────────────
+// ── Scroll wheel — zoom viewport (change orbit distance) ─────────────────
 void EditorRenderer::OnScroll(double /*dx*/, double dy) {
     // Only zoom when mouse is over the viewport
     if (m_mouseX >= m_vpX && m_mouseX < m_vpX + m_vpW &&
         m_mouseY >= m_vpY && m_mouseY < m_vpY + m_vpH)
     {
-        float factor = (dy > 0) ? 1.12f : (1.f / 1.12f);
-        m_camZoom = std::max(0.05f, std::min(20.f, m_camZoom * factor));
+        float factor = (dy > 0) ? 0.88f : (1.f / 0.88f);
+        m_vpDist = std::max(1.f, std::min(5000.f, m_vpDist * factor));
     }
 }
 
@@ -511,20 +515,26 @@ std::string EditorRenderer::EntityName(uint32_t id) const {
     return "Entity #" + std::to_string(id);
 }
 
-// ── EI-03: simple spatial pick ────────────────────────────────────────────
-// Each entity is mapped to an icon rect in DrawOutliner; for now we do a
-// linear row-pick matching the outliner row ordering.
-uint32_t EditorRenderer::PickEntityAt(float /*sx*/, float /*sy*/) {
-    // Viewport click: cycle selection through entities (placeholder approach).
-    // A full implementation would ray-cast against AABB components.
+// ── EI-03: simple spatial pick using 3D projection ────────────────────────
+uint32_t EditorRenderer::PickEntityAt(float sx, float sy) {
     if (!m_world) return 0;
     auto entities = m_world->GetEntities();
     if (entities.empty()) return 0;
-    // Find current selected index and advance
-    auto it = std::find(entities.begin(), entities.end(), m_selectedEntity);
-    if (it == entities.end() || std::next(it) == entities.end())
-        return entities.front();
-    return *std::next(it);
+
+    // Find the entity whose projected centre is closest to the click
+    uint32_t best     = 0;
+    float    bestDist = 24.f;  // pixel threshold
+    for (auto id : entities) {
+        float wx = 0.f, wy = 0.f, wz = 0.f;
+        auto* tr = m_world->GetComponent<Runtime::Components::Transform>(id);
+        if (tr) { wx = tr->position.x; wy = tr->position.y; wz = tr->position.z; }
+        float px, py;
+        if (Project3D(wx, wy, wz, px, py)) {
+            float d = std::sqrt((px - sx)*(px - sx) + (py - sy)*(py - sy));
+            if (d < bestDist) { bestDist = d; best = id; }
+        }
+    }
+    return best;  // 0 = deselect when nothing close enough
 }
 
 // ── EI-08: trigger build ──────────────────────────────────────────────────
@@ -662,6 +672,335 @@ void EditorRenderer::SetupOrtho() {
     glOrtho(0.0, m_width, m_height, 0.0, -1.0, 1.0);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 3-D viewport helpers — OpenGL 2.1 immediate-mode
+// ──────────────────────────────────────────────────────────────────────────
+static constexpr float kVpFOV = 60.f;
+
+// Build column-major perspective matrix and load it
+static void GL_LoadPerspective(float fovDeg, float aspect, float nearZ, float farZ) {
+    float f  = 1.0f / std::tan(fovDeg * 0.5f * 3.14159265f / 180.f);
+    float nf = 1.0f / (nearZ - farZ);
+    float m[16] = {
+        f / aspect, 0.f,  0.f,                         0.f,
+        0.f,        f,    0.f,                         0.f,
+        0.f,        0.f,  (farZ + nearZ) * nf,        -1.f,
+        0.f,        0.f,  2.0f * farZ * nearZ * nf,    0.f
+    };
+    glLoadMatrixf(m);
+}
+
+// Build column-major lookAt view matrix and load it
+static void GL_LoadLookAt(float ex, float ey, float ez,
+                           float cx, float cy, float cz) {
+    float fx = cx-ex, fy = cy-ey, fz = cz-ez;
+    float fl = std::sqrt(fx*fx + fy*fy + fz*fz);
+    if (fl < 1e-6f) fl = 1.f;
+    fx /= fl; fy /= fl; fz /= fl;
+
+    // right = cross(forward, world_up=(0,1,0))
+    float rx = -fz, ry = 0.f, rz = fx;
+    float rl = std::sqrt(rx*rx + rz*rz);
+    if (rl < 1e-6f) { rx = 1.f; rl = 1.f; }
+    rx /= rl; rz /= rl;
+
+    // true up = cross(right, forward)
+    float ux = ry*fz - rz*fy;
+    float uy = rz*fx - rx*fz;
+    float uz = rx*fy - ry*fx;
+
+    // Column-major for glLoadMatrixf
+    float m[16] = {
+        rx,                       ux,                       -fx,                   0.f,
+        ry,                       uy,                       -fy,                   0.f,
+        rz,                       uz,                       -fz,                   0.f,
+        -(rx*ex+ry*ey+rz*ez),    -(ux*ex+uy*ey+uz*ez),     fx*ex+fy*ey+fz*ez,    1.f
+    };
+    glLoadMatrixf(m);
+}
+
+// Project a world-space point to viewport pixel coordinates using stored camera state.
+bool EditorRenderer::Project3D(float wx, float wy, float wz, float& sx, float& sy) const {
+    float yawR = m_vpYaw   * 3.14159265f / 180.f;
+    float pitR = m_vpPitch * 3.14159265f / 180.f;
+    float eyeX = m_vpTargX + m_vpDist * std::cos(pitR) * std::sin(yawR);
+    float eyeY = m_vpTargY + m_vpDist * std::sin(pitR);
+    float eyeZ = m_vpTargZ + m_vpDist * std::cos(pitR) * std::cos(yawR);
+
+    // Forward (toward target)
+    float fx = m_vpTargX - eyeX, fy = m_vpTargY - eyeY, fz = m_vpTargZ - eyeZ;
+    float fl = std::sqrt(fx*fx + fy*fy + fz*fz);
+    if (fl < 1e-6f) return false;
+    fx /= fl; fy /= fl; fz /= fl;
+
+    // Right = cross(forward, up=(0,1,0))
+    float rx = -fz, ry = 0.f, rz = fx;
+    float rl = std::sqrt(rx*rx + rz*rz);
+    if (rl < 1e-6f) rl = 1.f;
+    rx /= rl; rz /= rl;
+
+    // True up = cross(right, forward)
+    float ux = ry*fz - rz*fy;
+    float uy = rz*fx - rx*fz;
+    float uz = rx*fy - ry*fx;
+
+    // World to view space
+    float dx = wx - eyeX, dy = wy - eyeY, dz = wz - eyeZ;
+    float vx = rx*dx + ry*dy + rz*dz;
+    float vy = ux*dx + uy*dy + uz*dz;
+    float vz = -(fx*dx + fy*dy + fz*dz);  // negated: camera looks in -Z (OpenGL)
+
+    if (vz >= -0.01f) return false;  // behind or on camera (kNearPlaneEpsilon)
+
+    float aspect = (m_vpH > 0.f) ? m_vpW / m_vpH : 1.f;
+    float f = 1.0f / std::tan(kVpFOV * 0.5f * 3.14159265f / 180.f);
+    float ndcX = (f / aspect) * vx / (-vz);
+    float ndcY = f * vy / (-vz);
+
+    if (ndcX < -1.1f || ndcX > 1.1f || ndcY < -1.1f || ndcY > 1.1f) return false;
+
+    sx = m_vpX + (ndcX + 1.f) * 0.5f * m_vpW;
+    sy = m_vpY + (1.f - ndcY) * 0.5f * m_vpH;
+    return true;
+}
+
+// Compute the orbit camera's eye position (shared by renderer and project helper)
+static void OrbitEye(float yaw, float pitch, float dist,
+                     float tX, float tY, float tZ,
+                     float& ex, float& ey, float& ez) {
+    float yR = yaw   * 3.14159265f / 180.f;
+    float pR = pitch * 3.14159265f / 180.f;
+    ex = tX + dist * std::cos(pR) * std::sin(yR);
+    ey = tY + dist * std::sin(pR);
+    ez = tZ + dist * std::cos(pR) * std::cos(yR);
+}
+
+// ── Draw3DViewportScene ────────────────────────────────────────────────────
+void EditorRenderer::Draw3DViewportScene(float vx, float vy, float vw, float vh) {
+    // Save current GL viewport
+    GLint savedVp[4];
+    glGetIntegerv(GL_VIEWPORT, savedVp);
+
+    // Restrict to the viewport panel (GL uses bottom-left origin)
+    int glX  = (int)vx;
+    int glY  = (int)(m_height - vy - vh);
+    int glW  = (int)vw;
+    int glH  = (int)vh;
+    glViewport(glX, glY, glW, glH);
+
+    // Scissor + clear depth only in this region
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(glX, glY, glW, glH);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glDisable(GL_SCISSOR_TEST);
+
+    // ── Projection ──────────────────────────────────────────────────────
+    glMatrixMode(GL_PROJECTION);
+    GL_LoadPerspective(kVpFOV, (glH > 0 ? (float)glW / glH : 1.f), 0.1f, 10000.f);
+
+    // ── View (orbit camera) ─────────────────────────────────────────────
+    float ex, ey, ez;
+    OrbitEye(m_vpYaw, m_vpPitch, m_vpDist, m_vpTargX, m_vpTargY, m_vpTargZ,
+             ex, ey, ez);
+    glMatrixMode(GL_MODELVIEW);
+    GL_LoadLookAt(ex, ey, ez, m_vpTargX, m_vpTargY, m_vpTargZ);
+
+    // ── Draw 3D scene ──────────────────────────────────────────────────
+    DrawFloorGrid3D();
+    DrawEntities3D();
+    DrawGizmo3D();
+
+    // ── Restore GL state ───────────────────────────────────────────────
+    glDisable(GL_DEPTH_TEST);
+    glViewport(savedVp[0], savedVp[1], savedVp[2], savedVp[3]);
+
+    // Restore 2-D ortho for UI overlays
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0.0, m_width, m_height, 0.0, -1.0, 1.0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+}
+
+// ── Floor grid on the Y=0 plane ───────────────────────────────────────────
+void EditorRenderer::DrawFloorGrid3D() {
+    // Minor grid (every 10 world units, −200 to +200 in X and Z)
+    float ext  = 200.f;
+    float step = 10.f;
+
+    glLineWidth(1.f);
+    glBegin(GL_LINES);
+    for (float t = -ext; t <= ext; t += step) {
+        uint32_t col = (std::fabs(t) < 0.01f) ? kGridLineMain : kGridLine;
+        float r = (float)((col >> 24) & 0xFF) / 255.f;
+        float g = (float)((col >> 16) & 0xFF) / 255.f;
+        float b = (float)((col >>  8) & 0xFF) / 255.f;
+        float a = (float)( col        & 0xFF) / 255.f;
+        glColor4f(r, g, b, a);
+        glVertex3f(t,    0.f, -ext);  glVertex3f(t,    0.f,  ext);
+        glVertex3f(-ext, 0.f,  t);    glVertex3f( ext, 0.f,  t);
+    }
+    glEnd();
+
+    // Axis lines: X = red, Z = blue
+    glLineWidth(2.f);
+    glBegin(GL_LINES);
+    // X axis
+    glColor4ub(0xE0, 0x55, 0x55, 0xFF);
+    glVertex3f(-ext, 0.f, 0.f); glVertex3f(ext, 0.f, 0.f);
+    // Z axis
+    glColor4ub(0x55, 0x55, 0xEE, 0xFF);
+    glVertex3f(0.f, 0.f, -ext); glVertex3f(0.f, 0.f, ext);
+    // Y axis (green, short)
+    glColor4ub(0x55, 0xBB, 0x55, 0xFF);
+    glVertex3f(0.f, 0.f, 0.f); glVertex3f(0.f, 30.f, 0.f);
+    glEnd();
+    glLineWidth(1.f);
+}
+
+// Helper: draw a wireframe box centred at (x,y,z) with half-size hs
+static void DrawWireBox(float x, float y, float z, float hs, bool selected = false) {
+    float lw = selected ? 2.5f : 1.f;
+    glLineWidth(lw);
+    // Bottom ring
+    glBegin(GL_LINE_LOOP);
+    glVertex3f(x-hs, y-hs, z-hs); glVertex3f(x+hs, y-hs, z-hs);
+    glVertex3f(x+hs, y-hs, z+hs); glVertex3f(x-hs, y-hs, z+hs);
+    glEnd();
+    // Top ring
+    glBegin(GL_LINE_LOOP);
+    glVertex3f(x-hs, y+hs, z-hs); glVertex3f(x+hs, y+hs, z-hs);
+    glVertex3f(x+hs, y+hs, z+hs); glVertex3f(x-hs, y+hs, z+hs);
+    glEnd();
+    // Verticals
+    glBegin(GL_LINES);
+    glVertex3f(x-hs, y-hs, z-hs); glVertex3f(x-hs, y+hs, z-hs);
+    glVertex3f(x+hs, y-hs, z-hs); glVertex3f(x+hs, y+hs, z-hs);
+    glVertex3f(x+hs, y-hs, z+hs); glVertex3f(x+hs, y+hs, z+hs);
+    glVertex3f(x-hs, y-hs, z+hs); glVertex3f(x-hs, y+hs, z+hs);
+    glEnd();
+    glLineWidth(1.f);
+}
+
+// ── Draw all ECS entities as 3D wireframe boxes ───────────────────────────
+void EditorRenderer::DrawEntities3D() {
+    if (!m_world) return;
+    auto entities = m_world->GetEntities();
+
+    static const uint32_t kEntityColors[] = {
+        0x4A90D9FF, 0x7ED321FF, 0xF5A623FF, 0xBD10E0FF, 0xE05555FF, 0x55BBEEFF
+    };
+
+    for (size_t i = 0; i < entities.size(); i++) {
+        auto id = entities[i];
+        float wx = 0.f, wy = 0.f, wz = 0.f;
+        float boxSize = 1.0f;
+
+        auto* tr  = m_world->GetComponent<Runtime::Components::Transform>(id);
+        auto* tag = m_world->GetComponent<Runtime::Components::Tag>(id);
+        if (tr) { wx = tr->position.x; wy = tr->position.y; wz = tr->position.z; }
+
+        // Size hint from tags
+        if (tag) {
+            for (auto& t : tag->tags) {
+                if (t == "Star")      { boxSize = 5.0f; break; }
+                if (t == "GasGiant") { boxSize = 3.0f; break; }
+                if (t == "Planet")   { boxSize = 2.0f; break; }
+                if (t == "Station" || t == "JumpGate") { boxSize = 2.5f; break; }
+                if (t == "AsteroidBelt") { boxSize = 0.5f; break; }
+            }
+        }
+
+        bool selected = (id == m_selectedEntity);
+        uint32_t col  = selected ? 0xFFCC00FF : kEntityColors[i % 6];
+        float r = (float)((col >> 24) & 0xFF) / 255.f;
+        float g = (float)((col >> 16) & 0xFF) / 255.f;
+        float b = (float)((col >>  8) & 0xFF) / 255.f;
+        glColor4f(r, g, b, 1.f);
+
+        DrawWireBox(wx, wy, wz, boxSize * 0.5f, selected);
+    }
+}
+
+// ── Draw 3D gizmo (move/rotate/scale arrows) for selected entity ──────────
+void EditorRenderer::DrawGizmo3D() {
+    if (!m_world || m_selectedEntity == 0) return;
+    if (!m_world->IsAlive(m_selectedEntity)) return;
+
+    auto* tr = m_world->GetComponent<Runtime::Components::Transform>(m_selectedEntity);
+    float ex = tr ? tr->position.x : 0.f;
+    float ey = tr ? tr->position.y : 0.f;
+    float ez = tr ? tr->position.z : 0.f;
+
+    float gLen = std::max(1.5f, m_vpDist * 0.05f);  // scale with distance
+
+    glLineWidth(2.5f);
+    glBegin(GL_LINES);
+    // X axis (red)
+    float xc = (m_gizmoDragging && m_gizmoDragAxis == 1) ? 1.f : 0.9f;
+    glColor4f(xc, 0.2f, 0.2f, 1.f);
+    glVertex3f(ex, ey, ez); glVertex3f(ex + gLen, ey, ez);
+    // Y axis (green)
+    float yc = (m_gizmoDragging && m_gizmoDragAxis == 2) ? 1.f : 0.9f;
+    glColor4f(0.2f, yc, 0.2f, 1.f);
+    glVertex3f(ex, ey, ez); glVertex3f(ex, ey + gLen, ez);
+    // Z axis (blue)
+    float zc = (m_gizmoDragging && m_gizmoDragAxis == 3) ? 1.f : 0.9f;
+    glColor4f(0.2f, 0.2f, zc, 1.f);
+    glVertex3f(ex, ey, ez); glVertex3f(ex, ey, ez + gLen);
+    glEnd();
+    glLineWidth(1.f);
+}
+
+// ── 2-D axis widget (bottom-left corner of viewport, drawn after 3D) ──────
+void EditorRenderer::DrawViewportAxes(float vpX, float vpBottom) {
+    float ox = vpX + 40.f;
+    float oy = vpBottom - 40.f;
+    float len = 22.f;
+    DrawLine(ox, oy, ox + len, oy,              kAxisX, 2.f);
+    DrawText("X", ox + len + 2.f, oy - 5.f,    kAxisX);
+    DrawLine(ox, oy, ox, oy - len,              kAxisY, 2.f);
+    DrawText("Y", ox - 3.f, oy - len - 12.f,   kAxisY);
+    DrawLine(ox, oy, ox + len * 0.6f, oy - len * 0.6f, kAxisZ, 2.f);
+    DrawText("Z", ox + len * 0.6f + 2.f, oy - len * 0.6f - 10.f, kAxisZ);
+}
+
+// ── 2-D gizmo arrow overlay (draws screen-space arrows over projected pos) ─
+void EditorRenderer::DrawViewportGizmo(float /*vpX*/, float /*vpY*/,
+                                        float /*vpW*/, float /*vpH*/) {
+    // The 3D gizmo is now drawn in DrawGizmo3D() during the 3D pass.
+    // This 2-D overlay only draws a selection ring around the projected entity.
+    if (!m_world || m_selectedEntity == 0) return;
+    if (!m_world->IsAlive(m_selectedEntity)) return;
+
+    auto* tr = m_world->GetComponent<Runtime::Components::Transform>(m_selectedEntity);
+    float px = 0.f, py = 0.f;
+    float wx = tr ? tr->position.x : 0.f;
+    float wy = tr ? tr->position.y : 0.f;
+    float wz = tr ? tr->position.z : 0.f;
+
+    if (Project3D(wx, wy, wz, px, py)) {
+        // Small ring around entity centre
+        int segs = 16;
+        float r = 10.f;
+        glColor4f(1.f, 0.8f, 0.f, 0.9f);
+        glLineWidth(2.f);
+        glBegin(GL_LINE_LOOP);
+        for (int i = 0; i < segs; i++) {
+            float a = (float)i / segs * 6.28318f;
+            glVertex2f(px + r * std::cos(a), py + r * std::sin(a));
+        }
+        glEnd();
+        glLineWidth(1.f);
+
+        // Mode label
+        static const char* modeNames[] = { "[Move]", "[Rotate]", "[Scale]" };
+        DrawText(modeNames[m_gizmoMode], px + 12.f, py - 8.f, 0xFFCC00FF, 0.9f);
+    }
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -964,86 +1303,47 @@ void EditorRenderer::DrawToolbar(float x, float y, float w, float h) {
 }
 
 // ──────────────────────────────────────────────────────────────────────────
-// Viewport — dark 3D area with grid + gizmos (EI-05)
+// Viewport — 3-D perspective view (EI-05)
 // ──────────────────────────────────────────────────────────────────────────
 void EditorRenderer::DrawViewport(float x, float y, float w, float h) {
     DrawRect(x, y, w, h, kBgViewport);
-    DrawPanelHeader("  Viewport  [Camera: Perspective]", x, y, w, kPanelHdrH, kBgHeader);
+
+    // Show yaw/pitch/dist in the header
+    char hdrBuf[80];
+    snprintf(hdrBuf, sizeof(hdrBuf),
+             "  Viewport  [3D Perspective  Yaw:%.0f  Pitch:%.0f  Dist:%.0f]",
+             m_vpYaw, m_vpPitch, m_vpDist);
+    DrawPanelHeader(hdrBuf, x, y, w, kPanelHdrH, kBgHeader);
 
     float vx = x, vy = y + kPanelHdrH, vw = w, vh = h - kPanelHdrH;
 
-    // Cache for EI-03 mouse pick
+    // Cache for EI-03 mouse pick and gizmo hit
     m_vpX = vx; m_vpY = vy; m_vpW = vw; m_vpH = vh;
 
+    // ── 3-D scene pass ──────────────────────────────────────────────────
+    Draw3DViewportScene(vx, vy, vw, vh);
+
+    // ── 2-D overlays (scissor to viewport region) ───────────────────────
     glScissor((int)vx, (int)(m_height - vy - vh), (int)vw, (int)vh);
     glEnable(GL_SCISSOR_TEST);
 
-    DrawViewportGrid(vx, vy, vw, vh);
-
-    // Render entity representations when world is available (EI-02)
-    if (m_world) {
-        float cx = vx + vw * 0.5f + m_camOffX;
-        float cy = vy + vh * 0.5f + m_camOffY;
-        auto entities = m_world->GetEntities();
-        static const uint32_t kEntityColors[] = {
-            0x4A90D9FF, 0x7ED321FF, 0xF5A623FF, 0xBD10E0FF, 0xE05555FF, 0x55BBEEFF
-        };
-        for (size_t i = 0; i < entities.size(); i++) {
-            auto id = entities[i];
-            float ex = cx + ((float)i - (float)entities.size() * 0.5f) * 90.f * m_camZoom;
-            float ey = cy - 20.f * m_camZoom;
-            float ew = 70.f * m_camZoom, eh = 40.f * m_camZoom;
-            // clamp minimum visible size
-            if (ew < 4.f) ew = 4.f;
-            if (eh < 2.f) eh = 2.f;
-
-            // Use Transform component offset if available
-            auto* tr = m_world->GetComponent<Runtime::Components::Transform>(id);
-            if (tr) {
-                ex = cx + tr->position.x * 20.f * m_camZoom;
-                ey = cy - tr->position.y * 20.f * m_camZoom;
-            }
-
-            uint32_t col = kEntityColors[i % 6];
-            bool selected = (id == m_selectedEntity);
-
-            DrawRect(ex - ew * 0.5f, ey - eh * 0.5f, ew, eh, col & 0xFFFFFF44);
-            DrawRectOutline(ex - ew * 0.5f, ey - eh * 0.5f, ew, eh,
-                            selected ? 0xFFCC00FF : col, selected ? 2.f : 1.f);
-
-            if (m_camZoom > 0.3f) {
-                std::string name = EntityName(id);
-                int tw = TextWidth(name);
-                DrawText(name, ex - tw * 0.5f, ey - eh * 0.5f - 12.f,
-                         selected ? 0xFFFFFFFF : col);
-            }
-        }
-    } else {
-        // Legacy dummy objects when no world is set
-        float cx = vx + vw * 0.5f;
-        float cy = vy + vh * 0.5f;
-        float hullW = vw * 0.30f, hullH = vh * 0.20f;
-        DrawRect(cx - hullW * 0.5f, cy - hullH * 0.5f, hullW, hullH, 0x2C4A6EFF);
-        DrawRectOutline(cx - hullW * 0.5f, cy - hullH * 0.5f, hullW, hullH, kTextAccent, 1.5f);
-        DrawText("Station_Hull", cx - hullW * 0.5f + 4.f, cy - hullH * 0.5f + 4.f, kTextAccent);
-    }
-
-    // EI-05: draw gizmo arrows for selected entity
+    // 2-D gizmo overlay (selection ring + mode label)
     DrawViewportGizmo(vx, vy, vw, vh);
-
+    // 2-D axis indicator (bottom-left corner)
     DrawViewportAxes(vx, vy + vh);
 
     glDisable(GL_SCISSOR_TEST);
 
-    DrawText("RMB/MMB: pan  Scroll: zoom  LMB: select  F: reset view",
+    // Help text (bottom of panel)
+    DrawText("RMB: orbit  MMB: pan  Scroll: zoom  LMB: select  F: reset",
              vx + 6.f, vy + vh - 18.f, kTextMuted);
 
-    // Zoom level indicator (top-right of viewport)
+    // Camera info (top-right)
     {
-        char zBuf[32];
-        snprintf(zBuf, sizeof(zBuf), "%.0f%%", m_camZoom * 100.f);
-        int zw = TextWidth(zBuf);
-        DrawText(zBuf, vx + vw - zw - 8.f, vy + 6.f, kTextMuted);
+        char distBuf[32];
+        snprintf(distBuf, sizeof(distBuf), "Dist: %.0f", m_vpDist);
+        int dtw = TextWidth(distBuf);
+        DrawText(distBuf, vx + vw - dtw - 8.f, vy + 6.f, kTextMuted);
     }
 
     if (m_playing) {
@@ -1054,147 +1354,6 @@ void EditorRenderer::DrawViewport(float x, float y, float w, float h) {
     snprintf(fpsBuf, sizeof(fpsBuf), "%.0f FPS", m_fps);
     int tw = TextWidth(fpsBuf);
     DrawText(fpsBuf, vx + vw - tw - 8.f, vy + kPanelHdrH + 4.f, kTextSuccess);
-}
-
-void EditorRenderer::DrawViewportGrid(float vpX, float vpY, float vpW, float vpH) {
-    // Camera-aware centre point
-    float cx = vpX + vpW * 0.5f + m_camOffX;
-    float cy = vpY + vpH * 0.5f + m_camOffY;
-
-    float step = 30.f * m_camZoom;
-    // Clamp step so grid doesn't get absurdly dense or sparse
-    while (step < 8.f)  step *= 5.f;
-    while (step > 200.f) step /= 5.f;
-
-    for (float gx = cx; gx < vpX + vpW; gx += step)
-        DrawLine(gx, vpY, gx, vpY + vpH, kGridLine);
-    for (float gx = cx - step; gx > vpX; gx -= step)
-        DrawLine(gx, vpY, gx, vpY + vpH, kGridLine);
-    for (float gy = cy; gy < vpY + vpH; gy += step)
-        DrawLine(vpX, gy, vpX + vpW, gy, kGridLine);
-    for (float gy = cy - step; gy > vpY; gy -= step)
-        DrawLine(vpX, gy, vpX + vpW, gy, kGridLine);
-
-    float stepMain = step * 5.f;
-    for (float gx = cx; gx < vpX + vpW; gx += stepMain)
-        DrawLine(gx, vpY, gx, vpY + vpH, kGridLineMain, 1.5f);
-    for (float gx = cx - stepMain; gx > vpX; gx -= stepMain)
-        DrawLine(gx, vpY, gx, vpY + vpH, kGridLineMain, 1.5f);
-    for (float gy = cy; gy < vpY + vpH; gy += stepMain)
-        DrawLine(vpX, gy, vpX + vpW, gy, kGridLineMain, 1.5f);
-    for (float gy = cy - stepMain; gy > vpY; gy -= stepMain)
-        DrawLine(vpX, gy, vpX + vpW, gy, kGridLineMain, 1.5f);
-}
-
-void EditorRenderer::DrawViewportAxes(float vpX, float vpBottom) {
-    float ox = vpX + 40.f;
-    float oy = vpBottom - 40.f;
-    float len = 22.f;
-
-    DrawLine(ox, oy, ox + len, oy,              kAxisX, 2.f);
-    DrawText("X", ox + len + 2.f, oy - 5.f,    kAxisX);
-    DrawLine(ox, oy, ox, oy - len,              kAxisY, 2.f);
-    DrawText("Y", ox - 3.f, oy - len - 12.f,   kAxisY);
-    DrawLine(ox, oy, ox + len * 0.6f, oy - len * 0.6f, kAxisZ, 2.f);
-    DrawText("Z", ox + len * 0.6f + 2.f, oy - len * 0.6f - 10.f, kAxisZ);
-}
-
-// EI-05: draw translate gizmo arrows for the selected entity
-void EditorRenderer::DrawViewportGizmo(float vpX, float vpY, float vpW, float vpH) {
-    if (!m_world || m_selectedEntity == 0) return;
-
-    float cx = vpX + vpW * 0.5f + m_camOffX;
-    float cy = vpY + vpH * 0.5f + m_camOffY;
-
-    // Project entity position to screen
-    float ex = cx, ey = cy;
-    auto* tr = m_world->GetComponent<Runtime::Components::Transform>(m_selectedEntity);
-    if (tr) {
-        ex = cx + tr->position.x * 20.f * m_camZoom;
-        ey = cy - tr->position.y * 20.f * m_camZoom;
-    } else {
-        auto entities = m_world->GetEntities();
-        auto it = std::find(entities.begin(), entities.end(), m_selectedEntity);
-        if (it != entities.end()) {
-            size_t idx = (size_t)(it - entities.begin());
-            ex = cx + ((float)idx - (float)entities.size() * 0.5f) * 90.f * m_camZoom;
-        }
-    }
-
-    float gLen  = 40.f;
-    float aSize = 6.f;
-
-    // Highlight colour for the axis being dragged
-    auto axisCol = [&](int axis, uint32_t base) -> uint32_t {
-        return (m_gizmoDragging && m_gizmoDragAxis == axis) ? 0xFFFF00FF : base;
-    };
-
-    if (m_gizmoMode == 0) {
-        // ── Move gizmo: arrows ────────────────────────────────────────────
-        // X (red) →
-        DrawLine(ex, ey, ex + gLen, ey, axisCol(1, kAxisX), 2.5f);
-        DrawLine(ex + gLen, ey, ex + gLen - aSize, ey - aSize, axisCol(1, kAxisX), 1.5f);
-        DrawLine(ex + gLen, ey, ex + gLen - aSize, ey + aSize, axisCol(1, kAxisX), 1.5f);
-        DrawText("X", ex + gLen + 3.f, ey - 6.f, axisCol(1, kAxisX), 1.1f);
-        // Y (green) ↑
-        DrawLine(ex, ey, ex, ey - gLen, axisCol(2, kAxisY), 2.5f);
-        DrawLine(ex, ey - gLen, ex - aSize, ey - gLen + aSize, axisCol(2, kAxisY), 1.5f);
-        DrawLine(ex, ey - gLen, ex + aSize, ey - gLen + aSize, axisCol(2, kAxisY), 1.5f);
-        DrawText("Y", ex + 4.f, ey - gLen - 10.f, axisCol(2, kAxisY), 1.1f);
-        // Z (blue) ↗
-        float zex = ex + gLen * 0.6f, zey = ey - gLen * 0.6f;
-        DrawLine(ex, ey, zex, zey, axisCol(3, kAxisZ), 2.5f);
-        DrawText("Z", zex + 3.f, zey - 8.f, axisCol(3, kAxisZ), 1.1f);
-
-    } else if (m_gizmoMode == 1) {
-        // ── Rotate gizmo: arc rings ────────────────────────────────────────
-        // Draw simple circle approximations for each axis
-        auto DrawRing = [&](uint32_t col, int axis) {
-            int segs = 24;
-            uint32_t c = axisCol(axis, col);
-            glLineWidth(2.f);
-            SetColor(c);
-            glBegin(GL_LINE_LOOP);
-            for (int i = 0; i < segs; i++) {
-                float a = (float)i / (float)segs * 6.2832f;
-                if (axis == 1) glVertex2f(ex + gLen * std::cos(a), ey + gLen * 0.4f * std::sin(a));
-                if (axis == 2) glVertex2f(ex + gLen * std::cos(a) * 0.4f, ey - gLen * std::sin(a));
-                if (axis == 3) glVertex2f(ex + gLen * 0.7f * std::cos(a), ey - gLen * 0.7f * std::sin(a));
-            }
-            glEnd();
-            glLineWidth(1.f);
-        };
-        DrawRing(kAxisX, 1);
-        DrawRing(kAxisY, 2);
-        DrawRing(kAxisZ, 3);
-        DrawText("X", ex + gLen + 3.f, ey - 6.f,       axisCol(1, kAxisX), 1.0f);
-        DrawText("Y", ex + 4.f,        ey - gLen - 8.f, axisCol(2, kAxisY), 1.0f);
-        DrawText("Z", ex + gLen * 0.7f + 3.f, ey - gLen * 0.7f - 8.f, axisCol(3, kAxisZ), 1.0f);
-
-    } else {
-        // ── Scale gizmo: lines with cube handles ──────────────────────────
-        float hSz = 5.f;
-        // X
-        DrawLine(ex, ey, ex + gLen, ey, axisCol(1, kAxisX), 2.f);
-        DrawRect(ex + gLen - hSz * 0.5f, ey - hSz * 0.5f, hSz, hSz, axisCol(1, kAxisX));
-        DrawText("X", ex + gLen + 4.f, ey - 6.f, axisCol(1, kAxisX), 1.0f);
-        // Y
-        DrawLine(ex, ey, ex, ey - gLen, axisCol(2, kAxisY), 2.f);
-        DrawRect(ex - hSz * 0.5f, ey - gLen - hSz * 0.5f, hSz, hSz, axisCol(2, kAxisY));
-        DrawText("Y", ex + 4.f, ey - gLen - 10.f, axisCol(2, kAxisY), 1.0f);
-        // Z
-        float zex = ex + gLen * 0.6f, zey = ey - gLen * 0.6f;
-        DrawLine(ex, ey, zex, zey, axisCol(3, kAxisZ), 2.f);
-        DrawRect(zex - hSz * 0.5f, zey - hSz * 0.5f, hSz, hSz, axisCol(3, kAxisZ));
-        DrawText("Z", zex + 3.f, zey - 8.f, axisCol(3, kAxisZ), 1.0f);
-    }
-
-    // Centre dot
-    DrawRect(ex - 4.f, ey - 4.f, 8.f, 8.f, 0xFFFFFFFF);
-
-    // Mode label near the gizmo
-    static const char* modeNames[] = { "Move", "Rotate", "Scale" };
-    DrawText(modeNames[m_gizmoMode], ex + 10.f, ey - gLen - 14.f, 0xCCCCCCCC, 0.9f);
 }
 
 // ──────────────────────────────────────────────────────────────────────────

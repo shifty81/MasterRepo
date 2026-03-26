@@ -74,14 +74,18 @@ private:
     bool   m_leftMousePressed = false;
     bool   m_ctrlHeld         = false;
 
-    // RMB / MMB drag state for camera pan
+    // RMB / MMB drag state for camera orbit / pan
     bool   m_rmbDown    = false;
     bool   m_mmbDown    = false;
 
-    // Camera pan offset and zoom (applied in viewport rendering)
-    float  m_camOffX    = 0.f;
-    float  m_camOffY    = 0.f;
-    float  m_camZoom    = 1.f;
+    // ── 3-D viewport orbit camera ─────────────────────────────────────────
+    // RMB drag orbits (yaw / pitch), MMB drag pans target, Scroll zooms.
+    float  m_vpYaw    =   35.f;   // horizontal orbit (degrees)
+    float  m_vpPitch  =   30.f;   // vertical orbit   (degrees; +up)
+    float  m_vpDist   =  200.f;   // orbit distance (world units)
+    float  m_vpTargX  =    8.f;   // orbit target world-X
+    float  m_vpTargY  =    0.f;   // orbit target world-Y
+    float  m_vpTargZ  =    0.f;   // orbit target world-Z
 
     // Text-input focus (console input bar or AI chat input)
     bool   m_consoleFocused  = false;
@@ -174,9 +178,17 @@ private:
     void DrawAddCompMenu(float x, float y, float w, float h);    // add-component popup
 
     // ── 3D viewport helpers ────────────────────────────────────────────────
-    void DrawViewportGrid (float vpX, float vpY, float vpW, float vpH);
-    void DrawViewportAxes (float vpX, float vpY);
-    void DrawViewportGizmo(float vpX, float vpY, float vpW, float vpH); // EI-05
+    void Draw3DViewportScene (float vx, float vy, float vw, float vh);
+    void DrawFloorGrid3D     ();
+    void DrawEntities3D      ();
+    void DrawGizmo3D         ();
+    void DrawViewportAxes    (float vpX, float vpBottom);  // 2-D corner overlay
+    void DrawViewportGizmo   (float vpX, float vpY, float vpW, float vpH); // EI-05
+    // Removed: void DrawViewportGrid — replaced by DrawFloorGrid3D
+
+    /** Project a 3D world point to viewport pixel coordinates.
+     *  Returns false when the point is behind the camera or off-screen. */
+    bool Project3D(float wx, float wy, float wz, float& sx, float& sy) const;
 
     // EI-03: pick entity at screen coord inside viewport
     uint32_t PickEntityAt(float screenX, float screenY);
