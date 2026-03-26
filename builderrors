@@ -1,0 +1,1613 @@
+
+[0;36m[1m── MasterRepo — Build All  [20260325_194249] ──[0m
+
+[1;33m[build_all][0m No C++ compiler found — CMake will attempt its own detection.
+-- Building for: Visual Studio 17 2022
+-- Selecting Windows SDK version 10.0.26100.0 to target Windows 10.0.19045.
+-- The C compiler identification is MSVC 19.38.33145.0
+-- The CXX compiler identification is MSVC 19.38.33145.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+--   VersionLib configured
+-- Found OpenGL: opengl32
+-- Populating glfw
+-- Selecting Windows SDK version 10.0.26100.0 to target Windows 10.0.19045.
+-- Configuring done (0.5s)
+-- Generating done (0.0s)
+-- Build files have been written to: C:/GIT PROJECTS/MasterRepo/Builds/debug/_deps/glfw-subbuild
+MSBuild version 17.14.40+3e7442088 for .NET Framework
+
+  1>Checking Build System
+  1>Creating directories for 'glfw-populate'
+  Performing download step (git clone) for 'glfw-populate'
+  Cloning into 'glfw-src'...
+  HEAD is now at 7b6aead Documentation updates for 3.4 release
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/Builds/debug/_deps/glfw-subbuild/CMakeLists.txt
+  Performing update step for 'glfw-populate'
+  -- Already at requested tag: 3.4
+  No patch step for 'glfw-populate'
+  No configure step for 'glfw-populate'
+  No build step for 'glfw-populate'
+  No install step for 'glfw-populate'
+  No test step for 'glfw-populate'
+  Completed 'glfw-populate'
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/Builds/debug/_deps/glfw-subbuild/CMakeLists.txt
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+-- Looking for pthread_create in pthreads
+-- Looking for pthread_create in pthreads - not found
+-- Looking for pthread_create in pthread
+-- Looking for pthread_create in pthread - not found
+-- Found Threads: TRUE
+-- Including Win32 support
+--   GLFW: built from source via FetchContent (fallback)
+--   UILib configured
+--   EditorLib configured with C:/GIT PROJECTS/MasterRepo/Editor
+--   PCGLib configured with C:/GIT PROJECTS/MasterRepo/PCG
+--   IDELib configured with C:/GIT PROJECTS/MasterRepo/IDE
+--   ToolsLib configured with C:/GIT PROJECTS/MasterRepo/Tools
+--   ToolsGUI configured
+--   TrainingDataLib configured
+--   NovaForge game configured
+-- 
+-- === MasterRepo v0.1.0 ===
+--   Build type:    Debug
+--   Editor:        ON
+--   Runtime:       ON
+--   AI:            ON
+--   Tools:         ON
+--   Tests:         OFF
+-- 
+-- Configuring done (14.7s)
+-- Generating done (0.5s)
+-- Build files have been written to: C:/GIT PROJECTS/MasterRepo/Builds/debug
+MSBuild version 17.14.40+3e7442088 for .NET Framework
+
+  1>Checking Build System
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/AI/CMakeLists.txt
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/UI/CMakeLists.txt
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/Builds/debug/_deps/glfw-src/src/CMakeLists.txt
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/Builder/CMakeLists.txt
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/Core/CMakeLists.txt
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/PCG/CMakeLists.txt
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/Runtime/CMakeLists.txt
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/IDE/CMakeLists.txt
+  LLMBackend.cpp
+  Widget.cpp
+  EventBus.cpp
+  PartDef.cpp
+  context.c
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/Tools/CMakeLists.txt
+  PCGRule.cpp
+  init.c
+  ECS.cpp
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/TrainingData/CMakeLists.txt
+  input.c
+  CodeEditor.cpp
+  Theme.cpp
+  monitor.c
+  ModelManager.cpp
+  platform.c
+  MessageBus.cpp
+  vulkan.c
+  window.c
+  ModuleDef.cpp
+  System.cpp
+  ProjectContext.cpp
+  MeshNode.cpp
+  UIStyle.cpp
+  ThemeManager.cpp
+  egl_context.c
+  AssetImporter.cpp
+  osmesa_context.c
+  BuildQueue.cpp
+  null_init.c
+  DeltaEditStore.cpp
+  MemoryStore.cpp
+  null_monitor.c
+  AIChat.cpp
+  null_window.c
+  LODGraph.cpp
+  Assembly.cpp
+  Layout.cpp
+  TypeInfo.cpp
+  null_joystick.c
+  win32_module.c
+  HeightField.cpp
+  win32_time.c
+  Serializer.cpp
+  win32_thread.c
+  IDEConsole.cpp
+  SnapRules.cpp
+  UILayoutSolver.cpp
+  win32_init.c
+  WorldNode.cpp
+  EmbeddingEngine.cpp
+  AssetProcessor.cpp
+  CubeSphereLayout.cpp
+  win32_joystick.c
+  UIAnimation.cpp
+  win32_monitor.c
+  VoxelGridLayout.cpp
+  win32_window.c
+  Debugger.cpp
+  CollisionShape.cpp
+  SceneManager.cpp
+  TextureNode.cpp
+  Generating Code...
+  TaskSystem.cpp
+  Compiling...
+  wgl_context.c
+  Localization.cpp
+  PhysicsData.cpp
+  Generating Code...
+  LSPClient.cpp
+  PartDamage.cpp
+  AgentScheduler.cpp
+  CommandSystem.cpp
+  AudioGenerator.cpp
+  Systems.cpp
+  BuildAutomation.cpp
+  TrainingCollector.cpp
+  Accessibility.cpp
+  BuildAuditLog.cpp
+  NLAssistant.cpp
+  ErrorLearning.cpp
+  GameStateManager.cpp
+  GUISystem.cpp
+  QuestGenerator.cpp
+  PlayerController.cpp
+  glfw.vcxproj -> C:\GIT PROJECTS\MasterRepo\Builds\debug\lib\Debug\glfw3.lib
+  InteriorNode.cpp
+  UILogicGraph.cpp
+  ResourceManager.cpp
+  InteractiveDocs.cpp
+  PCGValidator.cpp
+  Inventory.cpp
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/Versions/CMakeLists.txt
+  ServerManager.cpp
+  CodeLearning.cpp
+  Generating Code...
+  PluginSystem.cpp
+  Equipment.cpp
+  Generating Code...
+  NoiseGenerator.cpp
+  VersionManager.cpp
+  TrainingDataLib.vcxproj -> C:\GIT PROJECTS\MasterRepo\Builds\debug\lib\Debug\TrainingDataLib.lib
+  Crafting.cpp
+  ArchiveSystem.cpp
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/Engine/CMakeLists.txt
+  PCGPipeline.cpp
+  UILib.vcxproj -> C:\GIT PROJECTS\MasterRepo\Builds\debug\lib\Debug\UILib.lib
+  BuilderLib.vcxproj -> C:\GIT PROJECTS\MasterRepo\Builds\debug\lib\Debug\BuilderLib.lib
+  Damage.cpp
+  VoiceInput.cpp
+  ReplayTimeline.cpp
+  PromptLibrary.cpp
+  Engine.cpp
+  Spawn.cpp
+  ProjectExplorer.cpp
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/Editor/CMakeLists.txt
+  VersionSystem.cpp
+  Sandbox.cpp
+  Logger.cpp
+  GitPanel.cpp
+  SaveLoad.cpp
+  BiomeGenerator.cpp
+  ArchiveLearning.cpp
+  RuntimeBootstrap.cpp
+  VersionLib.vcxproj -> C:\GIT PROJECTS\MasterRepo\Builds\debug\lib\Debug\VersionLib.lib
+  SnippetManager.cpp
+  DungeonGenerator.cpp
+  AnalyticsDashboard.cpp
+  EditorCommandBus.cpp
+  HotReload.cpp
+  InputManager.cpp
+  StoryGenerator.cpp
+  PhysicsWorld.cpp
+  TaskPanel.cpp
+  VegetationGenerator.cpp
+  LayerTagSystem.cpp
+  WeatherSystem.cpp
+  Camera.cpp
+  HUD.cpp
+  AudioEngine.cpp
+  AssetLearning.cpp
+  WatchPanel.cpp
+  InspectorTools.cpp
+  BuilderRuntime.cpp
+  SimulationPlayback.cpp
+  CityGenerator.cpp
+  AudioPipeline.cpp
+  Collision.cpp
+  ContentBrowser.cpp
+  CrashReport.cpp
+  PrefabSystem.cpp
+  AnimationGraph.cpp
+  SpaceLayoutGenerator.cpp
+  DocGenerator.cpp
+  TrainingPipeline.cpp
+  CaveGenerator.cpp
+  OutputPanel.cpp
+  AnimationNodes.cpp
+  StateSync.cpp
+  DockingSystem.cpp
+  Database.cpp
+  AnimationPipeline.cpp
+  WorldChunkGen.cpp
+  NPCController.cpp
+  ModelCatalog.cpp
+  GizmoSystem.cpp
+  BreakpointManager.cpp
+  CodeAudit.cpp
+  Generating Code...
+  TickScheduler.cpp
+  Generating Code...
+  ViewportPanel.cpp
+  Compiling...
+  DialogueSystem.cpp
+  Window.cpp
+  LSPDiagnostics.cpp
+  ConsolePanel.cpp
+  Compiling...
+  QuestGraphGen.cpp
+  LocalCIPipeline.cpp
+  Platform.cpp
+  TestGen.cpp
+  CodeSearchEngine.cpp
+  EditorModes.cpp
+  AnimationController.cpp
+  AdminConsole.cpp
+  NodeEditor.cpp
+  TextureGenerator.cpp
+  GameSession.cpp
+  EditorLayout.cpp
+  PackageManager.cpp
+  ContextHelp.cpp
+  Renderer.cpp
+  OverlaySystem.cpp
+  RefactorPanel.cpp
+  RenderPipeline.cpp
+  StructureGenerator.cpp
+  NetworkProtocolGen.cpp
+  BuilderEditor.cpp
+  BehaviorTree.cpp
+  CodeScaffolder.cpp
+  RegressionTest.cpp
+  GhostPartPreview.cpp
+  AchievementSystem.cpp
+  NetworkManager.cpp
+  JobSystem.cpp
+  MaterialEditor.cpp
+  SceneGraph.cpp
+  PCGAdvanced.cpp
+  ConsoleFilter.cpp
+  PCGEditor.cpp
+  TestPipeline.cpp
+  CodeIntelligence.cpp
+  NetContext.cpp
+  BugTriage.cpp
+  LobbySystem.cpp
+  FractalNoise.cpp
+  ShaderManager.cpp
+  ProfilerPanel.cpp
+  NarrativeEngine.cpp
+  ErrorPanel.cpp
+  BreadcrumbBar.cpp
+  InputMapper.cpp
+  Generating Code...
+  MetricsReporter.cpp
+  DeterministicSeed.cpp
+  Generating Code...
+  Compiling...
+  CameraController.cpp
+  Tutorial.cpp
+  Generating Code...
+  GUIEditor.cpp
+  PhysicsWorld.cpp
+  LODSystem.cpp
+  PCGLib.vcxproj -> C:\GIT PROJECTS\MasterRepo\Builds\debug\lib\Debug\PCGLib.lib
+  Generating Code...
+  WorkspaceState.cpp
+  ParticleSystem.cpp
+  ComponentRegistry.cpp
+  IDELib.vcxproj -> C:\GIT PROJECTS\MasterRepo\Builds\debug\lib\Debug\IDELib.lib
+  Compiling...
+  TransactionManager.cpp
+  PostProcessPipeline.cpp
+  AssetStreamer.cpp
+  PerformanceProfiler.cpp
+  Generating Code...
+  MetaLearning.cpp
+  Compiling...
+  VRPreview.cpp
+  EventLog.cpp
+  PluginMarketplace.cpp
+  TerrainSystem.cpp
+  BenchmarkRunner.cpp
+  CraftingSystem.cpp
+  ConfigSystem.cpp
+  Generating Code...
+  VoxelWorld.cpp
+  AIMinerStateMachine.cpp
+  EditorRenderer.cpp
+  ShadowMapper.cpp
+  AIWalletSystem.cpp
+  Compiling...
+  RenderingOptimizer.cpp
+C:\GIT PROJECTS\MasterRepo\Core\Config\ConfigSystem.cpp(165,42): error C2039: 'to_sys': is not a member of 'std::filesystem::_File_time_clock' [C:\GIT PROJECTS\MasterRepo\Builds\debug\Core\CoreLib.vcxproj]
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\chrono(2786,12):
+      see declaration of 'std::filesystem::_File_time_clock'
+  
+C:\GIT PROJECTS\MasterRepo\Core\Config\ConfigSystem.cpp(165,42): error C3861: 'to_sys': identifier not found [C:\GIT PROJECTS\MasterRepo\Builds\debug\Core\CoreLib.vcxproj]
+C:\GIT PROJECTS\MasterRepo\Core\Config\ConfigSystem.cpp(166,46): error C3536: 'sctp': cannot be used before it is initialized [C:\GIT PROJECTS\MasterRepo\Builds\debug\Core\CoreLib.vcxproj]
+C:\GIT PROJECTS\MasterRepo\Core\Config\ConfigSystem.cpp(305,38): error C2039: 'to_sys': is not a member of 'std::filesystem::_File_time_clock' [C:\GIT PROJECTS\MasterRepo\Builds\debug\Core\CoreLib.vcxproj]
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\chrono(2786,12):
+      see declaration of 'std::filesystem::_File_time_clock'
+  
+C:\GIT PROJECTS\MasterRepo\Core\Config\ConfigSystem.cpp(305,38): error C3861: 'to_sys': identifier not found [C:\GIT PROJECTS\MasterRepo\Builds\debug\Core\CoreLib.vcxproj]
+C:\GIT PROJECTS\MasterRepo\Core\Config\ConfigSystem.cpp(306,54): error C3536: 'sctp': cannot be used before it is initialized [C:\GIT PROJECTS\MasterRepo\Builds\debug\Core\CoreLib.vcxproj]
+  LuaBinding.cpp
+  AssetPipeline.cpp
+  SkillTree.cpp
+  OcclusionCuller.cpp
+  AudioMixer.cpp
+  DecalSystem.cpp
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22): error C2039: 'DrawTextA': is not a member of 'Editor::EditorRenderer' [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.h(35,7):
+      see declaration of 'Editor::EditorRenderer'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(340,5): error C3861: 'SetColor': identifier not found [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(373,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(373,5):
+      while trying to match the argument list '(const char [2], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(375,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(375,5):
+      while trying to match the argument list '(const char [2], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(377,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(377,5):
+      while trying to match the argument list '(const char [2], float, float, unsigned int)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(417,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(417,9):
+      while trying to match the argument list '(const char *, float, float, unsigned int)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(448,13): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(448,13):
+      while trying to match the argument list '(const char *, float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(491,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(491,5):
+      while trying to match the argument list '(const char [4], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(503,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(503,5):
+      while trying to match the argument list '(const char [5], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(518,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(518,9):
+      while trying to match the argument list '(const char *, float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(528,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(528,5):
+      while trying to match the argument list '(const char [8], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(579,13): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(579,13):
+      while trying to match the argument list '(std::string, float, float, unsigned int)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(589,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(589,9):
+      while trying to match the argument list '(const char [13], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(599,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(599,5):
+      while trying to match the argument list '(const char [48], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(609,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(609,5):
+      while trying to match the argument list '(char [32], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(641,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(641,5):
+      while trying to match the argument list '(const char [2], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(643,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(643,5):
+      while trying to match the argument list '(const char [2], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(645,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(645,5):
+      while trying to match the argument list '(const char [2], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(715,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(715,9):
+      while trying to match the argument list '(const char [4], float, float, uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(716,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(716,9):
+      while trying to match the argument list '(const std::basic_string<char,std::char_traits<char>,std::allocator<char>>, float, float, unsigned int)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(756,13): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(756,13):
+      while trying to match the argument list '(const char [4], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(757,13): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(757,13):
+      while trying to match the argument list '(const char *, float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(765,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(765,5):
+      while trying to match the argument list '(char [32], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(779,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(779,9):
+      while trying to match the argument list '(const char *, float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(780,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(780,9):
+      while trying to match the argument list '(const std::basic_string<char,std::char_traits<char>,std::allocator<char>>, float, float, uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(789,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(789,9):
+      while trying to match the argument list '(const char [10], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(796,13): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(796,13):
+      while trying to match the argument list '(const char [10], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(816,13): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(816,13):
+      while trying to match the argument list '(const char [5], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(829,13): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(829,13):
+      while trying to match the argument list '(const char [10], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(843,13): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(843,13):
+      while trying to match the argument list '(const char [5], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(847,13): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(847,13):
+      while trying to match the argument list '(std::string, float, float, unsigned int)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(854,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(854,9):
+      while trying to match the argument list '(const char [10], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(858,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(858,9):
+      while trying to match the argument list '(const char [10], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(865,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(865,9):
+      while trying to match the argument list '(const char [5], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(872,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(872,9):
+      while trying to match the argument list '(const char [10], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(884,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(884,5):
+      while trying to match the argument list '(const char [16], float, float, unsigned int)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(906,22): error C2589: '(': illegal token on right side of '::' [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(906,17): error C2062: type 'unknown-type' unexpected [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(906,22): error C2059: syntax error: ')' [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(914,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(914,9):
+      while trying to match the argument list '(const std::string, float, float, uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(921,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(921,5):
+      while trying to match the argument list '(const char [4], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(953,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(953,9):
+      while trying to match the argument list '(char [160], float, float, uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(962,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(962,9):
+      while trying to match the argument list '(const char [11], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(979,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(979,5):
+      while trying to match the argument list '(const char [5], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(994,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(994,9):
+      while trying to match the argument list '(std::string, float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(995,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(995,9):
+      while trying to match the argument list '(const std::string, float, float, unsigned int)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1018,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1018,5):
+      while trying to match the argument list '(const char [2], float, float, unsigned int)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1023,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1023,9):
+      while trying to match the argument list '(const char [65], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1042,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1042,9):
+      while trying to match the argument list '(char [8], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1051,13): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1051,13):
+      while trying to match the argument list '(const std::string, float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1065,39): error C2589: '(': illegal token on right side of '::' [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1065,34): error C2062: type 'unknown-type' unexpected [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1065,39): error C2059: syntax error: ')' [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1067,21): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1067,21):
+      while trying to match the argument list '(std::basic_string<char,std::char_traits<char>,std::allocator<char>>, float, float, uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1088,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1088,5):
+      while trying to match the argument list '(const char [2], float, float, unsigned int)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1107,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1107,9):
+      while trying to match the argument list '(std::basic_string<char,std::char_traits<char>,std::allocator<char>>, float, float, uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1116,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1116,5):
+      while trying to match the argument list '(std::basic_string<char,std::char_traits<char>,std::allocator<char>>, float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1122,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1122,5):
+      while trying to match the argument list '(const char [5], float, float, unsigned int)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1124,19): error C2039: 'SendMessageA': is not a member of 'IDE::AIChat' [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\IDE\AIChat\AIChat.h(26,7):
+      see declaration of 'IDE::AIChat'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1144,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1144,5):
+      while trying to match the argument list '(char [128], float, float, unsigned int)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1149,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\debug\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1149,5):
+      while trying to match the argument list '(char [64], float, float, unsigned int)'
+  
+  AnomalyOverlay.cpp
+  EventDispatcher.cpp
+  LightManager.cpp
+  DamageSystem.cpp
+  Validator.cpp
+  UndoableCommandBus.cpp
+  MemoryProfiler.cpp
+  Signal.cpp
+  NetworkInterpolationBuffer.cpp
+  EditorToolRegistry.cpp
+  RingBuffer.cpp
+  DeltaCompression.cpp
+  NovaForgeBuilderIntegration.cpp
+  PoolAllocator.cpp
+C:\GIT PROJECTS\MasterRepo\Core\Allocator\PoolAllocator\PoolAllocator.h(52,1): warning C4359: 'Core::PoolAllocator<Core::_PATestType,16>::Slot': Alignment specifier is less than actual alignment (8), and will be ignored. [C:\GIT PROJECTS\MasterRepo\Builds\debug\Core\CoreLib.vcxproj]
+  (compiling source file '../../../../Core/Allocator/PoolAllocator/PoolAllocator.cpp')
+      C:\GIT PROJECTS\MasterRepo\Core\Allocator\PoolAllocator\PoolAllocator.h(52,1):
+      the template instantiation context (the oldest one first) is
+          C:\GIT PROJECTS\MasterRepo\Core\Allocator\PoolAllocator\PoolAllocator.cpp(9,46):
+          see reference to class template instantiation 'Core::PoolAllocator<Core::_PATestType,16>' being compiled
+          C:\GIT PROJECTS\MasterRepo\Core\Allocator\PoolAllocator\PoolAllocator.h(139,1):
+          see reference to class template instantiation 'Core::PoolAllocator<Core::_PATestType,16>::Slot' being compiled
+  
+C:\GIT PROJECTS\MasterRepo\Core\Allocator\PoolAllocator\PoolAllocator.h(52,1): warning C4359: 'Core::PoolAllocator<int,64>::Slot': Alignment specifier is less than actual alignment (8), and will be ignored. [C:\GIT PROJECTS\MasterRepo\Builds\debug\Core\CoreLib.vcxproj]
+  (compiling source file '../../../../Core/Allocator/PoolAllocator/PoolAllocator.cpp')
+      C:\GIT PROJECTS\MasterRepo\Core\Allocator\PoolAllocator\PoolAllocator.h(52,1):
+      the template instantiation context (the oldest one first) is
+          C:\GIT PROJECTS\MasterRepo\Core\Allocator\PoolAllocator\PoolAllocator.cpp(10,46):
+          see reference to class template instantiation 'Core::PoolAllocator<int,64>' being compiled
+          C:\GIT PROJECTS\MasterRepo\Core\Allocator\PoolAllocator\PoolAllocator.h(139,1):
+          see reference to class template instantiation 'Core::PoolAllocator<int,64>::Slot' being compiled
+  
+  ThreadPool.cpp
+  EntityInspectorTool.cpp
+  TileGraph.cpp
+  MaterialOverrideTool.cpp
+  ScriptRunner.cpp
+  AnimBlendTree.cpp
+  Orchestrator.cpp
+  BinarySerializer.cpp
+  ProjectDialog.cpp
+  DataCompressor.cpp
+  MarketSystem.cpp
+  LRUCache.cpp
+  DependencyAnalyzer.cpp
+  FactionSystem.cpp
+  EntityScheduler.cpp
+  SettingsPanel.cpp
+  RulesEngine.cpp
+  HotReloadManager.cpp
+  CombatSystem.cpp
+  Generating Code...
+  MetricsDashboard.cpp
+  RaycastSystem.cpp
+  Compiling...
+  ProgressionSystem.cpp
+  Generating Code...
+  QuickOpen.cpp
+  LocalizationSystem.cpp
+  RollbackNetcode.cpp
+  HazardSystem.cpp
+  Generating Code...
+  ModLoader.cpp
+  DecisionVisualizer.cpp
+  Compiling...
+  SymbolLocator.cpp
+  FleetController.cpp
+  Generating Code...
+  AtlasEngine.vcxproj -> C:\GIT PROJECTS\MasterRepo\Builds\debug\lib\Debug\AtlasEngine.lib
+  Generating Code...
+  ConflictResolver.cpp
+  RuntimeLib.vcxproj -> C:\GIT PROJECTS\MasterRepo\Builds\debug\lib\Debug\RuntimeLib.lib
+  Generating Code...
+  ResourceMonitor.cpp
+  GitHistory.cpp
+  ReplayRecorder.cpp
+  GoalPlanner.cpp
+  IngestionManager.cpp
+  GPUProfiler.cpp
+  Arbiter.cpp
+  OllamaClient.cpp
+  TextureAtlasPacker.cpp
+  StreamingResponse.cpp
+  AssetBrowser.cpp
+  Generating Code...
+  ChangeTracker.cpp
+  AILib.vcxproj -> C:\GIT PROJECTS\MasterRepo\Builds\debug\lib\Debug\AILib.lib
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/Agents/CMakeLists.txt
+  CodeAgent.cpp
+  ToolSystem.cpp
+  Generating Code...
+  ToolsLib.vcxproj -> C:\GIT PROJECTS\MasterRepo\Builds\debug\lib\Debug\ToolsLib.lib
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/Tools/CMakeLists.txt
+  ToolsApp.cpp
+  BuildAgent.cpp
+  GPUProfilerPanel.cpp
+  PerfProfilerPanel.cpp
+  DebugAgent.cpp
+  MemoryProfilerPanel.cpp
+  FixAgent.cpp
+  DependencyPanel.cpp
+  RefactorAgent.cpp
+  SymbolLocatorPanel.cpp
+  GitHistoryPanel.cpp
+  CleanupAgent.cpp
+  AtlasPackerPanel.cpp
+  AssetBrowserPanel.cpp
+  EditorAgent.cpp
+  Generating Code...
+  ToolsGUI.vcxproj -> C:\GIT PROJECTS\MasterRepo\Builds\debug\lib\Debug\ToolsGUI.lib
+  AssetAgent.cpp
+  PCGAgent.cpp
+  VersionAgent.cpp
+  SelfBuildAgent.cpp
+  Generating Code...
+  AgentsLib.vcxproj -> C:\GIT PROJECTS\MasterRepo\Builds\debug\lib\Debug\AgentsLib.lib
+[0;31m[build_all ERROR][0m ❌ Debug FAILED.
+-- Building for: Visual Studio 17 2022
+-- Selecting Windows SDK version 10.0.26100.0 to target Windows 10.0.19045.
+-- The C compiler identification is MSVC 19.38.33145.0
+-- The CXX compiler identification is MSVC 19.38.33145.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+--   VersionLib configured
+-- Found OpenGL: opengl32
+-- Populating glfw
+-- Selecting Windows SDK version 10.0.26100.0 to target Windows 10.0.19045.
+-- Configuring done (0.5s)
+-- Generating done (0.0s)
+-- Build files have been written to: C:/GIT PROJECTS/MasterRepo/Builds/release/_deps/glfw-subbuild
+MSBuild version 17.14.40+3e7442088 for .NET Framework
+
+  1>Checking Build System
+  1>Creating directories for 'glfw-populate'
+  Performing download step (git clone) for 'glfw-populate'
+  Cloning into 'glfw-src'...
+  HEAD is now at 7b6aead Documentation updates for 3.4 release
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/Builds/release/_deps/glfw-subbuild/CMakeLists.txt
+  Performing update step for 'glfw-populate'
+  -- Already at requested tag: 3.4
+  No patch step for 'glfw-populate'
+  No configure step for 'glfw-populate'
+  No build step for 'glfw-populate'
+  No install step for 'glfw-populate'
+  No test step for 'glfw-populate'
+  Completed 'glfw-populate'
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/Builds/release/_deps/glfw-subbuild/CMakeLists.txt
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+-- Looking for pthread_create in pthreads
+-- Looking for pthread_create in pthreads - not found
+-- Looking for pthread_create in pthread
+-- Looking for pthread_create in pthread - not found
+-- Found Threads: TRUE
+-- Including Win32 support
+--   GLFW: built from source via FetchContent (fallback)
+--   UILib configured
+--   EditorLib configured with C:/GIT PROJECTS/MasterRepo/Editor
+--   PCGLib configured with C:/GIT PROJECTS/MasterRepo/PCG
+--   IDELib configured with C:/GIT PROJECTS/MasterRepo/IDE
+--   ToolsLib configured with C:/GIT PROJECTS/MasterRepo/Tools
+--   ToolsGUI configured
+--   TrainingDataLib configured
+--   NovaForge game configured
+-- 
+-- === MasterRepo v0.1.0 ===
+--   Build type:    Release
+--   Editor:        ON
+--   Runtime:       ON
+--   AI:            ON
+--   Tools:         ON
+--   Tests:         OFF
+-- 
+-- Configuring done (12.8s)
+-- Generating done (0.4s)
+-- Build files have been written to: C:/GIT PROJECTS/MasterRepo/Builds/release
+MSBuild version 17.14.40+3e7442088 for .NET Framework
+
+  1>Checking Build System
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/AI/CMakeLists.txt
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/Core/CMakeLists.txt
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/UI/CMakeLists.txt
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/IDE/CMakeLists.txt
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/Builder/CMakeLists.txt
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/Builds/release/_deps/glfw-src/src/CMakeLists.txt
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/PCG/CMakeLists.txt
+  LLMBackend.cpp
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/Runtime/CMakeLists.txt
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/Tools/CMakeLists.txt
+  PartDef.cpp
+  CodeEditor.cpp
+  Widget.cpp
+  context.c
+  EventBus.cpp
+  init.c
+  PCGRule.cpp
+  AssetImporter.cpp
+  input.c
+  ECS.cpp
+  ModelManager.cpp
+  monitor.c
+  Theme.cpp
+  platform.c
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/TrainingData/CMakeLists.txt
+  MeshNode.cpp
+  MessageBus.cpp
+  vulkan.c
+  ModuleDef.cpp
+  AIChat.cpp
+  System.cpp
+  window.c
+  ProjectContext.cpp
+  egl_context.c
+  BuildQueue.cpp
+  UIStyle.cpp
+  ThemeManager.cpp
+  osmesa_context.c
+  DeltaEditStore.cpp
+  null_init.c
+  LODGraph.cpp
+  Assembly.cpp
+  null_monitor.c
+  IDEConsole.cpp
+  AssetProcessor.cpp
+  null_window.c
+  MemoryStore.cpp
+  HeightField.cpp
+  null_joystick.c
+  SnapRules.cpp
+  TypeInfo.cpp
+  win32_module.c
+  Layout.cpp
+  WorldNode.cpp
+  win32_time.c
+  Debugger.cpp
+  CollisionShape.cpp
+  Serializer.cpp
+  win32_thread.c
+  TrainingCollector.cpp
+  UILayoutSolver.cpp
+  win32_init.c
+  CubeSphereLayout.cpp
+  win32_joystick.c
+  PhysicsData.cpp
+  UIAnimation.cpp
+  win32_monitor.c
+  BuildAutomation.cpp
+  VoxelGridLayout.cpp
+  LSPClient.cpp
+  EmbeddingEngine.cpp
+  TextureNode.cpp
+  win32_window.c
+  SceneManager.cpp
+  TaskSystem.cpp
+  PartDamage.cpp
+  Generating Code...
+  Localization.cpp
+  Compiling...
+  wgl_context.c
+  AudioGenerator.cpp
+  Systems.cpp
+  Generating Code...
+  BuildAuditLog.cpp
+  NLAssistant.cpp
+  ServerManager.cpp
+  CommandSystem.cpp
+  AgentScheduler.cpp
+  PlayerController.cpp
+  Accessibility.cpp
+  QuestGenerator.cpp
+  GameStateManager.cpp
+  InteractiveDocs.cpp
+  glfw.vcxproj -> C:\GIT PROJECTS\MasterRepo\Builds\release\lib\Release\glfw3.lib
+  InteriorNode.cpp
+  ErrorLearning.cpp
+  PCGValidator.cpp
+  GUISystem.cpp
+  Inventory.cpp
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/Versions/CMakeLists.txt
+  ResourceManager.cpp
+  Generating Code...
+  TrainingDataLib.vcxproj -> C:\GIT PROJECTS\MasterRepo\Builds\release\lib\Release\TrainingDataLib.lib
+  Equipment.cpp
+  ReplayTimeline.cpp
+  NoiseGenerator.cpp
+  PluginSystem.cpp
+  UILogicGraph.cpp
+  Crafting.cpp
+  CodeLearning.cpp
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/Engine/CMakeLists.txt
+  GitPanel.cpp
+  PCGPipeline.cpp
+  VoiceInput.cpp
+  VersionManager.cpp
+  ArchiveSystem.cpp
+  Damage.cpp
+  Generating Code...
+  ProjectExplorer.cpp
+  Spawn.cpp
+  AnalyticsDashboard.cpp
+  BuilderLib.vcxproj -> C:\GIT PROJECTS\MasterRepo\Builds\release\lib\Release\BuilderLib.lib
+  Engine.cpp
+  PromptLibrary.cpp
+  VersionSystem.cpp
+  SaveLoad.cpp
+  BiomeGenerator.cpp
+  Logger.cpp
+  SnippetManager.cpp
+  SimulationPlayback.cpp
+  Sandbox.cpp
+  DungeonGenerator.cpp
+  RuntimeBootstrap.cpp
+  HUD.cpp
+  TaskPanel.cpp
+  StoryGenerator.cpp
+  ArchiveLearning.cpp
+  DocGenerator.cpp
+  HotReload.cpp
+  InputManager.cpp
+  UILib.vcxproj -> C:\GIT PROJECTS\MasterRepo\Builds\release\lib\Release\UILib.lib
+  VersionLib.vcxproj -> C:\GIT PROJECTS\MasterRepo\Builds\release\lib\Release\VersionLib.lib
+  BuilderRuntime.cpp
+  VegetationGenerator.cpp
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/Editor/CMakeLists.txt
+  Collision.cpp
+  PhysicsWorld.cpp
+  WeatherSystem.cpp
+  EditorCommandBus.cpp
+  PrefabSystem.cpp
+  Camera.cpp
+  WatchPanel.cpp
+  CityGenerator.cpp
+  AudioEngine.cpp
+  LayerTagSystem.cpp
+  AssetLearning.cpp
+  CrashReport.cpp
+  StateSync.cpp
+  CodeAudit.cpp
+  SpaceLayoutGenerator.cpp
+  AudioPipeline.cpp
+  InspectorTools.cpp
+  NPCController.cpp
+  OutputPanel.cpp
+  CaveGenerator.cpp
+  AnimationGraph.cpp
+  Generating Code...
+  ContentBrowser.cpp
+  WorldChunkGen.cpp
+  Database.cpp
+  AnimationNodes.cpp
+  TrainingPipeline.cpp
+  AdminConsole.cpp
+  BreakpointManager.cpp
+  Generating Code...
+  AnimationPipeline.cpp
+  DockingSystem.cpp
+  LSPDiagnostics.cpp
+  LocalCIPipeline.cpp
+  CodeScaffolder.cpp
+  ModelCatalog.cpp
+  GizmoSystem.cpp
+  TickScheduler.cpp
+  CodeSearchEngine.cpp
+  Compiling...
+  DialogueSystem.cpp
+  Window.cpp
+  ViewportPanel.cpp
+  Platform.cpp
+  AnimationController.cpp
+  ConsolePanel.cpp
+  PackageManager.cpp
+  TestGen.cpp
+  GameSession.cpp
+  TestPipeline.cpp
+  EditorModes.cpp
+  NodeEditor.cpp
+  NetworkProtocolGen.cpp
+  RefactorPanel.cpp
+  EditorLayout.cpp
+  BehaviorTree.cpp
+  Renderer.cpp
+  JobSystem.cpp
+  AchievementSystem.cpp
+  RenderPipeline.cpp
+  OverlaySystem.cpp
+  MetricsReporter.cpp
+  ContextHelp.cpp
+  BuilderEditor.cpp
+  Compiling...
+  QuestGraphGen.cpp
+  NetworkManager.cpp
+  CodeIntelligence.cpp
+  RegressionTest.cpp
+  ConsoleFilter.cpp
+  GhostPartPreview.cpp
+  SceneGraph.cpp
+  LobbySystem.cpp
+  TextureGenerator.cpp
+  BugTriage.cpp
+  MaterialEditor.cpp
+  DeterministicSeed.cpp
+  NetContext.cpp
+  PerformanceProfiler.cpp
+  BreadcrumbBar.cpp
+  PCGEditor.cpp
+  ShaderManager.cpp
+  Generating Code...
+  StructureGenerator.cpp
+  InputMapper.cpp
+  Generating Code...
+  Generating Code...
+  Tutorial.cpp
+  ProfilerPanel.cpp
+  PhysicsWorld.cpp
+  ErrorPanel.cpp
+  BenchmarkRunner.cpp
+  PCGAdvanced.cpp
+  ComponentRegistry.cpp
+  GUIEditor.cpp
+  MetaLearning.cpp
+  AssetStreamer.cpp
+  FractalNoise.cpp
+  WorkspaceState.cpp
+  AssetPipeline.cpp
+  NarrativeEngine.cpp
+  Generating Code...
+  Generating Code...
+  Generating Code...
+  Compiling...
+  CameraController.cpp
+  MemoryProfiler.cpp
+  LODSystem.cpp
+  CraftingSystem.cpp
+  ParticleSystem.cpp
+  AIMinerStateMachine.cpp
+  PostProcessPipeline.cpp
+  ScriptRunner.cpp
+  AIWalletSystem.cpp
+  SkillTree.cpp
+  AudioMixer.cpp
+  TerrainSystem.cpp
+  DependencyAnalyzer.cpp
+  VoxelWorld.cpp
+  DamageSystem.cpp
+  PCGLib.vcxproj -> C:\GIT PROJECTS\MasterRepo\Builds\release\lib\Release\PCGLib.lib
+  ShadowMapper.cpp
+  NovaForgeBuilderIntegration.cpp
+  OcclusionCuller.cpp
+  DecalSystem.cpp
+  Generating Code...
+  LightManager.cpp
+  MarketSystem.cpp
+  NetworkInterpolationBuffer.cpp
+  DeltaCompression.cpp
+  FactionSystem.cpp
+  TileGraph.cpp
+  CombatSystem.cpp
+  AnimBlendTree.cpp
+  Generating Code...
+  EntityScheduler.cpp
+  Compiling...
+  VRPreview.cpp
+  PluginMarketplace.cpp
+  RaycastSystem.cpp
+  RollbackNetcode.cpp
+  EditorRenderer.cpp
+  Generating Code...
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22): error C2039: 'DrawTextA': is not a member of 'Editor::EditorRenderer' [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.h(35,7):
+      see declaration of 'Editor::EditorRenderer'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(340,5): error C3861: 'SetColor': identifier not found [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(373,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(373,5):
+      while trying to match the argument list '(const char [2], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(375,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(375,5):
+      while trying to match the argument list '(const char [2], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(377,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(377,5):
+      while trying to match the argument list '(const char [2], float, float, unsigned int)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(417,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(417,9):
+      while trying to match the argument list '(const char *, float, float, unsigned int)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(448,13): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(448,13):
+      while trying to match the argument list '(const char *, float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(491,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(491,5):
+      while trying to match the argument list '(const char [4], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(503,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(503,5):
+      while trying to match the argument list '(const char [5], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(518,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(518,9):
+      while trying to match the argument list '(const char *, float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(528,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(528,5):
+      while trying to match the argument list '(const char [8], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(579,13): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(579,13):
+      while trying to match the argument list '(std::string, float, float, unsigned int)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(589,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(589,9):
+      while trying to match the argument list '(const char [13], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(599,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(599,5):
+      while trying to match the argument list '(const char [48], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(609,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(609,5):
+      while trying to match the argument list '(char [32], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(641,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(641,5):
+      while trying to match the argument list '(const char [2], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(643,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(643,5):
+      while trying to match the argument list '(const char [2], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(645,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(645,5):
+      while trying to match the argument list '(const char [2], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(715,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(715,9):
+      while trying to match the argument list '(const char [4], float, float, uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(716,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(716,9):
+      while trying to match the argument list '(const std::basic_string<char,std::char_traits<char>,std::allocator<char>>, float, float, unsigned int)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(756,13): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(756,13):
+      while trying to match the argument list '(const char [4], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(757,13): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(757,13):
+      while trying to match the argument list '(const char *, float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(765,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(765,5):
+      while trying to match the argument list '(char [32], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(779,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(779,9):
+      while trying to match the argument list '(const char *, float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(780,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(780,9):
+      while trying to match the argument list '(const std::basic_string<char,std::char_traits<char>,std::allocator<char>>, float, float, uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(789,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(789,9):
+      while trying to match the argument list '(const char [10], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(796,13): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(796,13):
+      while trying to match the argument list '(const char [10], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(816,13): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(816,13):
+      while trying to match the argument list '(const char [5], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(829,13): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(829,13):
+      while trying to match the argument list '(const char [10], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(843,13): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(843,13):
+      while trying to match the argument list '(const char [5], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(847,13): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(847,13):
+      while trying to match the argument list '(std::string, float, float, unsigned int)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(854,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(854,9):
+      while trying to match the argument list '(const char [10], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(858,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(858,9):
+      while trying to match the argument list '(const char [10], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(865,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(865,9):
+      while trying to match the argument list '(const char [5], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(872,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(872,9):
+      while trying to match the argument list '(const char [10], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(884,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(884,5):
+      while trying to match the argument list '(const char [16], float, float, unsigned int)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(906,22): error C2589: '(': illegal token on right side of '::' [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(906,17): error C2062: type 'unknown-type' unexpected [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(906,22): error C2059: syntax error: ')' [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(914,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(914,9):
+      while trying to match the argument list '(const std::string, float, float, uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(921,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(921,5):
+      while trying to match the argument list '(const char [4], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(953,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(953,9):
+      while trying to match the argument list '(char [160], float, float, uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(962,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(962,9):
+      while trying to match the argument list '(const char [11], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(979,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(979,5):
+      while trying to match the argument list '(const char [5], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(994,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(994,9):
+      while trying to match the argument list '(std::string, float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(995,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(995,9):
+      while trying to match the argument list '(const std::string, float, float, unsigned int)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1018,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1018,5):
+      while trying to match the argument list '(const char [2], float, float, unsigned int)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1023,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1023,9):
+      while trying to match the argument list '(const char [65], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1042,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1042,9):
+      while trying to match the argument list '(char [8], float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1051,13): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1051,13):
+      while trying to match the argument list '(const std::string, float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1065,39): error C2589: '(': illegal token on right side of '::' [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1065,34): error C2062: type 'unknown-type' unexpected [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1065,39): error C2059: syntax error: ')' [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1067,21): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1067,21):
+      while trying to match the argument list '(std::basic_string<char,std::char_traits<char>,std::allocator<char>>, float, float, uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1088,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1088,5):
+      while trying to match the argument list '(const char [2], float, float, unsigned int)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1107,9): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1107,9):
+      while trying to match the argument list '(std::basic_string<char,std::char_traits<char>,std::allocator<char>>, float, float, uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1116,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1116,5):
+      while trying to match the argument list '(std::basic_string<char,std::char_traits<char>,std::allocator<char>>, float, float, const uint32_t)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1122,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1122,5):
+      while trying to match the argument list '(const char [5], float, float, unsigned int)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1124,19): error C2039: 'SendMessageA': is not a member of 'IDE::AIChat' [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\IDE\AIChat\AIChat.h(26,7):
+      see declaration of 'IDE::AIChat'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1144,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1144,5):
+      while trying to match the argument list '(char [128], float, float, unsigned int)'
+  
+C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1149,5): error C2660: 'Editor::DrawTextA': function does not take 4 arguments [C:\GIT PROJECTS\MasterRepo\Builds\release\Editor\EditorLib.vcxproj]
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(326,22):
+      see declaration of 'Editor::DrawTextA'
+      C:\GIT PROJECTS\MasterRepo\Editor\Render\EditorRenderer.cpp(1149,5):
+      while trying to match the argument list '(char [64], float, float, unsigned int)'
+  
+  AnomalyOverlay.cpp
+  UndoableCommandBus.cpp
+  EditorToolRegistry.cpp
+  Compiling...
+  TransactionManager.cpp
+  EntityInspectorTool.cpp
+  EventLog.cpp
+  MaterialOverrideTool.cpp
+  ProjectDialog.cpp
+  ConfigSystem.cpp
+  SettingsPanel.cpp
+C:\GIT PROJECTS\MasterRepo\Core\Config\ConfigSystem.cpp(165,42): error C2039: 'to_sys': is not a member of 'std::filesystem::_File_time_clock' [C:\GIT PROJECTS\MasterRepo\Builds\release\Core\CoreLib.vcxproj]
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\chrono(2786,12):
+      see declaration of 'std::filesystem::_File_time_clock'
+  
+C:\GIT PROJECTS\MasterRepo\Core\Config\ConfigSystem.cpp(165,42): error C3861: 'to_sys': identifier not found [C:\GIT PROJECTS\MasterRepo\Builds\release\Core\CoreLib.vcxproj]
+C:\GIT PROJECTS\MasterRepo\Core\Config\ConfigSystem.cpp(166,46): error C3536: 'sctp': cannot be used before it is initialized [C:\GIT PROJECTS\MasterRepo\Builds\release\Core\CoreLib.vcxproj]
+C:\GIT PROJECTS\MasterRepo\Core\Config\ConfigSystem.cpp(305,38): error C2039: 'to_sys': is not a member of 'std::filesystem::_File_time_clock' [C:\GIT PROJECTS\MasterRepo\Builds\release\Core\CoreLib.vcxproj]
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\chrono(2786,12):
+      see declaration of 'std::filesystem::_File_time_clock'
+  
+C:\GIT PROJECTS\MasterRepo\Core\Config\ConfigSystem.cpp(305,38): error C3861: 'to_sys': identifier not found [C:\GIT PROJECTS\MasterRepo\Builds\release\Core\CoreLib.vcxproj]
+C:\GIT PROJECTS\MasterRepo\Core\Config\ConfigSystem.cpp(306,54): error C3536: 'sctp': cannot be used before it is initialized [C:\GIT PROJECTS\MasterRepo\Builds\release\Core\CoreLib.vcxproj]
+  LuaBinding.cpp
+  EventDispatcher.cpp
+  QuickOpen.cpp
+  Signal.cpp
+  RingBuffer.cpp
+  Compiling...
+  ProgressionSystem.cpp
+  PoolAllocator.cpp
+C:\GIT PROJECTS\MasterRepo\Core\Allocator\PoolAllocator\PoolAllocator.h(52,1): warning C4359: 'Core::PoolAllocator<Core::_PATestType,16>::Slot': Alignment specifier is less than actual alignment (8), and will be ignored. [C:\GIT PROJECTS\MasterRepo\Builds\release\Core\CoreLib.vcxproj]
+  (compiling source file '../../../Core/Allocator/PoolAllocator/PoolAllocator.cpp')
+      C:\GIT PROJECTS\MasterRepo\Core\Allocator\PoolAllocator\PoolAllocator.h(52,1):
+      the template instantiation context (the oldest one first) is
+          C:\GIT PROJECTS\MasterRepo\Core\Allocator\PoolAllocator\PoolAllocator.cpp(9,46):
+          see reference to class template instantiation 'Core::PoolAllocator<Core::_PATestType,16>' being compiled
+          C:\GIT PROJECTS\MasterRepo\Core\Allocator\PoolAllocator\PoolAllocator.h(139,1):
+          see reference to class template instantiation 'Core::PoolAllocator<Core::_PATestType,16>::Slot' being compiled
+  
+C:\GIT PROJECTS\MasterRepo\Core\Allocator\PoolAllocator\PoolAllocator.h(52,1): warning C4359: 'Core::PoolAllocator<int,64>::Slot': Alignment specifier is less than actual alignment (8), and will be ignored. [C:\GIT PROJECTS\MasterRepo\Builds\release\Core\CoreLib.vcxproj]
+  (compiling source file '../../../Core/Allocator/PoolAllocator/PoolAllocator.cpp')
+      C:\GIT PROJECTS\MasterRepo\Core\Allocator\PoolAllocator\PoolAllocator.h(52,1):
+      the template instantiation context (the oldest one first) is
+          C:\GIT PROJECTS\MasterRepo\Core\Allocator\PoolAllocator\PoolAllocator.cpp(10,46):
+          see reference to class template instantiation 'Core::PoolAllocator<int,64>' being compiled
+          C:\GIT PROJECTS\MasterRepo\Core\Allocator\PoolAllocator\PoolAllocator.h(139,1):
+          see reference to class template instantiation 'Core::PoolAllocator<int,64>::Slot' being compiled
+  
+  ThreadPool.cpp
+  Generating Code...
+  HazardSystem.cpp
+  BinarySerializer.cpp
+  FleetController.cpp
+  DataCompressor.cpp
+  Generating Code...
+  LRUCache.cpp
+  AtlasEngine.vcxproj -> C:\GIT PROJECTS\MasterRepo\Builds\release\lib\Release\AtlasEngine.lib
+  IDELib.vcxproj -> C:\GIT PROJECTS\MasterRepo\Builds\release\lib\Release\IDELib.lib
+  HotReloadManager.cpp
+  RuntimeLib.vcxproj -> C:\GIT PROJECTS\MasterRepo\Builds\release\lib\Release\RuntimeLib.lib
+  Compiling...
+  RenderingOptimizer.cpp
+  LocalizationSystem.cpp
+  Validator.cpp
+  ModLoader.cpp
+  Compiling...
+  SymbolLocator.cpp
+  Orchestrator.cpp
+  Generating Code...
+  GitHistory.cpp
+  RulesEngine.cpp
+  ReplayRecorder.cpp
+  MetricsDashboard.cpp
+  GPUProfiler.cpp
+  DecisionVisualizer.cpp
+  TextureAtlasPacker.cpp
+  ConflictResolver.cpp
+  AssetBrowser.cpp
+  ResourceMonitor.cpp
+  ChangeTracker.cpp
+  GoalPlanner.cpp
+  IngestionManager.cpp
+  Generating Code...
+  Arbiter.cpp
+  OllamaClient.cpp
+  StreamingResponse.cpp
+  ToolsLib.vcxproj -> C:\GIT PROJECTS\MasterRepo\Builds\release\lib\Release\ToolsLib.lib
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/Tools/CMakeLists.txt
+  ToolsApp.cpp
+  Generating Code...
+  GPUProfilerPanel.cpp
+  PerfProfilerPanel.cpp
+  MemoryProfilerPanel.cpp
+  DependencyPanel.cpp
+  AILib.vcxproj -> C:\GIT PROJECTS\MasterRepo\Builds\release\lib\Release\AILib.lib
+  Building Custom Rule C:/GIT PROJECTS/MasterRepo/Agents/CMakeLists.txt
+  SymbolLocatorPanel.cpp
+  CodeAgent.cpp
+  ToolSystem.cpp
+  GitHistoryPanel.cpp
+  AtlasPackerPanel.cpp
+  BuildAgent.cpp
+  AssetBrowserPanel.cpp
+  Generating Code...
+  DebugAgent.cpp
+  FixAgent.cpp
+  RefactorAgent.cpp
+  ToolsGUI.vcxproj -> C:\GIT PROJECTS\MasterRepo\Builds\release\lib\Release\ToolsGUI.lib
+  CleanupAgent.cpp
+  EditorAgent.cpp
+  AssetAgent.cpp
+  PCGAgent.cpp
+  VersionAgent.cpp
+  SelfBuildAgent.cpp
+  Generating Code...
+  AgentsLib.vcxproj -> C:\GIT PROJECTS\MasterRepo\Builds\release\lib\Release\AgentsLib.lib
+[0;31m[build_all ERROR][0m ❌ Release FAILED.
+
+[0;36m[1m── Build Summary ──[0m
+
