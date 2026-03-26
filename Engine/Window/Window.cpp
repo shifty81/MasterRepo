@@ -73,6 +73,7 @@ bool Window::Init() {
     glfwSetMouseButtonCallback    (win, s_MouseButtonCallback);
     glfwSetKeyCallback            (win, s_KeyCallback);
     glfwSetCharCallback           (win, s_CharCallback);
+    glfwSetScrollCallback         (win, s_ScrollCallback);
     glfwSetFramebufferSizeCallback(win, s_FramebufferSizeCallback);
 
     m_handle      = win;
@@ -165,15 +166,24 @@ void Window::s_MouseButtonCallback(GLFWwindow* w, int btn, int action, int /*mod
 void Window::s_KeyCallback(GLFWwindow* w, int key, int /*scan*/, int action, int /*mods*/) {
     auto* self = static_cast<Window*>(glfwGetWindowUserPointer(w));
     if (!self) return;
-    if (action == GLFW_REPEAT) return; // ignore key-repeat for now
-    bool pressed = (action == GLFW_PRESS);
-    if (self->onKey) self->onKey(key, pressed);
+    // Forward PRESS and REPEAT as pressed=true so held-backspace works in text fields
+    if (action == GLFW_RELEASE) {
+        if (self->onKey) self->onKey(key, false);
+    } else {
+        if (self->onKey) self->onKey(key, true);
+    }
 }
 
 void Window::s_CharCallback(GLFWwindow* w, unsigned int codepoint) {
     auto* self = static_cast<Window*>(glfwGetWindowUserPointer(w));
     if (!self) return;
     if (self->onChar) self->onChar(codepoint);
+}
+
+void Window::s_ScrollCallback(GLFWwindow* w, double dx, double dy) {
+    auto* self = static_cast<Window*>(glfwGetWindowUserPointer(w));
+    if (!self) return;
+    if (self->onScroll) self->onScroll(dx, dy);
 }
 
 void Window::s_FramebufferSizeCallback(GLFWwindow* w, int width, int height) {

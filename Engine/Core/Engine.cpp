@@ -89,12 +89,14 @@ void Engine::Run() {
         case EngineMode::Server: Logger::Info("Running Server");  break;
     }
 
-    // ESC or OS window-close button stops the loop
+    // ESC or OS window-close button stops the loop.
+    // Chain with any callback the caller already registered on the window.
     if (m_window) {
-        m_window->onKey = [this](int key, bool pressed) {
-            // GLFW_KEY_ESCAPE is 256 in all GLFW 3.x versions
+        auto userKey = m_window->onKey;
+        m_window->onKey = [this, userKey](int key, bool pressed) {
             constexpr int kKeyEscape = 256;
             if (key == kKeyEscape && pressed) m_running = false;
+            if (userKey) userKey(key, pressed);
         };
     }
 

@@ -2,12 +2,19 @@
 /**
  * NovaForgeHUD — lightweight immediate-mode OpenGL HUD for the game window.
  *
- * Uses the same OpenGL 2.1 immediate-mode approach as EditorRenderer so no
- * additional dependencies are needed.  Text is rendered via stb_easy_font.
+ * Renders:
+ *   1. A real 3-D FPS perspective view of the solar system (bottom layer).
+ *   2. Translucent 2-D HUD panels on top (status, log, crosshair, controls).
+ *
+ * Uses OpenGL 2.1 immediate-mode with manual perspective / lookAt matrices.
+ * Text via stb_easy_font (no extra dependencies).
  *
  * Usage:
- *   NovaForgeHUD hud;
- *   engine.SetRenderCallback([&](int w, int h){ hud.Draw(w, h, state); });
+ *   NovaForge::HUD hud;
+ *   // Before calling Draw each frame, set camera and world state:
+ *   hud.SetCamera(px, py, pz, yaw, pitch);
+ *   hud.SetWorldObjects(objects);
+ *   engine.SetRenderCallback([&](int w, int h){ hud.Draw(w, h, state, dt); });
  */
 
 #ifdef _WIN32
@@ -24,13 +31,17 @@
 #include <algorithm>
 
 // ── stb_easy_font ─────────────────────────────────────────────────────────
-// The implementation is defined by the including .cpp file (main.cpp)
-// via #define STB_EASY_FONT_IMPLEMENTATION before including this header.
-// This prevents multiple-definition errors if the header were ever included
-// in more than one translation unit.
 #include "External/stb/stb_easy_font.h"
 
 namespace NovaForge {
+
+// ── World object descriptor (passed in per-frame for 3-D rendering) ──────
+struct WorldObject {
+    float    x = 0.f, y = 0.f, z = 0.f;  // world position
+    float    size = 1.f;                   // half-extent of wireframe box
+    uint32_t color = 0x4A90D9FF;           // RGBA8888
+    std::string name;
+};
 
 struct HUDState {
     int         entityCount     = 0;
@@ -38,18 +49,24 @@ struct HUDState {
     float       totalEarnings   = 0.f;
     int         craftingSessions= 0;
     bool        builderActive   = false;
-    bool        playing         = false;   // PIE / play mode
+    bool        playing         = false;
     double      fps             = 0.0;
     std::string sceneName       = "NovaForge_Dev";
-    std::vector<std::string> recentLog;    // last few log lines
+    std::vector<std::string>  recentLog;
+    std::vector<WorldObject>  worldObjects;  // for 3-D scene render
 };
 
 class HUD {
 public:
-    // Call every render frame.  w/h are the framebuffer dimensions.
-    // dt is the elapsed time since the last frame in seconds.
+    // ── Camera state (call every frame before Draw) ───────────────────────
+    void SetCamera(float x, float y, float z, float yawDeg, float pitchDeg) {
+        m_camX = x; m_camY = y; m_camZ = z;
+        m_camYaw = yawDeg; m_camPitch = pitchDeg;
+    }
+
+    // ── Main draw entry point ─────────────────────────────────────────────
     void Draw(int w, int h, const HUDState& s, double dt = 1.0 / 60.0) {
-        // Accumulate accurate FPS from real frame dt
+        // FPS accumulator
         m_fpsFrames++;
         m_fpsAccum += dt;
         if (m_fpsAccum >= 0.5) {
@@ -57,7 +74,12 @@ public:
             m_fpsAccum = 0; m_fpsFrames = 0;
         }
 
-        // ── Setup 2-D ortho ──────────────────────────────────────────────
+        float W = (float)w, H = (float)h;
+
+        // ── 1.  3-D scene ─────────────────────────────────────────────────
+        Draw3DScene(w, h, s);
+
+        // ── 2.  2-D HUD overlay ───────────────────────────────────────────
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
         glEnable(GL_BLEND);
@@ -70,61 +92,68 @@ public:
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
 
-        float W = (float)w, H = (float)h;
+        // FPS crosshair
+        DrawCrosshair(W, H);
 
-        // ── Title bar ────────────────────────────────────────────────────
-        Rect(0, 0, W, 28, 0x1A1A2EFF);
+        // Title bar
+        Rect(0, 0, W, 28, 0x1A1A2ECC);
         Rect(0, 27, W, 1,  0x3A3A6AFF);
         Text("NovaForge  v0.1", 10, 8, 0x569CD6FF, 1.3f);
-        char fpsBuf[32];
-        snprintf(fpsBuf, sizeof(fpsBuf), "%.0f FPS", s.fps > 0 ? s.fps : m_fps);
-        int ftw = TW(fpsBuf);
-        Text(fpsBuf, W - ftw - 10, 8, 0x4EC94EFF, 1.1f);
+        {
+            char fpsBuf[32];
+            snprintf(fpsBuf, sizeof(fpsBuf), "%.0f FPS", s.fps > 0 ? s.fps : m_fps);
+            int ftw = TW(fpsBuf);
+            Text(fpsBuf, W - ftw - 10, 8, 0x4EC94EFF, 1.1f);
+        }
 
-        // ── Status bar (bottom) ──────────────────────────────────────────
+        // Status bar (bottom)
         float sbY = H - 22.f;
-        Rect(0, sbY, W, 22, 0x007ACCFF);
-        char statusBuf[128];
-        snprintf(statusBuf, sizeof(statusBuf),
-                 "  Scene: %s  |  Entities: %d  |  Miners: %d  |  Earnings: %.0f  |  %s",
-                 s.sceneName.c_str(), s.entityCount, s.minerCount,
-                 s.totalEarnings, s.builderActive ? "BUILDER MODE" : "Ready");
-        Text(statusBuf, 4, sbY + 5, 0xFFFFFFFF);
+        Rect(0, sbY, W, 22, 0x007ACCCC);
+        {
+            char statusBuf[128];
+            snprintf(statusBuf, sizeof(statusBuf),
+                     "  Scene: %s  |  Entities: %d  |  Miners: %d  |  Earnings: %.0f  |  %s",
+                     s.sceneName.c_str(), s.entityCount, s.minerCount,
+                     s.totalEarnings, s.builderActive ? "BUILDER MODE" : "Ready");
+            Text(statusBuf, 4, sbY + 5, 0xFFFFFFFF);
+        }
 
-        // ── Side info panel (right) ───────────────────────────────────────
+        // Side info panel (right)
         float panX = W - 220.f, panY = 36.f, panW = 216.f;
-        Rect(panX, panY, panW, 120, 0x1E1E2EDD);
+        Rect(panX, panY, panW, 120, 0x1E1E2ECC);
         RectOutline(panX, panY, panW, 120, 0x3A3A6AFF);
         Text("  GAME STATUS", panX + 6, panY + 4,  0x569CD6FF, 1.1f);
         Line(panX, panY + 18, panX + panW, panY + 18, 0x3A3A6AFF);
+        {
+            char buf[64];
+            float ly = panY + 22.f;
+            snprintf(buf, sizeof(buf), "Entities:  %d", s.entityCount);
+            Text(buf, panX + 8, ly, 0xD4D4D4FF); ly += 16;
+            snprintf(buf, sizeof(buf), "AI Miners: %d", s.minerCount);
+            Text(buf, panX + 8, ly, 0xD4D4D4FF); ly += 16;
+            snprintf(buf, sizeof(buf), "Earnings:  %.0f cr", s.totalEarnings);
+            Text(buf, panX + 8, ly, 0x4EC94EFF); ly += 16;
+            snprintf(buf, sizeof(buf), "Builder:   %s", s.builderActive ? "ON" : "off");
+            Text(buf, panX + 8, ly, s.builderActive ? 0xFFCC00FF : 0x808080FF);
+        }
 
-        char buf[64];
-        float ly = panY + 22.f;
-        snprintf(buf, sizeof(buf), "Entities:    %d", s.entityCount);
-        Text(buf, panX + 8, ly, 0xD4D4D4FF); ly += 16;
-        snprintf(buf, sizeof(buf), "AI Miners:   %d", s.minerCount);
-        Text(buf, panX + 8, ly, 0xD4D4D4FF); ly += 16;
-        snprintf(buf, sizeof(buf), "Earnings:    %.0f cr", s.totalEarnings);
-        Text(buf, panX + 8, ly, 0x4EC94EFF); ly += 16;
-        snprintf(buf, sizeof(buf), "Crafting:    %d sessions", s.craftingSessions);
-        Text(buf, panX + 8, ly, 0xD4D4D4FF); ly += 16;
-        snprintf(buf, sizeof(buf), "Builder:     %s", s.builderActive ? "ON" : "off");
-        Text(buf, panX + 8, ly, s.builderActive ? 0xFFCC00FF : 0x808080FF);
-
-        // ── Controls help (bottom-right) ─────────────────────────────────
-        float helpX = W - 220.f, helpY = sbY - 82.f;
-        Rect(helpX, helpY, 216, 78, 0x1E1E2ECC);
-        RectOutline(helpX, helpY, 216, 78, 0x3A3A6AFF);
+        // Controls help (bottom-right)
+        float helpX = W - 220.f, helpY = sbY - 96.f;
+        Rect(helpX, helpY, 216, 92, 0x1E1E2ECC);
+        RectOutline(helpX, helpY, 216, 92, 0x3A3A6AFF);
         Text("  CONTROLS", helpX + 6, helpY + 4, 0x808080FF, 1.0f);
         Line(helpX, helpY + 16, helpX + 216, helpY + 16, 0x3A3A6AFF);
-        float hy = helpY + 20.f;
-        Text("ESC  — Quit",          helpX + 8, hy, 0x808080FF); hy += 13;
-        Text("F5   — Quick Save",    helpX + 8, hy, 0x808080FF); hy += 13;
-        Text("F9   — Quick Load",    helpX + 8, hy, 0x808080FF); hy += 13;
-        Text("F2   — Builder Mode",  helpX + 8, hy, 0x808080FF); hy += 13;
-        Text("Tab  — Inventory",     helpX + 8, hy, 0x808080FF);
+        {
+            float hy = helpY + 20.f;
+            Text("ESC  — Quit",             helpX + 8, hy, 0x808080FF); hy += 13;
+            Text("WASD — Move (FPS)",        helpX + 8, hy, 0x808080FF); hy += 13;
+            Text("Mouse — Look",             helpX + 8, hy, 0x808080FF); hy += 13;
+            Text("F5   — Quick Save",        helpX + 8, hy, 0x808080FF); hy += 13;
+            Text("F9   — Quick Load",        helpX + 8, hy, 0x808080FF); hy += 13;
+            Text("F2   — Builder Mode",      helpX + 8, hy, 0x808080FF);
+        }
 
-        // ── Recent log panel (bottom-left) ───────────────────────────────
+        // Recent log panel (bottom-left)
         if (!s.recentLog.empty()) {
             float logH = (float)std::min((int)s.recentLog.size(), 6) * 14.f + 8.f;
             float logY = sbY - logH - 4.f;
@@ -136,23 +165,13 @@ public:
                 Text(s.recentLog[i], 8, ry, 0xA0A0A0FF); ry += 14;
             }
         }
-
-        // ── Centre viewport decoration ───────────────────────────────────
-        float cx = W * 0.5f - 100.f, cy = 38.f;
-        Rect(cx, cy, 200.f, H - 60.f - logHeightApprox(s) - 22.f, 0x0D0D1AFF);
-        RectOutline(cx, cy, 200.f, H - 60.f - logHeightApprox(s) - 22.f, 0x2A2A4AFF);
-        Text("  GAME WORLD", cx + 4, cy + 4, 0x2A2A4AFF, 1.0f);
-        Text("Launch AtlasEditor", cx + 8, cy + 24, 0x3A3A6AFF);
-        Text("to design scenes", cx + 8, cy + 40, 0x2A3A5AFF);
     }
 
-    // Feed new log lines in so they appear in the HUD
     void AppendLog(const std::string& line) {
         m_log.push_back(line);
         if (m_log.size() > 50) m_log.erase(m_log.begin());
     }
 
-    // Build a HUDState snapshot — call before Draw()
     HUDState BuildState(int entityCount, int minerCount,
                         float earnings, int crafting,
                         bool builder, double fps,
@@ -165,21 +184,173 @@ public:
         s.builderActive    = builder;
         s.fps              = fps;
         s.sceneName        = scene;
-        // Last 6 lines
         int start = std::max(0, (int)m_log.size() - 6);
         s.recentLog = std::vector<std::string>(m_log.begin() + start, m_log.end());
         return s;
     }
 
 private:
+    // Camera state for 3-D render
+    float m_camX = 0.f, m_camY = 1.7f, m_camZ = 0.f;
+    float m_camYaw = 0.f, m_camPitch = 0.f;
+
     std::vector<std::string> m_log;
     double m_fpsAccum  = 0.0;
     int    m_fpsFrames = 0;
     double m_fps       = 0.0;
 
-    static float logHeightApprox(const HUDState& s) {
-        int cnt = std::min((int)s.recentLog.size(), 6);
-        return cnt > 0 ? cnt * 14.f + 12.f : 0.f;
+    // ── 3-D scene renderer ────────────────────────────────────────────────
+    void Draw3DScene(int w, int h, const HUDState& s) {
+        glViewport(0, 0, w, h);
+
+        // Clear colour (deep space black)
+        glClearColor(0.02f, 0.02f, 0.06f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+        glDisable(GL_CULL_FACE);
+
+        // ── Perspective projection ────────────────────────────────────────
+        float aspect = (h > 0) ? (float)w / h : 1.f;
+        glMatrixMode(GL_PROJECTION);
+        FPSLoadPerspective(70.f, aspect, 0.1f, 50000.f);
+
+        // ── FPS camera view matrix ────────────────────────────────────────
+        glMatrixMode(GL_MODELVIEW);
+        FPSLoadViewMatrix(m_camX, m_camY, m_camZ, m_camYaw, m_camPitch);
+
+        // ── Star field (dots) ─────────────────────────────────────────────
+        DrawStarfield();
+
+        // ── World objects (wireframe boxes) ──────────────────────────────
+        for (auto& obj : s.worldObjects) {
+            float r = (float)((obj.color >> 24) & 0xFF) / 255.f;
+            float g = (float)((obj.color >> 16) & 0xFF) / 255.f;
+            float b = (float)((obj.color >>  8) & 0xFF) / 255.f;
+            glColor4f(r, g, b, 0.9f);
+            DrawWireBox3D(obj.x, obj.y, obj.z, obj.size);
+        }
+
+        // Restore GL state for 2-D HUD
+        glDisable(GL_DEPTH_TEST);
+    }
+
+    // FPS perspective (column-major for glLoadMatrixf)
+    static void FPSLoadPerspective(float fovDeg, float aspect, float nearZ, float farZ) {
+        float f  = 1.0f / std::tan(fovDeg * 0.5f * 3.14159265f / 180.f);
+        float nf = 1.0f / (nearZ - farZ);
+        float m[16] = {
+            f / aspect, 0.f, 0.f,                        0.f,
+            0.f,        f,   0.f,                        0.f,
+            0.f,        0.f, (farZ + nearZ) * nf,       -1.f,
+            0.f,        0.f, 2.0f * farZ * nearZ * nf,   0.f
+        };
+        glLoadMatrixf(m);
+    }
+
+    // FPS view matrix from position + yaw/pitch
+    static void FPSLoadViewMatrix(float px, float py, float pz,
+                                   float yawDeg, float pitchDeg) {
+        float yR = yawDeg   * 3.14159265f / 180.f;
+        float pR = pitchDeg * 3.14159265f / 180.f;
+
+        // Forward = where we're looking
+        float fx = std::cos(pR) * std::sin(yR);
+        float fy = std::sin(pR);
+        float fz = std::cos(pR) * std::cos(yR);
+
+        // Camera looks at eye + forward
+        float cx = px + fx, cy = py + fy, cz = pz + fz;
+
+        // right = cross(forward, up=(0,1,0))
+        float rx = -fz, ry = 0.f, rz = fx;
+        float rl = std::sqrt(rx*rx + rz*rz);
+        if (rl < 1e-6f) rl = 1.f;
+        rx /= rl; rz /= rl;
+
+        // true up = cross(right, forward)
+        float ux = ry*fz - rz*fy;
+        float uy = rz*fx - rx*fz;
+        float uz = rx*fy - ry*fx;
+
+        float m[16] = {
+            rx,                       ux,                       -fx,                   0.f,
+            ry,                       uy,                       -fy,                   0.f,
+            rz,                       uz,                       -fz,                   0.f,
+            -(rx*px+ry*py+rz*pz),    -(ux*px+uy*py+uz*pz),     fx*px+fy*py+fz*pz,    1.f
+        };
+        glLoadMatrixf(m);
+    }
+
+    // Draw a sparse starfield using GL_POINTS
+    static void DrawStarfield() {
+        // Fixed pseudo-random star positions
+        static float stars[150*3];
+        static bool  init = false;
+        if (!init) {
+            init = true;
+            // Simple LCG for deterministic star positions
+            unsigned seed = 0xDEADBEEF;
+            auto rng = [&]() -> float {
+                seed = seed * 1664525u + 1013904223u;
+                return ((seed >> 8) & 0xFFFF) / (float)0xFFFF;
+            };
+            for (int i = 0; i < 150; i++) {
+                float theta = rng() * 6.28318f;
+                float phi   = (rng() - 0.5f) * 3.14159f;
+                float r     = 8000.f;
+                stars[i*3+0] = r * std::cos(phi) * std::sin(theta);
+                stars[i*3+1] = r * std::sin(phi);
+                stars[i*3+2] = r * std::cos(phi) * std::cos(theta);
+            }
+        }
+        glPointSize(2.f);
+        glColor4f(0.9f, 0.9f, 1.0f, 0.8f);
+        glBegin(GL_POINTS);
+        for (int i = 0; i < 150; i++)
+            glVertex3f(stars[i*3], stars[i*3+1], stars[i*3+2]);
+        glEnd();
+        glPointSize(1.f);
+    }
+
+    // Wireframe box centred at (x,y,z) with half-extent hs
+    static void DrawWireBox3D(float x, float y, float z, float hs) {
+        glBegin(GL_LINE_LOOP);
+        glVertex3f(x-hs, y-hs, z-hs); glVertex3f(x+hs, y-hs, z-hs);
+        glVertex3f(x+hs, y-hs, z+hs); glVertex3f(x-hs, y-hs, z+hs);
+        glEnd();
+        glBegin(GL_LINE_LOOP);
+        glVertex3f(x-hs, y+hs, z-hs); glVertex3f(x+hs, y+hs, z-hs);
+        glVertex3f(x+hs, y+hs, z+hs); glVertex3f(x-hs, y+hs, z+hs);
+        glEnd();
+        glBegin(GL_LINES);
+        glVertex3f(x-hs, y-hs, z-hs); glVertex3f(x-hs, y+hs, z-hs);
+        glVertex3f(x+hs, y-hs, z-hs); glVertex3f(x+hs, y+hs, z-hs);
+        glVertex3f(x+hs, y-hs, z+hs); glVertex3f(x+hs, y+hs, z+hs);
+        glVertex3f(x-hs, y-hs, z+hs); glVertex3f(x-hs, y+hs, z+hs);
+        glEnd();
+    }
+
+    // Draw FPS crosshair at screen centre
+    static void DrawCrosshair(float W, float H) {
+        float cx = W * 0.5f, cy = H * 0.5f;
+        float len = 10.f, gap = 4.f;
+        glColor4f(1.f, 1.f, 1.f, 0.85f);
+        glLineWidth(1.5f);
+        glBegin(GL_LINES);
+        glVertex2f(cx - len, cy); glVertex2f(cx - gap, cy);
+        glVertex2f(cx + gap, cy); glVertex2f(cx + len, cy);
+        glVertex2f(cx, cy - len); glVertex2f(cx, cy - gap);
+        glVertex2f(cx, cy + gap); glVertex2f(cx, cy + len);
+        glEnd();
+        // Centre dot
+        glPointSize(3.f);
+        glBegin(GL_POINTS);
+        glVertex2f(cx, cy);
+        glEnd();
+        glPointSize(1.f);
+        glLineWidth(1.f);
     }
 
     // ── Colour helpers ────────────────────────────────────────────────────

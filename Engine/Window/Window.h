@@ -52,6 +52,7 @@ public:
     std::function<void(int btn, bool pressed)>    onMouseButton;
     std::function<void(int key, bool pressed)>    onKey;
     std::function<void(unsigned int codepoint)>   onChar;
+    std::function<void(double dx, double dy)>     onScroll;
     std::function<void(int w, int h)>             onResize;
 
     const MouseState& GetMouse() const { return m_mouse; }
@@ -68,10 +69,11 @@ private:
     MouseState   m_mouse;
 
     // Static GLFW callback trampolines
-    static void s_CursorPosCallback(GLFWwindow* w, double x, double y);
-    static void s_MouseButtonCallback(GLFWwindow* w, int btn, int action, int mods);
-    static void s_KeyCallback(GLFWwindow* w, int key, int scancode, int action, int mods);
-    static void s_CharCallback(GLFWwindow* w, unsigned int codepoint);
+    static void s_CursorPosCallback      (GLFWwindow* w, double x, double y);
+    static void s_MouseButtonCallback    (GLFWwindow* w, int btn, int action, int mods);
+    static void s_KeyCallback            (GLFWwindow* w, int key, int scancode, int action, int mods);
+    static void s_CharCallback           (GLFWwindow* w, unsigned int codepoint);
+    static void s_ScrollCallback         (GLFWwindow* w, double dx, double dy);
     static void s_FramebufferSizeCallback(GLFWwindow* w, int width, int height);
 };
 

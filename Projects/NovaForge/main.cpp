@@ -14,6 +14,7 @@
  *           stations, and all player-assembled structures (Phase 36)
  */
 #include "Engine/Core/Engine.h"
+#include "Engine/Window/Window.h"
 #include "Engine/Audio/AudioEngine.h"
 #include "Runtime/ECS/ECS.h"
 #include "Runtime/Components/Components.h"
@@ -407,6 +408,14 @@ int main() {
 
     Engine::Core::Logger::Info("NF-08: SaveSystem ready — F5 quicksave, F9 quickload");
 
+    // ── FPS camera & key state — declared before any lambdas capture them ──
+    float  playerYaw   = 0.f;   // horizontal look (degrees)
+    float  playerPitch = 0.f;   // vertical look   (degrees, clamped ±89)
+    bool   keyW = false, keyA = false, keyS = false, keyD = false;
+    bool   keySpace = false, keyShift = false;
+    double lastMouseX = 640.0, lastMouseY = 360.0;
+    bool   mouseInitialized = false;
+
     // ── Game loop via Engine tick callback ──────────────────────────────
     float accumTime  = 0.f;
     bool  gameRunning = true;
@@ -425,8 +434,19 @@ int main() {
         // NF-04: tick crafting sessions
         crafting.Tick(dt);
 
-        // NF-02: build dummy input (real input would come from window callbacks)
+        // NF-02: FPS movement from real keyboard state
         Runtime::Player::PlayerInput input{};
+        {
+            float speed = 1.f;
+            if (keyW) { input.moveForward =  speed; }
+            if (keyS) { input.moveForward = -speed; }
+            if (keyA) { input.moveRight   = -speed; }
+            if (keyD) { input.moveRight   =  speed; }
+            if (keySpace) input.moveUp =  1.f;
+            if (keyShift) input.moveUp = -1.f;
+            input.lookYaw   = playerYaw;
+            input.lookPitch = playerPitch;
+        }
         player.Update(dt, input);
 
         // NF-03: Tab key is handled by GLFW key callback in a full build.
@@ -470,7 +490,30 @@ int main() {
         }
     });
 
-    Engine::Core::Logger::Info("NovaForge ready — press ESC to quit, F5 quicksave, F9 quickload");
+    // Wire FPS input before calling engine.Run() so the engine's ESC
+    // chaining (done inside Run) will preserve our callbacks.
+    if (auto* win = engine.GetWindow()) {
+        win->onMouseMove = [&](double x, double y) {
+            if (!mouseInitialized) { lastMouseX = x; lastMouseY = y; mouseInitialized = true; return; }
+            double dx = x - lastMouseX;
+            double dy = y - lastMouseY;
+            lastMouseX = x; lastMouseY = y;
+            playerYaw   += (float)dx * 0.15f;
+            playerPitch -= (float)dy * 0.15f;
+            playerPitch  = std::max(-89.f, std::min(89.f, playerPitch));
+        };
+        win->onKey = [&](int key, bool pressed) {
+            // GLFW key codes (platform-independent integers)
+            constexpr int kW = 87, kA = 65, kS = 83, kD = 68;
+            constexpr int kSpace = 32, kShift = 340;
+            if (key == kW) keyW = pressed;
+            if (key == kA) keyA = pressed;
+            if (key == kS) keyS = pressed;
+            if (key == kD) keyD = pressed;
+            if (key == kSpace) keySpace = pressed;
+            if (key == kShift) keyShift = pressed;
+        };
+    }
 
     // ── NovaForge HUD — graphical overlay drawn into the engine window ──────
     // The HUD is rendered via the RenderCallback so it happens inside the
@@ -490,16 +533,56 @@ int main() {
         auto now = std::chrono::steady_clock::now();
         double dt = std::chrono::duration<double>(now - lastFrameTime).count();
         lastFrameTime = now;
-        if (dt <= 0.0 || dt > 1.0) dt = 1.0 / 60.0; // clamp outliers
+        if (dt <= 0.0 || dt > 1.0) dt = 1.0 / 60.0;
 
+        // ── Build world objects from ECS for 3-D FPS rendering ──────────
         auto state = gameHud.BuildState(
-            /* entities  */ static_cast<int>(engine.GetWorld().EntityCount()),
-            /* miners    */ miners.MinerCount(),
-            /* earnings  */ miners.TotalEarnings(),
-            /* crafting  */ crafting.Stats().activeSessions,
-            /* builder   */ builderActive,
-            /* fps       */ 0.0  // HUD computes FPS from dt internally
+            static_cast<int>(engine.GetWorld().EntityCount()),
+            miners.MinerCount(),
+            miners.TotalEarnings(),
+            crafting.Stats().activeSessions,
+            builderActive,
+            0.0
         );
+
+        state.worldObjects.clear();
+        {
+            static const uint32_t kColors[] = {
+                0xFFDD44FF, 0x4A90D9FF, 0x7ED321FF, 0xF5A623FF,
+                0xBD10E0FF, 0xE05555FF, 0x55BBEEFF, 0xAAFF88FF
+            };
+            auto entities = world.GetEntities();
+            for (size_t i = 0; i < entities.size(); i++) {
+                auto id = entities[i];
+                auto* tr  = world.GetComponent<Runtime::Components::Transform>(id);
+                auto* tag = world.GetComponent<Runtime::Components::Tag>(id);
+                NovaForge::WorldObject obj;
+                if (tr) { obj.x = tr->position.x; obj.y = tr->position.y; obj.z = tr->position.z; }
+                if (tag) obj.name = tag->name;
+                obj.color = kColors[i % 8];
+                obj.size  = 0.5f;
+                if (tag) {
+                    for (auto& t : tag->tags) {
+                        if (t == "Star")     { obj.size = 5.0f; obj.color = 0xFFEE44FF; break; }
+                        if (t == "GasGiant") { obj.size = 3.0f; break; }
+                        if (t == "Planet")   { obj.size = 2.0f; break; }
+                        if (t == "Station" || t == "JumpGate") { obj.size = 2.5f; break; }
+                    }
+                }
+                state.worldObjects.push_back(obj);
+            }
+        }
+
+        // ── Update HUD camera from player transform ──────────────────────
+        {
+            constexpr float kCameraEyeHeight = 1.7f;
+            auto* tr = world.GetComponent<Runtime::Components::Transform>(playerEntity);
+            float px = tr ? tr->position.x : 0.f;
+            float py = (tr ? tr->position.y : 0.f) + kCameraEyeHeight;
+            float pz = tr ? tr->position.z : 0.f;
+            gameHud.SetCamera(px, py, pz, playerYaw, playerPitch);
+        }
+
         gameHud.Draw(w, h, state, dt);
     });
 
