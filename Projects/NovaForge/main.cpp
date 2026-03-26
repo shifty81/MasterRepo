@@ -360,7 +360,12 @@ int main() {
     // ── NF-08: Save / Load ───────────────────────────────────────────────
     Runtime::SaveLoad::SaveSystem saveSystem;
     std::string saveDir = "Projects/NovaForge/Saves";
-    fs::create_directories(saveDir);
+    {
+        std::error_code ec;
+        fs::create_directories(saveDir, ec);
+        // Silently ignore errors (e.g., read-only working directory);
+        // QuickSave also uses the error_code variant internally.
+    }
 
     auto QuickSave = [&]() {
         Runtime::SaveLoad::SaveData data;

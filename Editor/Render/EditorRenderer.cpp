@@ -161,12 +161,7 @@ void EditorRenderer::OnMouseButton(int btn, bool pressed) {
                 else
                     Engine::Core::Logger::Info("Deselected");
             }
-        } else {
-            // Click outside viewport → dismiss menu
-            m_activeMenu = -1;
         }
-    } else if (btn == 0 && !pressed) {
-        m_leftMousePressed = false;
     }
 }
 
@@ -474,6 +469,22 @@ void EditorRenderer::DrawMenuBar(float x, float y, float w, float h) {
 
             iy += 20.f;
         }
+    }
+
+    // Dismiss menu if click happened outside the menu bar and any open sub-menu
+    if (m_leftMousePressed && m_activeMenu >= 0) {
+        bool inMenuBar = (m_mouseY >= y && m_mouseY < y + h);
+        bool inSubMenu = false;
+        if (!inMenuBar && subMenus[m_activeMenu]) {
+            float dmX = menuXs[m_activeMenu] - 4.f;
+            float dmY = y + h;
+            float dmW = 180.f;
+            float dmH = (float)subMenuCounts[m_activeMenu] * 20.f + 4.f;
+            inSubMenu = (m_mouseX >= dmX && m_mouseX < dmX + dmW &&
+                         m_mouseY >= dmY && m_mouseY < dmY + dmH);
+        }
+        if (!inMenuBar && !inSubMenu)
+            m_activeMenu = -1;
     }
 }
 
@@ -1165,9 +1176,6 @@ void EditorRenderer::Render(double dt) {
         m_fpsFrames = 0;
     }
 
-    // Reset single-frame flags
-    m_leftMousePressed = false;
-
     float W = (float)m_width;
     float H = (float)m_height;
 
@@ -1178,8 +1186,7 @@ void EditorRenderer::Render(double dt) {
     SetupOrtho();
 
     // ── Layout geometry ────────────────────────────────────────────────────
-    float titleY   = 0.f;
-    float menuY    = titleY   + kTitleH;
+    float menuY    = 0.f;
     float toolbarY = menuY    + kMenuH;
     float statusY  = H        - kStatusH;
     float consoleY = statusY  - kConsoleH;
@@ -1208,7 +1215,6 @@ void EditorRenderer::Render(double dt) {
     // ── Bars (drawn on top) ────────────────────────────────────────────────
     DrawToolbar (0.f, toolbarY, W, kToolbarH);
     DrawMenuBar (0.f, menuY,  W, kMenuH);
-    DrawTitleBar(0.f, titleY, W, kTitleH);
     DrawStatusBar(0.f, statusY, W, kStatusH);
 
     // ── Top / bottom hairlines ─────────────────────────────────────────────
@@ -1233,6 +1239,9 @@ void EditorRenderer::Render(double dt) {
         float acY = mainY + 10.f;
         DrawAIChat(acX, acY, acW, acH);
     }
+
+    // Reset single-frame click flag after all UI has had a chance to see it
+    m_leftMousePressed = false;
 }
 
 } // namespace Editor
