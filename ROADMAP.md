@@ -27,7 +27,13 @@
 | Builder–NovaForge Integration (Phase 36) | 9/9 | 0 | 9 |
 | Audit: Undocumented Subsystems (Phase 35) | 37/37 | 0 | 37 |
 | Suggested Next Features (Phase 37) | 12/12 | 0 | 12 |
-| **TOTAL** | **201/201** | **0** | **201** |
+| v10.7 Production Polish & AI Enhancement (Phase 38) | 10/10 | 0 | 10 |
+| Shippable Game Foundations (Phase 39) | 10/10 | 0 | 10 |
+| Live Services & Advanced AI (Phase 40) | 10/10 | 0 | 10 |
+| Developer Experience & World Simulation (Phase 41) | 10/10 | 0 | 10 |
+| Immersive Technologies & Live Infrastructure (Phase 42) | 10/10 | 0 | 10 |
+| Game Systems & Engine Tooling (Phase 43) | 10/10 | 0 | 10 |
+| **TOTAL** | **261/261** | **0** | **261** |
 
 ---
 
@@ -886,6 +892,126 @@ All three paths converge for the final product.
 
 ---
 
+## Phase 38 – v10.7 Production Polish & AI Enhancement ✅
+
+> Implements the optional enhancements outlined in the MasterRepo v10.7 Ultra Blueprint.
+> All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 38.01 | AI Reasoning Visualizer | High | Show why AI made each suggestion — evidence, decision steps, confidence, alternatives | `AI/ReasoningVisualizer/ReasoningVisualizer.h/.cpp` |
+| ✅ 38.02 | Cyclic Dependency Resolver | High | Detect and break cyclic deps in AI suggestion graphs and PCG rule sets (Tarjan SCC) | `AI/CyclicDependencyResolver/CyclicDependencyResolver.h/.cpp` |
+| ✅ 38.03 | Session Memory Manager | High | Persistent multi-session key-value + embedding memory for AI agents | `AI/SessionMemory/SessionMemory.h/.cpp` |
+| ✅ 38.04 | AI Suggestion Sandbox | High | Multi-step AI suggestion staging with Preview / Commit / Reject / Undo / Redo | `AI/SuggestionSandbox/SuggestionSandbox.h/.cpp` |
+| ✅ 38.05 | Anomaly Alerting System | Medium | Threshold + z-score alerting for AI/PCG metric outliers with rate limiting | `AI/AnomalyAlerting/AnomalyAlerting.h/.cpp` |
+| ✅ 38.06 | Build Report Generator | Medium | Pull-request-style Markdown reports: metrics, suggestions, anomalies, notes | `AI/BuildReport/BuildReport.h/.cpp` |
+| ✅ 38.07 | Deterministic PCG Verifier | Medium | Run any registered PCG generator twice with the same seed and diff outputs | `PCG/DeterministicVerifier/DeterministicVerifier.h/.cpp` |
+| ✅ 38.08 | Asset Metadata Enhancer | Medium | Versioned asset records with AI reasoning annotations, tag search, JSON persistence | `Core/AssetMetadata/AssetMetadata.h/.cpp` |
+| ✅ 38.09 | Headless Server Runtime | Low | Embedded headless game loop for offline AI + PCG batch processing and CI | `Runtime/HeadlessServer/HeadlessServer.h/.cpp` |
+| ✅ 38.10 | AI Profiler Panel | Low | Editor panel: per-frame AI/PCG CPU time, queue depth, peak/avg graphs | `Editor/Panels/AIProfiler/AIProfilerPanel.h/.cpp` |
+
+---
+
+## Phase 39 – Shippable Game Foundations ✅
+
+> Fills the remaining production gaps to make NovaForge and AtlasEditor fully release-ready.
+> All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 39.01 | Runtime Analytics | High | Session-scoped gameplay event tracking, funnel steps, counters, JSONL flush | `Runtime/Analytics/RuntimeAnalytics.h/.cpp` |
+| ✅ 39.02 | Cinematic System | High | Catmull-Rom spline camera paths, keyframe FOV/exposure, play/pause/seek/loop | `Engine/Cinematic/CinematicSystem.h/.cpp` |
+| ✅ 39.03 | Gamepad Input System | High | Full controller support: buttons, axes, deadzone, rumble, action mapping | `Engine/Input/Gamepad/GamepadSystem.h/.cpp` |
+| ✅ 39.04 | Graphics Settings Manager | High | Preset/custom quality, resolution scale, MSAA, shadows, dynamic auto-scaling | `Engine/Graphics/GraphicsSettings.h/.cpp` |
+| ✅ 39.05 | Save Game Manager | High | Named slots, schema versioning + migration, auto-save, playtime tracking | `Runtime/SaveGame/SaveGameManager.h/.cpp` |
+| ✅ 39.06 | Packaging Pipeline | Medium | Asset collection, compression (LZ4/Zstd), .pak bundle + manifest generation | `Builder/Packaging/PackagingPipeline.h/.cpp` |
+| ✅ 39.07 | Telemetry Reporter | Medium | Opt-in crash reports, feature usage, performance outliers, local JSONL storage | `Core/Telemetry/TelemetryReporter.h/.cpp` |
+| ✅ 39.08 | Network Replication Layer | Medium | ECS component delta replication, dirty tracking, interest range, full snapshot | `Engine/Net/Replication/NetworkReplication.h/.cpp` |
+| ✅ 39.09 | Cloud Sync Manager | Low | Offline-first push/pull/sync for saves and workspaces, conflict resolution | `Core/CloudSync/CloudSyncManager.h/.cpp` |
+| ✅ 39.10 | Ship Design Exporter | Low | Export assemblies to Blueprint JSON / OBJ / PAK / GLB; batch export support | `Builder/Export/ShipExporter.h/.cpp` |
+
+---
+
+## Phase 40 – Live Services & Advanced AI ✅
+
+> Closes the remaining gaps in AI tooling, world simulation, and live-game services.
+> All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 40.01 | Prompt Template Engine | High | Parameterised `{{var}}` prompt templates with conditionals, partials, filters | `AI/PromptTemplate/PromptTemplateEngine.h/.cpp` |
+| ✅ 40.02 | Multi-Agent Coordinator | High | Fan-out, pipeline, and voting coordination over registered AI agents | `AI/MultiAgent/MultiAgentCoordinator.h/.cpp` |
+| ✅ 40.03 | Spatial Audio System | High | 3D positional audio: HRTF panning, distance attenuation, reverb zones, Doppler | `Engine/Audio/Spatial/SpatialAudio.h/.cpp` |
+| ✅ 40.04 | Planet Generator | High | Procedural planet via fBm sphere: biome map, albedo, heightmap, PGM/PPM export | `PCG/Planet/PlanetGenerator.h/.cpp` |
+| ✅ 40.05 | Leaderboard System | Medium | Local-first named boards, score submission, rank queries, JSON persistence | `Runtime/Leaderboard/LeaderboardSystem.h/.cpp` |
+| ✅ 40.06 | Feature Flag System | Medium | Bool / percentage / variant flags, user-bucket hashing, runtime overrides | `Core/FeatureFlags/FeatureFlagSystem.h/.cpp` |
+| ✅ 40.07 | Timeline Editor Panel | Medium | Visual timeline for cinematics: tracks, keyframes, playhead scrub, transport | `Editor/Panels/TimelineEditor/TimelineEditorPanel.h/.cpp` |
+| ✅ 40.08 | Notification System | Medium | Priority-queued toasts with categories, muting, expiry, and action callbacks | `Runtime/Notification/NotificationSystem.h/.cpp` |
+| ✅ 40.09 | NavMesh Pathfinding | High | A* over polygon nav-graph, dynamic obstacles, area costs, smooth paths | `Engine/Pathfinding/NavMesh/NavMesh.h/.cpp` |
+| ✅ 40.10 | Sampling Profiler | Low | CPU sampling profiler: flat profile, flame graph JSON export, CSV flat table | `Core/Profiling/SamplingProfiler.h/.cpp` |
+
+---
+
+## Phase 41 – Developer Experience & World Simulation ✅
+
+> Closes gaps in shader authoring, AI editing, simulation fidelity, and runtime tooling.
+> All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 41.01 | Shader Graph | High | Node-based visual shader editor: texture/math/utility nodes, GLSL/HLSL compiler, JSON save/load | `Engine/Shader/ShaderGraph/ShaderGraph.h/.cpp` |
+| ✅ 41.02 | Behavior Tree Editor | High | Visual BT editor panel: Selector/Sequence/Leaf nodes, live PIE run-state overlay | `Editor/Panels/BehaviorTreeEditor/BehaviorTreeEditorPanel.h/.cpp` |
+| ✅ 41.03 | Fluid Simulation | High | Eulerian Navier-Stokes (2D/3D): velocity advection, pressure projection, smoke density, PGM export | `Engine/Sim/FluidSim/FluidSimulation.h/.cpp` |
+| ✅ 41.04 | Event Replay System | High | Deterministic record/replay of all engine events: save, seek, speed control, JSON serialization | `Core/EventReplay/EventReplaySystem.h/.cpp` |
+| ✅ 41.05 | Crowd Simulation | High | Boids-style steering + NavMesh goal-seeking for 1000+ agents with formation groups | `Runtime/Crowd/CrowdSimulation.h/.cpp` |
+| ✅ 41.06 | Data Table System | Medium | Row-keyed typed tables (CSV/JSON): hot-reload, DLC patch-merge, typed accessors | `Core/DataTable/DataTableSystem.h/.cpp` |
+| ✅ 41.07 | Procedural Animation | Medium | Runtime IK (TwoBone + FABRIK), look-at, spring bones, terrain foot placement, ragdoll blend | `Engine/Animation/ProceduralAnim/ProceduralAnimation.h/.cpp` |
+| ✅ 41.08 | Blueprint Compiler | Medium | Visual node-graph → Lua or C++ code generation with type validation and API registry | `Builder/Blueprint/BlueprintCompiler.h/.cpp` |
+| ✅ 41.09 | Minimap System | Medium | World-to-texture minimap: fog of war, icon layers, zoom, region labels, fog reveal | `Runtime/Minimap/MinimapSystem.h/.cpp` |
+| ✅ 41.10 | GPU Particle System | Low | Emitter-based particle sim with forces (gravity/wind/attractor), colour gradients, sub-emitters | `Engine/Particles/GPUParticles/GPUParticleSystem.h/.cpp` |
+
+---
+
+## Phase 42 – Immersive Technologies & Live Infrastructure ✅
+
+> Fills key gaps in splines, weather, dialogue, input, LOD, RPC, light baking, objectives, voice,
+> and open-world streaming.  All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 42.01 | Spline System | High | Catmull-Rom + Bezier splines, arc-length param, Frenet frame, nearest-point, JSON | `Engine/Spline/SplineSystem.h/.cpp` |
+| ✅ 42.02 | Weather System | High | Procedural weather (Clear→Blizzard), smooth blend, time-of-day, thunder events | `PCG/Weather/WeatherSystem/WeatherSystem.h/.cpp` |
+| ✅ 42.03 | Conversation Graph | High | Node-graph dialogue: conditions, effects, choices, localization, JSON save/load | `Runtime/Dialogue/ConversationGraph/ConversationGraph.h/.cpp` |
+| ✅ 42.04 | Input Remapper | High | Runtime rebind: keyboard/mouse/gamepad, axis support, conflict detection, profiles | `Engine/Input/Remapping/InputRemapper.h/.cpp` |
+| ✅ 42.05 | LOD Manager | Medium | Distance-based LOD selection, cross-fade blend, screen-size mode, global bias | `Engine/Lod/LODManager/LODManager.h/.cpp` |
+| ✅ 42.06 | RPC System | Medium | Typed remote procedure calls: reliable/unreliable, broadcast/unicast, arg serialization | `Engine/Net/RPC/RPCSystem.h/.cpp` |
+| ✅ 42.07 | Light Baker | Medium | CPU path-traced lightmap baker: direct shadows, 1-bounce GI, AO, async threading | `Engine/Lighting/LightBaker/LightBaker.h/.cpp` |
+| ✅ 42.08 | Objective System | Medium | Quest objectives: conditions, time limits, chaining, persistence, reward descriptors | `Runtime/Gameplay/ObjectiveSystem/ObjectiveSystem.h/.cpp` |
+| ✅ 42.09 | Voice Manager | Low | VO line queue with priority, 3D position, subtitles, lip-sync paths, cooldowns | `Runtime/Audio/VoiceManager/VoiceManager.h/.cpp` |
+| ✅ 42.10 | Scene Streaming | High | Open-world chunk streaming: load/unload radius, memory budget, soft unload, callbacks | `Runtime/Streaming/SceneStreamingSystem/SceneStreamingSystem.h/.cpp` |
+
+---
+
+## Phase 43 – Game Systems & Engine Tooling ✅
+
+> Core RPG / action gameplay systems plus essential engine utilities.
+> All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 43.01 | Interaction System | High | Proximity/ray interactable registration, candidate sorting, cooldown, one-shot | `Runtime/Gameplay/InteractionSystem/InteractionSystem.h/.cpp` |
+| ✅ 43.02 | Damage Pipeline | High | Typed damage (Physical…True), modifiers, resistances, crit roll, entity HP | `Runtime/Combat/DamagePipeline/DamagePipeline.h/.cpp` |
+| ✅ 43.03 | Ability System | High | GAS-style: grant/revoke, mana/stamina cost, cooldown, charges, tags, regen | `Runtime/Combat/AbilitySystem/AbilitySystem.h/.cpp` |
+| ✅ 43.04 | Inventory System | High | Grid inventory, stacking, weight, equipment slots, transfer, JSON persist | `Runtime/Inventory/InventorySystem/InventorySystem.h/.cpp` |
+| ✅ 43.05 | Status Effect System | Medium | Buffs/debuffs: DoT tick, stacks (Refresh/Additive/Max), immunity tags | `Runtime/Combat/StatusEffects/StatusEffectSystem.h/.cpp` |
+| ✅ 43.06 | Game Event Bus | Medium | Pub-sub bus: priority, one-shot, filter predicate, deferred (thread-safe) | `Core/Events/GameEventBus/GameEventBus.h/.cpp` |
+| ✅ 43.07 | Texture Atlas Builder | Medium | Shelf-packing sprite atlas: RGBA blit, UV map, PPM+JSON export | `Engine/Render/TextureAtlas/TextureAtlasBuilder.h/.cpp` |
+| ✅ 43.08 | Debug Draw | Low | Immediate-mode debug overlay: lines, spheres, boxes, text, groups, lifetime | `Engine/Debug/DebugDraw/DebugDraw.h/.cpp` |
+| ✅ 43.09 | Constraint Solver | Medium | Sequential-impulse solver: distance, spring, hinge, slider constraints | `Engine/Physics/ConstraintSolver/ConstraintSolver.h/.cpp` |
+| ✅ 43.10 | Screenshot System | Low | Frame capture (PNG/JPEG), supersampling, sequence capture, async save | `Engine/Render/Screenshot/ScreenshotSystem.h/.cpp` |
+
+---
+
 ## Appendix B — Rules & Conventions
 
 | Rule | Description |
@@ -928,5 +1054,12 @@ All three paths converge for the final product.
 | 34 | LocalizationSystem (`Core/Localization/LocalizationSystem`), RaycastSystem (`Engine/Raycast/RaycastSystem`), BreadcrumbBar (`IDE/Breadcrumb/BreadcrumbBar`), ChangeTracker (`Tools/ChangeTracker/ChangeTracker`), StreamingResponse (`AI/StreamingResponse`) |
 | 35 | Audit — 37 undocumented subsystems catalogued (ArchiveLearning, AssetLearning, BugTriage, ContextHelp, KnowledgeIngestion, Tutorial, BuildAuditLog, BuildQueue, InteriorNode, CrashReport, Database, LocalCIPipeline, NetworkProtocolGen, PackageManager, GUIEditor, EditorToolRegistry, MaterialOverrideTool, TickScheduler, AnimationGraph, FractalNoise, PCGAdvanced, DeltaEditStore, SkillTree, AIWalletSystem, CubeSphereLayout, VoxelGridLayout, AnalyticsDashboard, AssetProcessor, BuildAutomation, CodeAudit, SimulationPlayback, UIAnimation, UILogicGraph, UILayoutSolver, UILocalization, Accessibility, InteractiveDocs) |
 | 36 | Builder–NovaForge Integration — `NovaForgeBuilderIntegration` (Runtime/BuilderRuntime): PartLibrary loader, ship/station/rover build sessions, InteriorNode slots, snap rules, crafting gate, damage system, collision gen, assembly save/load. `Projects/NovaForge/main.cpp` fully wired. |
+| 37 | Suggested Next Features — Multiplayer sync, Economy system, Faction & reputation, Ship-to-ship combat, Player progression, Modding/Lua hooks, Environmental hazards, AI fleet intelligence, Procedural narrative, Full UI theme system, Build-mode preview, Integration test suite. |
+| 38 | v10.7 Production Polish & AI Enhancement — ReasoningVisualizer, CyclicDependencyResolver, SessionMemory, SuggestionSandbox, AnomalyAlerting, BuildReport, DeterministicVerifier (PCG), AssetMetadata (Core), HeadlessServer (Runtime), AIProfilerPanel (Editor). |
+| 39 | Shippable Game Foundations — RuntimeAnalytics (Runtime), CinematicSystem (Engine), GamepadSystem (Engine/Input), GraphicsSettings (Engine), SaveGameManager (Runtime), PackagingPipeline (Builder), TelemetryReporter (Core), NetworkReplication (Engine/Net), CloudSyncManager (Core), ShipExporter (Builder). |
+| 40 | Live Services & Advanced AI — PromptTemplateEngine (AI), MultiAgentCoordinator (AI), SpatialAudio (Engine/Audio), PlanetGenerator (PCG), LeaderboardSystem (Runtime), FeatureFlagSystem (Core), TimelineEditorPanel (Editor/Panels), NotificationSystem (Runtime), NavMesh (Engine/Pathfinding), SamplingProfiler (Core/Profiling). |
+| 41 | Developer Experience & World Simulation — ShaderGraph (Engine/Shader), BehaviorTreeEditorPanel (Editor/Panels), FluidSimulation (Engine/Sim), EventReplaySystem (Core), CrowdSimulation (Runtime), DataTableSystem (Core), ProceduralAnimation (Engine/Animation), BlueprintCompiler (Builder), MinimapSystem (Runtime), GPUParticleSystem (Engine/Particles). |
+| 42 | Immersive Technologies & Live Infrastructure — SplineSystem (Engine/Spline), WeatherSystem (PCG/Weather), ConversationGraph (Runtime/Dialogue), InputRemapper (Engine/Input/Remapping), LODManager (Engine/Lod), RPCSystem (Engine/Net/RPC), LightBaker (Engine/Lighting), ObjectiveSystem (Runtime/Gameplay), VoiceManager (Runtime/Audio), SceneStreamingSystem (Runtime/Streaming). |
+| 43 | Game Systems & Engine Tooling — InteractionSystem (Runtime/Gameplay), DamagePipeline (Runtime/Combat), AbilitySystem (Runtime/Combat), InventorySystem (Runtime/Inventory), StatusEffectSystem (Runtime/Combat), GameEventBus (Core/Events), TextureAtlasBuilder (Engine/Render), DebugDraw (Engine/Debug), ConstraintSolver (Engine/Physics), ScreenshotSystem (Engine/Render). |
 
 </details>
