@@ -23,6 +23,11 @@
 #include <fstream>
 #include <cstdlib>
 #include <sstream>
+#include "AI/OllamaClient/OllamaClient.h"
+#include <future>
+#include <thread>
+#include <chrono>
+#include <atomic>
 
 // ── stb_easy_font (single header, public domain) ──────────────────────────
 #define STB_EASY_FONT_IMPLEMENTATION
@@ -77,6 +82,77 @@ static constexpr float kOutlinerW = 220.f;
 static constexpr float kInspectorW= 240.f;
 static constexpr float kPanelHdrH = 20.f;
 
+// ── Undoable command classes ───────────────────────────────────────────────
+
+struct CreateEntityCmd final : IUndoableCommand {
+    Runtime::ECS::World*           world;
+    uint32_t&                      selRef;
+    Runtime::Components::Tag       tag;
+    Runtime::Components::Transform transform;
+    uint32_t                       createdId = 0;
+
+    CreateEntityCmd(Runtime::ECS::World* w, uint32_t& sel,
+                    Runtime::Components::Tag t, Runtime::Components::Transform tr)
+        : world(w), selRef(sel), tag(std::move(t)), transform(tr) {}
+
+    void Execute() override {
+        createdId = world->CreateEntity();
+        world->AddComponent(createdId, tag);
+        world->AddComponent(createdId, transform);
+        selRef = createdId;
+    }
+    void Undo() override {
+        world->DestroyEntity(createdId);
+        if (selRef == createdId) selRef = 0;
+    }
+    const char* Description() const override { return "Create Entity"; }
+};
+
+struct DeleteEntityCmd final : IUndoableCommand {
+    Runtime::ECS::World*           world;
+    uint32_t&                      selRef;
+    uint32_t                       entityId;
+    Runtime::Components::Tag       tag;
+    Runtime::Components::Transform transform;
+    bool                           hadTag = false, hadTransform = false;
+
+    DeleteEntityCmd(Runtime::ECS::World* w, uint32_t& sel, uint32_t id)
+        : world(w), selRef(sel), entityId(id) {
+        if (auto* t  = w->GetComponent<Runtime::Components::Tag>(id))       { tag = *t;  hadTag = true; }
+        if (auto* tr = w->GetComponent<Runtime::Components::Transform>(id)) { transform = *tr; hadTransform = true; }
+    }
+    void Execute() override {
+        world->DestroyEntity(entityId);
+        if (selRef == entityId) selRef = 0;
+    }
+    void Undo() override {
+        uint32_t newId = world->CreateEntity();
+        if (hadTag)       world->AddComponent(newId, tag);
+        if (hadTransform) world->AddComponent(newId, transform);
+        entityId = newId;
+        selRef   = newId;
+    }
+    const char* Description() const override { return "Delete Entity"; }
+};
+
+struct MoveEntityCmd final : IUndoableCommand {
+    Runtime::ECS::World*           world;
+    uint32_t                       entityId;
+    Runtime::Components::Transform oldTr, newTr;
+
+    MoveEntityCmd(Runtime::ECS::World* w, uint32_t id,
+                  Runtime::Components::Transform o, Runtime::Components::Transform n)
+        : world(w), entityId(id), oldTr(o), newTr(n) {}
+
+    void Execute() override {
+        if (auto* tr = world->GetComponent<Runtime::Components::Transform>(entityId)) *tr = newTr;
+    }
+    void Undo() override {
+        if (auto* tr = world->GetComponent<Runtime::Components::Transform>(entityId)) *tr = oldTr;
+    }
+    const char* Description() const override { return "Move Entity"; }
+};
+
 // ──────────────────────────────────────────────────────────────────────────
 EditorRenderer::EditorRenderer()
     : m_contentBrowser(std::make_unique<ContentBrowser>())
@@ -92,12 +168,26 @@ EditorRenderer::EditorRenderer()
         Engine::Core::Logger::Info("Navigate to " + file + ":" + std::to_string(line));
     });
 
-    // EI-14: wire AI chat send to Ollama via HTTP
-    m_aiChat->SetSendCallback([this](const std::string& userMsg, IDE::AIChat& chat) {
-        // Simple non-blocking: log the query; actual HTTP done in Render loop
+    // EI-14: wire AI chat to local Ollama (non-blocking async call)
+    m_aiChat->SetSendCallback([this](const std::string& userMsg, IDE::AIChat& /*chat*/) {
         Engine::Core::Logger::Info("[AI] User: " + userMsg);
-        chat.AppendMessage(IDE::ChatRole::Assistant,
-            "[AI] (Ollama) Received: \"" + userMsg + "\". Connect Ollama at localhost:11434.");
+        if (m_aiFuture.valid() &&
+            m_aiFuture.wait_for(std::chrono::milliseconds(0)) != std::future_status::ready) {
+            m_aiChat->AppendMessage(IDE::ChatRole::Assistant,
+                "[AI] Still processing previous request — please wait.");
+            return;
+        }
+        m_aiChat->AppendMessage(IDE::ChatRole::Assistant, "⏳ Thinking…");
+        std::string sysPrompt = m_aiChat->SystemPrompt();
+        m_aiFuture = std::async(std::launch::async, [userMsg, sysPrompt]() -> std::string {
+            AI::OllamaClient client("localhost", 11434);
+            if (!client.Ping())
+                return "⚠ Ollama not reachable at localhost:11434.\n"
+                       "Start it with:  ollama serve\n"
+                       "Then pull a model:  ollama pull codellama";
+            auto resp = client.Generate("codellama", userMsg, sysPrompt);
+            return resp.success ? resp.text : ("⚠ Error: " + resp.error);
+        });
     });
 
     m_aiChat->SetSystemPrompt(
@@ -129,12 +219,33 @@ bool EditorRenderer::Init(int width, int height) {
     m_consoleLines.push_back("[Info]  AI agent system standby");
     m_consoleLines.push_back("[Info]  Ready.");
 
+    // ProjectAI: prime with a welcome context message on startup
+    if (m_aiChat) {
+        m_aiChat->AppendMessage(IDE::ChatRole::Assistant,
+            "Welcome to Atlas AI — your local project assistant.\n\n"
+            "I have access to the project folder. You can ask me to:\n"
+            "  • Explain any system or file  (\"explain Runtime/ECS/ECS.h\")\n"
+            "  • Help plan new features      (\"how should I add multiplayer?\")\n"
+            "  • Review code or architecture (\"review the PIE simulation\")\n"
+            "  • Generate code snippets\n\n"
+            "I run fully offline via Ollama at localhost:11434.\n"
+            "Run 'ollama serve' and 'ollama pull codellama' to get started.");
+    }
+
     return true;
 }
 
 // EI-02
 void EditorRenderer::SetWorld(Runtime::ECS::World* world) {
     m_world = world;
+}
+
+void EditorRenderer::StopPIE() {
+    if (!m_playing) return;
+    m_playing = false;
+    m_pieTime = 0.f;
+    Engine::Core::Logger::Info("PIE: stopped");
+    AppendConsole("[Info]  PIE stopped");
 }
 
 void EditorRenderer::Resize(int width, int height) {
@@ -287,6 +398,8 @@ void EditorRenderer::OnMouseButton(int btn, bool pressed) {
                                 m_gizmoDragAxis = axis;
                                 m_dragLastX = m_mouseX;
                                 m_dragLastY = m_mouseY;
+                                // snapshot transform for undo on release
+                                if (tr) m_gizmoDragStartTransform = *tr;
                                 return; // consumed by gizmo
                             }
                         }
@@ -305,8 +418,15 @@ void EditorRenderer::OnMouseButton(int btn, bool pressed) {
                 }
             }
         } else {
-            // Mouse button released — end any gizmo drag
+            // Mouse button released — commit gizmo drag to undo stack
             if (m_gizmoDragging) {
+                if (m_world && m_selectedEntity != 0 && m_world->IsAlive(m_selectedEntity)) {
+                    if (auto* tr = m_world->GetComponent<Runtime::Components::Transform>(m_selectedEntity)) {
+                        UndoableCommandBus::Instance().Execute(
+                            std::make_unique<MoveEntityCmd>(m_world, m_selectedEntity,
+                                                            m_gizmoDragStartTransform, *tr));
+                    }
+                }
                 m_gizmoDragging = false;
                 m_gizmoDragAxis = 0;
             }
@@ -349,6 +469,10 @@ void EditorRenderer::OnKey(int key, bool pressed) {
     static constexpr int K_ENTER      = 257;
     static constexpr int K_ESCAPE     = 256;
     static constexpr int K_F          = 70;
+    static constexpr int K_C          = 67;
+    static constexpr int K_V          = 86;
+    static constexpr int K_D          = 68;
+    static constexpr int K_F1         = 290;
     (void)K_LEFT_SHIFT;
 #else
     static constexpr int K_Z          = GLFW_KEY_Z;
@@ -369,6 +493,10 @@ void EditorRenderer::OnKey(int key, bool pressed) {
     static constexpr int K_ENTER      = GLFW_KEY_ENTER;
     static constexpr int K_ESCAPE     = GLFW_KEY_ESCAPE;
     static constexpr int K_F          = GLFW_KEY_F;
+    static constexpr int K_C          = GLFW_KEY_C;
+    static constexpr int K_V          = GLFW_KEY_V;
+    static constexpr int K_D          = GLFW_KEY_D;
+    static constexpr int K_F1         = GLFW_KEY_F1;
 #endif
 
     // Track Ctrl held state (both press and release)
@@ -379,9 +507,20 @@ void EditorRenderer::OnKey(int key, bool pressed) {
 
     if (!pressed) return;  // ignore key-up for non-modifier keys
 
+    // ESC: stop PIE first; if not playing, dismiss keybinds/project AI panels
+    if (key == K_ESCAPE) {
+        if (m_playing) { StopPIE(); return; }
+        if (m_keybindsVisible)    { m_keybindsVisible = false; return; }
+        if (m_projectAIVisible)   { m_projectAIVisible = false; return; }
+        m_consoleFocused   = false;
+        m_aiInputFocused   = false;
+        m_projectAIFocused = false;
+        return;
+    }
+
     // ── Text-input fields take priority (console or AI chat) ──────────────
-    if (m_consoleFocused || m_aiInputFocused) {
-        std::string& buf = m_consoleFocused ? m_consoleInput : m_aiInput;
+    if (m_consoleFocused || m_aiInputFocused || m_projectAIFocused) {
+        std::string& buf = m_consoleFocused ? m_consoleInput : (m_aiInputFocused ? m_aiInput : m_projectAIInput);
         if (key == K_BACKSPACE) {
             if (!buf.empty()) buf.pop_back();
             return;
@@ -392,6 +531,8 @@ void EditorRenderer::OnKey(int key, bool pressed) {
                     AppendConsole("> " + buf);
                     Engine::Core::Logger::Info(buf);
                 } else {
+                    // Both AI chat and ProjectAI use m_aiChat->SendMessage
+                    if (m_projectAIFocused) m_projectAIScrollY = 99999.f;
                     m_aiChat->SendMessage(buf);
                 }
                 buf.clear();
@@ -399,8 +540,10 @@ void EditorRenderer::OnKey(int key, bool pressed) {
             return;
         }
         if (key == K_ESCAPE) {
-            m_consoleFocused = false;
-            m_aiInputFocused = false;
+            if (m_playing) { StopPIE(); return; }
+            m_consoleFocused   = false;
+            m_aiInputFocused   = false;
+            m_projectAIFocused = false;
             return;
         }
         // Allow Ctrl shortcuts even when text field is focused
@@ -429,11 +572,43 @@ void EditorRenderer::OnKey(int key, bool pressed) {
             LoadScene(kDefaultScenePath);
         } else if (key == K_B) {
             TriggerBuild();
+        } else if (key == K_C) {
+            // Copy selected entity
+            if (m_world && m_selectedEntity != 0 && m_world->IsAlive(m_selectedEntity)) {
+                auto* tag = m_world->GetComponent<Runtime::Components::Tag>(m_selectedEntity);
+                auto* tr  = m_world->GetComponent<Runtime::Components::Transform>(m_selectedEntity);
+                m_clipboard.tag       = tag ? *tag : Runtime::Components::Tag{};
+                m_clipboard.transform = tr  ? *tr  : Runtime::Components::Transform{};
+                m_clipboard.valid     = true;
+                AppendConsole("[Info]  Copied: " + EntityName(m_selectedEntity));
+            }
+        } else if (key == K_V) {
+            // Paste clipboard entity
+            if (m_clipboard.valid && m_world) {
+                auto t  = m_clipboard.tag;  t.name += "_paste";
+                auto tr = m_clipboard.transform; tr.position.x += 2.f;
+                UndoableCommandBus::Instance().Execute(
+                    std::make_unique<CreateEntityCmd>(m_world, m_selectedEntity, t, tr));
+                AppendConsole("[Info]  Pasted: " + t.name);
+            }
+        } else if (key == K_D) {
+            // Duplicate selected entity
+            if (m_world && m_selectedEntity != 0 && m_world->IsAlive(m_selectedEntity)) {
+                auto* tag = m_world->GetComponent<Runtime::Components::Tag>(m_selectedEntity);
+                auto* tr  = m_world->GetComponent<Runtime::Components::Transform>(m_selectedEntity);
+                Runtime::Components::Tag       newTag = tag ? *tag : Runtime::Components::Tag{};
+                Runtime::Components::Transform newTr  = tr  ? *tr  : Runtime::Components::Transform{};
+                newTag.name += "_copy";
+                newTr.position.x += 2.f;
+                UndoableCommandBus::Instance().Execute(
+                    std::make_unique<CreateEntityCmd>(m_world, m_selectedEntity, newTag, newTr));
+                AppendConsole("[Info]  Duplicated: " + newTag.name);
+            }
         }
     } else {
         if (key == K_P) {
-            m_playing = !m_playing;
-            Engine::Core::Logger::Info(m_playing ? "PIE: Play started" : "PIE: Play stopped");
+            if (m_playing) { StopPIE(); }
+            else { m_playing = true; m_pieTime = 0.f; Engine::Core::Logger::Info("PIE: Play started"); AppendConsole("[Info]  PIE started  (P or ESC to stop)"); }
         } else if (key == K_F5) {
             TriggerBuild();
         }
@@ -469,11 +644,15 @@ void EditorRenderer::OnKey(int key, bool pressed) {
         else if (key == K_DELETE) {
             if (m_world && m_selectedEntity != 0 && m_world->IsAlive(m_selectedEntity)) {
                 std::string name = EntityName(m_selectedEntity);
-                m_world->DestroyEntity(m_selectedEntity);
+                UndoableCommandBus::Instance().Execute(
+                    std::make_unique<DeleteEntityCmd>(m_world, m_selectedEntity, m_selectedEntity));
                 AppendConsole("[Info]  Deleted entity: " + name);
                 Engine::Core::Logger::Info("Deleted entity: " + name);
-                m_selectedEntity = 0;
             }
+        }
+        else if (key == K_F1) {
+            m_keybindsVisible = !m_keybindsVisible;
+            if (m_keybindsVisible) AppendConsole("[Info]  Keybinds panel opened  (F1 to close)");
         }
     }
 }
@@ -493,11 +672,26 @@ void EditorRenderer::OnChar(unsigned int codepoint) {
         m_consoleInput += ch;
     } else if (m_aiInputFocused) {
         m_aiInput += ch;
+    } else if (m_projectAIFocused) {
+        m_projectAIInput += ch;
     }
 }
 
 // ── Scroll wheel — zoom viewport (change orbit distance) ─────────────────
 void EditorRenderer::OnScroll(double /*dx*/, double dy) {
+    // Scroll ProjectAI chat history
+    if (m_projectAIVisible) {
+        float paiW = std::min(680.f, (float)m_width  - 60.f);
+        float paiH = std::min(520.f, (float)m_height - 80.f);
+        float paiX = ((float)m_width  - paiW) * 0.5f;
+        float paiY = ((float)m_height - paiH) * 0.5f;
+        if (m_mouseX >= paiX && m_mouseX < paiX + paiW &&
+            m_mouseY >= paiY && m_mouseY < paiY + paiH) {
+            m_projectAIScrollY = std::max(0.f, m_projectAIScrollY - (float)dy * 20.f);
+            return;
+        }
+    }
+
     // Only zoom when mouse is over the viewport
     if (m_mouseX >= m_vpX && m_mouseX < m_vpX + m_vpW &&
         m_mouseY >= m_vpY && m_mouseY < m_vpY + m_vpH)
@@ -592,7 +786,17 @@ void EditorRenderer::SaveScene(const std::string& path) {
             auto id = entities[i];
             f << "    {\"id\":" << id;
             auto* tag = m_world->GetComponent<Runtime::Components::Tag>(id);
-            if (tag) f << ",\"name\":\"" << tag->name << "\"";
+            if (tag) {
+                f << ",\"name\":\"" << tag->name << "\"";
+                if (!tag->tags.empty()) {
+                    f << ",\"tags\":[";
+                    for (size_t ti = 0; ti < tag->tags.size(); ti++) {
+                        f << "\"" << tag->tags[ti] << "\"";
+                        if (ti + 1 < tag->tags.size()) f << ",";
+                    }
+                    f << "]";
+                }
+            }
             auto* tr = m_world->GetComponent<Runtime::Components::Transform>(id);
             if (tr) {
                 f << ",\"pos\":[" << tr->position.x << "," << tr->position.y
@@ -640,7 +844,24 @@ void EditorRenderer::LoadScene(const std::string& path) {
         std::string name = content.substr(s + 1, e - s - 1);
 
         auto id = m_world->CreateEntity();
-        m_world->AddComponent(id, Runtime::Components::Tag{name, {}});
+        Runtime::Components::Tag entityTag;
+        entityTag.name = name;
+        // Parse tags array if present
+        size_t tp = content.find("\"tags\":[", pos > 8 ? pos - 8 : 0);
+        if (tp != std::string::npos && tp < pos + 600) {
+            size_t ts = tp + 8;
+            size_t te = content.find(']', ts);
+            if (te != std::string::npos) {
+                size_t tp2 = ts;
+                while ((tp2 = content.find('"', tp2)) != std::string::npos && tp2 < te) {
+                    size_t te2 = content.find('"', tp2 + 1);
+                    if (te2 == std::string::npos || te2 > te) break;
+                    entityTag.tags.push_back(content.substr(tp2 + 1, te2 - tp2 - 1));
+                    tp2 = te2 + 1;
+                }
+            }
+        }
+        m_world->AddComponent(id, entityTag);
         Runtime::Components::Transform tr;
         // Parse pos
         size_t pp = content.find("\"pos\":[", pos);
@@ -950,6 +1171,17 @@ void EditorRenderer::DrawEntities3D() {
         auto* tr  = m_world->GetComponent<Runtime::Components::Transform>(id);
         auto* tag = m_world->GetComponent<Runtime::Components::Tag>(id);
         if (tr) { wx = tr->position.x; wy = tr->position.y; wz = tr->position.z; }
+
+        // PIE orbital animation: orbit non-star entities around Y=0 plane origin
+        if (m_playing) {
+            float r = std::sqrt(wx*wx + wz*wz);
+            if (r > 0.5f) {
+                float orbSpeed = 0.06f / std::max(r, 1.f);
+                float theta    = std::atan2(wz, wx) + orbSpeed * m_pieTime;
+                wx = r * std::cos(theta);
+                wz = r * std::sin(theta);
+            }
+        }
 
         bool selected = (id == m_selectedEntity);
 
@@ -1399,13 +1631,15 @@ void EditorRenderer::DrawMenuBar(float x, float y, float w, float h) {
                     }
                 } else if (label.find("Duplicate Entity") != std::string::npos) {
                     if (m_world && m_selectedEntity != 0 && m_world->IsAlive(m_selectedEntity)) {
-                        auto ne = m_world->CreateEntity();
                         auto* srcTag = m_world->GetComponent<Runtime::Components::Tag>(m_selectedEntity);
                         auto* srcTr  = m_world->GetComponent<Runtime::Components::Transform>(m_selectedEntity);
-                        if (srcTag) { auto t = *srcTag; t.name += "_copy"; m_world->AddComponent(ne, t); }
-                        if (srcTr)  { auto tr = *srcTr; tr.position.x += 2.f; m_world->AddComponent(ne, tr); }
-                        m_selectedEntity = ne;
-                        Engine::Core::Logger::Info("Scene: Duplicated entity id=" + std::to_string(ne));
+                        Runtime::Components::Tag       newTag = srcTag ? *srcTag : Runtime::Components::Tag{};
+                        Runtime::Components::Transform newTr  = srcTr  ? *srcTr  : Runtime::Components::Transform{};
+                        newTag.name += "_copy";
+                        newTr.position.x += 2.f;
+                        UndoableCommandBus::Instance().Execute(
+                            std::make_unique<CreateEntityCmd>(m_world, m_selectedEntity, newTag, newTr));
+                        Engine::Core::Logger::Info("Scene: Duplicated entity (undoable)");
                     }
                 } else if (label.find("Clear Scene") != std::string::npos) {
                     // keep just logging a warning - destructive action
@@ -1508,15 +1742,14 @@ void EditorRenderer::DrawToolbar(float x, float y, float w, float h) {
     DrawRectOutline(nex - 2.f, by, 62.f, bh, 0x44AA66FF);
     DrawText("+ Entity", nex + 2.f, by + 5.f, 0x4EC94EFF);
     if (neHov && m_leftMousePressed && m_world) {
-        auto id = m_world->CreateEntity();
         Runtime::Components::Tag tag;
-        tag.name = "NewEntity_" + std::to_string(id);
-        m_world->AddComponent(id, tag);
+        tag.name = "NewEntity";
+        tag.tags.push_back("Entity");
         Runtime::Components::Transform tr;
-        m_world->AddComponent(id, tr);
-        m_selectedEntity = id;
+        UndoableCommandBus::Instance().Execute(
+            std::make_unique<CreateEntityCmd>(m_world, m_selectedEntity, tag, tr));
         AppendConsole("[Info]  Created entity: " + tag.name);
-        Engine::Core::Logger::Info("New entity: " + tag.name);
+        Engine::Core::Logger::Info("New entity created (undoable)");
     }
 
     // ── Right side: AI chat toggle ────────────────────────────────────────
@@ -1526,7 +1759,7 @@ void EditorRenderer::DrawToolbar(float x, float y, float w, float h) {
     DrawRect(acx, by, 72.f, bh, m_aiChatVisible ? 0x094771FF : (achov ? 0x3E3E52FF : 0x252526FF));
     DrawRectOutline(acx, by, 72.f, bh, kBorderColor);
     DrawText("AI Chat", acx + 6.f, by + 5.f, kTextAccent);
-    if (achov && m_leftMousePressed) m_aiChatVisible = !m_aiChatVisible;
+    if (achov && m_leftMousePressed) m_projectAIVisible = !m_projectAIVisible;
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -1574,7 +1807,9 @@ void EditorRenderer::DrawViewport(float x, float y, float w, float h) {
     }
 
     if (m_playing) {
-        DrawText("  ▶ PIE ACTIVE", vx + vw * 0.5f - 50.f, vy + 8.f, kTextSuccess, 1.3f);
+        // Green border around viewport to indicate PIE is running
+        DrawRectOutline(vx, vy, vw, vh, 0x00CC44FF, 3.f);
+        DrawText("  ▶ PIE  (ESC to stop)", vx + vw * 0.5f - 70.f, vy + 8.f, 0x00FF55FF, 1.3f);
     }
 
     char fpsBuf[32];
@@ -2281,6 +2516,16 @@ void EditorRenderer::Render(double dt) {
         m_world->Update((float)dt);
     }
 
+    // Accumulate PIE simulation time
+    if (m_playing) m_pieTime += (float)dt;
+
+    // Poll AI future and flush response to chat
+    if (m_aiFuture.valid() &&
+        m_aiFuture.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
+        std::string reply = m_aiFuture.get();
+        m_aiChat->AppendMessage(IDE::ChatRole::Assistant, reply);
+    }
+
     float W = (float)m_width;
     float H = (float)m_height;
 
@@ -2345,8 +2590,208 @@ void EditorRenderer::Render(double dt) {
         DrawAIChat(acX, acY, acW, acH);
     }
 
+    // ProjectAI panel — ChatGPT-style, shown at startup and via Ctrl+Space
+    if (m_projectAIVisible) {
+        float paiW = std::min(680.f, W - 60.f);
+        float paiH = std::min(520.f, H - 80.f);
+        float paiX = (W - paiW) * 0.5f;
+        float paiY = (H - paiH) * 0.5f;
+        DrawProjectAIPanel(paiX, paiY, paiW, paiH);
+    }
+
+    // Keybinds reference panel — F1
+    if (m_keybindsVisible) {
+        float kbW = std::min(700.f, W - 40.f);
+        float kbH = std::min(460.f, H - 60.f);
+        float kbX = (W - kbW) * 0.5f;
+        float kbY = (H - kbH) * 0.5f;
+        DrawKeybindsPanel(kbX, kbY, kbW, kbH);
+    }
+
     // Reset single-frame click flag after all UI has had a chance to see it
     m_leftMousePressed = false;
+}
+
+// ── Keybinds reference panel (F1) ─────────────────────────────────────────
+void EditorRenderer::DrawKeybindsPanel(float x, float y, float w, float h) {
+    DrawRect(x, y, w, h, 0x1A1A2EF0);
+    DrawRectOutline(x, y, w, h, kHighlight, 2.f);
+    DrawPanelHeader("  Keybinds Reference  —  F1 to close", x, y, w, kPanelHdrH, 0x094771FF);
+
+    float cy = y + kPanelHdrH + 8.f;
+    float col1 = x + 12.f;
+    float col2 = x + w * 0.5f + 4.f;
+    float rh = 16.f;
+
+    struct KBRow { const char* key; const char* action; };
+    static const KBRow rows[] = {
+        { "RMB drag",        "Orbit camera"               },
+        { "MMB drag",        "Pan camera"                 },
+        { "Scroll",          "Zoom in / out"              },
+        { "LMB",             "Select entity"              },
+        { "F",               "Reset camera to scene"      },
+        { "W",               "Move gizmo"                 },
+        { "E",               "Rotate gizmo"               },
+        { "R",               "Scale gizmo"                },
+        { "G",               "Toggle grid snap"           },
+        { "P",               "Play (PIE)"                 },
+        { "ESC  (in PIE)",   "Stop PIE"                   },
+        { "Ctrl+Z",          "Undo"                       },
+        { "Ctrl+Y",          "Redo"                       },
+        { "Ctrl+C",          "Copy entity"                },
+        { "Ctrl+V",          "Paste entity"               },
+        { "Ctrl+D",          "Duplicate entity"           },
+        { "Delete",          "Delete entity"              },
+        { "Ctrl+S",          "Save scene"                 },
+        { "Ctrl+O",          "Open scene"                 },
+        { "Ctrl+B",          "Build project"              },
+        { "F5",              "Build project"              },
+        { "F1",              "Keybinds panel"             },
+        { "Ctrl+Space",      "AI Chat panel"              },
+        { "ESC  (panels)",   "Close keybinds / AI"        },
+        { nullptr, nullptr }
+    };
+
+    int  i = 0;
+    bool left = true;
+    DrawText("Action", col1 + 80.f, cy, kTextMuted, 0.9f);
+    DrawText("Action", col2 + 80.f, cy, kTextMuted, 0.9f);
+    DrawText("Key",    col1,        cy, kTextMuted, 0.9f);
+    DrawText("Key",    col2,        cy, kTextMuted, 0.9f);
+    cy += rh;
+    DrawLine(x + 8.f, cy - 2.f, x + w - 8.f, cy - 2.f, kBorderColor);
+
+    for (const KBRow* r = rows; r->key; ++r, ++i) {
+        float cx2 = left ? col1 : col2;
+        float ry  = cy;
+        if (!left) ry -= rh;
+        if ((i & 1) == 0) DrawRect(cx2 - 4.f, ry, w * 0.5f - 8.f, rh, 0x0D0D1A80);
+        DrawText(r->key,    cx2,         ry + 2.f, 0xFFCC44FF, 0.9f);
+        DrawText(r->action, cx2 + 80.f,  ry + 2.f, kTextNormal, 0.9f);
+        if (!left) cy += rh;
+        left = !left;
+    }
+    if (!left) cy += rh;
+
+    cy += 4.f;
+    DrawLine(x + 8.f, cy, x + w - 8.f, cy, kBorderColor);
+    DrawText("Press F1 or ESC to close", x + w * 0.5f - 70.f, cy + 4.f, kTextMuted, 0.9f);
+}
+
+// ── ProjectAI — ChatGPT-style panel with project file access ───────────────
+void EditorRenderer::DrawProjectAIPanel(float x, float y, float w, float h) {
+    DrawRect(x, y, w, h, 0x0D0D1AEE);
+    DrawRectOutline(x, y, w, h, 0x336699FF, 2.f);
+    DrawPanelHeader("  Atlas AI  —  Project Assistant  (Ollama / local)",
+                    x, y, w, kPanelHdrH, 0x0A2040FF);
+
+    // Close button (top-right)
+    float cbx = x + w - 22.f, cby = y + 3.f;
+    bool  cbHov = (m_mouseX >= cbx && m_mouseX < cbx + 18.f &&
+                   m_mouseY >= cby && m_mouseY < cby + 14.f);
+    DrawRect(cbx, cby, 18.f, 14.f, cbHov ? 0x881111FF : 0x441111FF);
+    DrawText("X", cbx + 4.f, cby + 2.f, 0xFF6655FF);
+    if (cbHov && m_leftMousePressed) {
+        m_projectAIVisible = false;
+        return;
+    }
+
+    float inputH     = 28.f;
+    float statusH    = 18.f;
+    float chatAreaH  = h - kPanelHdrH - inputH - statusH - 8.f;
+    float chatY      = y + kPanelHdrH + 2.f;
+    float inputY     = chatY + chatAreaH + 4.f;
+    float statusY    = inputY + inputH + 2.f;
+
+    // ── Chat history area ────────────────────────────────────────────────
+    DrawRect(x + 2.f, chatY, w - 4.f, chatAreaH, 0x08080EFF);
+    glScissor((int)(x + 2), (int)(m_height - chatY - chatAreaH), (int)(w - 4), (int)chatAreaH);
+    glEnable(GL_SCISSOR_TEST);
+
+    const auto& msgs = m_aiChat->Messages();
+    float lineH   = 15.f;
+    float totalH  = 0.f;
+    for (auto& msg : msgs) {
+        int lines = std::max(1, (int)(msg.content.size() / 60) + 1);
+        totalH += lineH * lines + 4.f;
+    }
+    float maxScroll = std::max(0.f, totalH - chatAreaH + 8.f);
+    m_projectAIScrollY = std::min(m_projectAIScrollY, maxScroll);
+
+    float ty = chatY + 4.f - m_projectAIScrollY;
+    for (auto& msg : msgs) {
+        bool  isUser = (msg.role == IDE::ChatRole::User);
+        uint32_t col = isUser ? 0x88BBFFFF : (msg.role == IDE::ChatRole::System ? 0x888888FF : 0xCCDDCCFF);
+        const char* prefix = isUser ? "You: " : "AI:  ";
+        uint32_t bgCol = isUser ? 0x0A1828FF : 0x081208FF;
+
+        std::string full = std::string(prefix) + msg.content;
+        int charsPerLine = std::max(1, (int)((w - 20.f) / 7.f));
+        for (size_t ci = 0; ci < full.size(); ci += charsPerLine) {
+            std::string line = full.substr(ci, charsPerLine);
+            if (ty + lineH >= chatY && ty < chatY + chatAreaH) {
+                DrawRect(x + 4.f, ty, w - 8.f, lineH, bgCol);
+                DrawText(line, x + 8.f, ty + 2.f, col, 0.9f);
+            }
+            ty += lineH;
+        }
+        ty += 4.f;
+    }
+
+    glDisable(GL_SCISSOR_TEST);
+
+    // Scroll hint
+    if (maxScroll > 0.f) {
+        float scrollFrac = m_projectAIScrollY / maxScroll;
+        float sbH = std::max(20.f, chatAreaH * chatAreaH / (totalH + 1.f));
+        float sbY = chatY + scrollFrac * (chatAreaH - sbH);
+        DrawRect(x + w - 6.f, chatY, 4.f, chatAreaH, 0x1A1A2EFF);
+        DrawRect(x + w - 6.f, sbY,   4.f, sbH,       0x336699FF);
+    }
+
+    // ── Input box ────────────────────────────────────────────────────────
+    bool inputHov = (m_mouseX >= x + 4 && m_mouseX < x + w - 44.f &&
+                     m_mouseY >= inputY && m_mouseY < inputY + inputH - 2.f);
+    if (inputHov && m_leftMousePressed) {
+        m_projectAIFocused = true;
+        m_consoleFocused   = false;
+        m_aiInputFocused   = false;
+    }
+    DrawRect(x + 4.f, inputY, w - 48.f, inputH - 2.f,
+             m_projectAIFocused ? 0x0A1828FF : 0x080810FF);
+    DrawRectOutline(x + 4.f, inputY, w - 48.f, inputH - 2.f,
+                    m_projectAIFocused ? kHighlight : kBorderColor);
+    std::string display = m_projectAIInput;
+    if (m_projectAIFocused && ((int)(m_fps * 1.5) % 2 == 0)) display += "|";
+    DrawText(display.empty() ? "Ask about the project, code, or planning…"
+                             : display,
+             x + 8.f, inputY + 7.f,
+             display.empty() ? kTextMuted : kTextNormal, 0.95f);
+
+    // Send button
+    float sbx = x + w - 42.f;
+    bool  sbHov = (m_mouseX >= sbx && m_mouseX < sbx + 38.f &&
+                   m_mouseY >= inputY && m_mouseY < inputY + inputH - 2.f);
+    DrawRect(sbx, inputY, 38.f, inputH - 2.f, sbHov ? 0x1155BBFF : 0x0A3377FF);
+    DrawRectOutline(sbx, inputY, 38.f, inputH - 2.f, 0x336699FF);
+    DrawText("Send", sbx + 4.f, inputY + 7.f, 0xAADDFFFF);
+
+    bool sendNow = (sbHov && m_leftMousePressed && !m_projectAIInput.empty());
+
+    if (sendNow) {
+        std::string msg = m_projectAIInput;
+        m_projectAIInput.clear();
+        m_aiChat->SendMessage(msg);
+        m_projectAIScrollY = 99999.f;
+    }
+
+    // ── Status bar ───────────────────────────────────────────────────────
+    DrawRect(x + 2.f, statusY, w - 4.f, statusH - 2.f, 0x050510FF);
+    bool pending = m_aiFuture.valid() &&
+                   m_aiFuture.wait_for(std::chrono::milliseconds(0)) != std::future_status::ready;
+    DrawText(pending ? "  ⏳ Waiting for Ollama…"
+                     : "  Model: codellama  |  localhost:11434  |  Ctrl+Space to hide",
+             x + 6.f, statusY + 3.f, pending ? kTextWarn : kTextMuted, 0.9f);
 }
 
 } // namespace Editor

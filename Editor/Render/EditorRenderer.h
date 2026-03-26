@@ -130,6 +130,31 @@ private:
     // ── EI-13: PIE (play-in-editor) ─────────────────────────────────────
     bool m_playing = false;
 
+    // ── PIE simulation time ───────────────────────────────────────────────
+    float m_pieTime = 0.f;   // accumulates dt when m_playing is true
+
+    // ── Gizmo drag undo snapshot ──────────────────────────────────────────
+    Runtime::Components::Transform m_gizmoDragStartTransform{};
+
+    // ── Clipboard (Ctrl+C / Ctrl+V / Ctrl+D) ─────────────────────────────
+    struct ClipboardEntity {
+        Runtime::Components::Tag       tag;
+        Runtime::Components::Transform transform;
+        bool valid = false;
+    };
+    ClipboardEntity m_clipboard;
+
+    // ── Keybinds reference panel ──────────────────────────────────────────
+    bool m_keybindsVisible = false;
+
+    // ── ProjectAI (ChatGPT-style panel) ───────────────────────────────────
+    bool   m_projectAIVisible    = true;  // shown at startup
+    bool   m_projectAIFirstOpen  = true;  // send welcome context on first open
+    std::future<std::string> m_aiFuture;  // async Ollama response
+    std::string m_projectAIInput;         // input box buffer
+    bool        m_projectAIFocused = false;
+    float       m_projectAIScrollY = 0.f; // scroll offset for chat history
+
     // ── Panel visibility toggles (View menu) ────────────────────────────
     bool m_outlinerVisible   = true;
     bool m_inspectorVisible  = true;
@@ -222,6 +247,10 @@ private:
 
     // Helper: get entity display name (Tag.name or "Entity #N")
     std::string EntityName(uint32_t id) const;
+
+    void DrawProjectAIPanel (float x, float y, float w, float h);
+    void DrawKeybindsPanel  (float x, float y, float w, float h);
+    void StopPIE();   // stop PIE mode cleanly
 };
 
 } // namespace Editor
