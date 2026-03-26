@@ -5,7 +5,9 @@
 #include <cstdint>
 #include <memory>
 #include <cmath>
+#include <future>
 #include "Engine/Math/Math.h"
+#include "Runtime/Components/Components.h"
 
 // Forward declarations to avoid heavy headers in the interface
 namespace Runtime::ECS  { class World; }
@@ -60,6 +62,9 @@ public:
 
     // EI-02: Wire the live ECS world into the renderer
     void SetWorld(Runtime::ECS::World* world);
+
+    // Query PIE state (used by main loop to suppress ESC-close during PIE)
+    bool IsPlaying() const { return m_playing; }
 
     void Shutdown();
 
