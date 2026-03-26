@@ -30,7 +30,8 @@
 | v10.7 Production Polish & AI Enhancement (Phase 38) | 10/10 | 0 | 10 |
 | Shippable Game Foundations (Phase 39) | 10/10 | 0 | 10 |
 | Live Services & Advanced AI (Phase 40) | 10/10 | 0 | 10 |
-| **TOTAL** | **231/231** | **0** | **231** |
+| Developer Experience & World Simulation (Phase 41) | 10/10 | 0 | 10 |
+| **TOTAL** | **241/241** | **0** | **241** |
 
 ---
 
@@ -949,6 +950,26 @@ All three paths converge for the final product.
 
 ---
 
+## Phase 41 – Developer Experience & World Simulation ✅
+
+> Closes gaps in shader authoring, AI editing, simulation fidelity, and runtime tooling.
+> All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 41.01 | Shader Graph | High | Node-based visual shader editor: texture/math/utility nodes, GLSL/HLSL compiler, JSON save/load | `Engine/Shader/ShaderGraph/ShaderGraph.h/.cpp` |
+| ✅ 41.02 | Behavior Tree Editor | High | Visual BT editor panel: Selector/Sequence/Leaf nodes, live PIE run-state overlay | `Editor/Panels/BehaviorTreeEditor/BehaviorTreeEditorPanel.h/.cpp` |
+| ✅ 41.03 | Fluid Simulation | High | Eulerian Navier-Stokes (2D/3D): velocity advection, pressure projection, smoke density, PGM export | `Engine/Sim/FluidSim/FluidSimulation.h/.cpp` |
+| ✅ 41.04 | Event Replay System | High | Deterministic record/replay of all engine events: save, seek, speed control, JSON serialization | `Core/EventReplay/EventReplaySystem.h/.cpp` |
+| ✅ 41.05 | Crowd Simulation | High | Boids-style steering + NavMesh goal-seeking for 1000+ agents with formation groups | `Runtime/Crowd/CrowdSimulation.h/.cpp` |
+| ✅ 41.06 | Data Table System | Medium | Row-keyed typed tables (CSV/JSON): hot-reload, DLC patch-merge, typed accessors | `Core/DataTable/DataTableSystem.h/.cpp` |
+| ✅ 41.07 | Procedural Animation | Medium | Runtime IK (TwoBone + FABRIK), look-at, spring bones, terrain foot placement, ragdoll blend | `Engine/Animation/ProceduralAnim/ProceduralAnimation.h/.cpp` |
+| ✅ 41.08 | Blueprint Compiler | Medium | Visual node-graph → Lua or C++ code generation with type validation and API registry | `Builder/Blueprint/BlueprintCompiler.h/.cpp` |
+| ✅ 41.09 | Minimap System | Medium | World-to-texture minimap: fog of war, icon layers, zoom, region labels, fog reveal | `Runtime/Minimap/MinimapSystem.h/.cpp` |
+| ✅ 41.10 | GPU Particle System | Low | Emitter-based particle sim with forces (gravity/wind/attractor), colour gradients, sub-emitters | `Engine/Particles/GPUParticles/GPUParticleSystem.h/.cpp` |
+
+---
+
 ## Appendix B — Rules & Conventions
 
 | Rule | Description |
@@ -995,5 +1016,6 @@ All three paths converge for the final product.
 | 38 | v10.7 Production Polish & AI Enhancement — ReasoningVisualizer, CyclicDependencyResolver, SessionMemory, SuggestionSandbox, AnomalyAlerting, BuildReport, DeterministicVerifier (PCG), AssetMetadata (Core), HeadlessServer (Runtime), AIProfilerPanel (Editor). |
 | 39 | Shippable Game Foundations — RuntimeAnalytics (Runtime), CinematicSystem (Engine), GamepadSystem (Engine/Input), GraphicsSettings (Engine), SaveGameManager (Runtime), PackagingPipeline (Builder), TelemetryReporter (Core), NetworkReplication (Engine/Net), CloudSyncManager (Core), ShipExporter (Builder). |
 | 40 | Live Services & Advanced AI — PromptTemplateEngine (AI), MultiAgentCoordinator (AI), SpatialAudio (Engine/Audio), PlanetGenerator (PCG), LeaderboardSystem (Runtime), FeatureFlagSystem (Core), TimelineEditorPanel (Editor/Panels), NotificationSystem (Runtime), NavMesh (Engine/Pathfinding), SamplingProfiler (Core/Profiling). |
+| 41 | Developer Experience & World Simulation — ShaderGraph (Engine/Shader), BehaviorTreeEditorPanel (Editor/Panels), FluidSimulation (Engine/Sim), EventReplaySystem (Core), CrowdSimulation (Runtime), DataTableSystem (Core), ProceduralAnimation (Engine/Animation), BlueprintCompiler (Builder), MinimapSystem (Runtime), GPUParticleSystem (Engine/Particles). |
 
 </details>

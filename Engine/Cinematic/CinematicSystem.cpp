@@ -136,7 +136,9 @@ CameraPose CinematicSystem::Tick(float dt) {
     if (seq.playhead >= seq.duration) {
         if (seq.loop) {
             // Handle multiple loop iterations for large dt values
-            seq.playhead = std::fmod(std::max(0.f, seq.playhead), seq.duration);
+            seq.playhead = seq.duration > 0.f
+                           ? std::fmod(std::max(0.f, seq.playhead), seq.duration)
+                           : 0.f;
         } else {
             seq.playhead = seq.duration;
             seq.state    = CinemaState::Finished;

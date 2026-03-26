@@ -64,7 +64,7 @@ static uint32_t BiomeColour(BiomeType b) {
     switch (b) {
         case BiomeType::DeepOcean: return 0xFF5533CCu;
         case BiomeType::Ocean:     return 0xFF7755EEu;
-        case BiomeType::Beach:     return 0xFFDDCC99u; // not used, see below
+        case BiomeType::Beach:     return 0xFFDDCC99u;
         case BiomeType::Grassland: return 0xFF44BB44u;
         case BiomeType::Forest:    return 0xFF226622u;
         case BiomeType::Desert:    return 0xFFCCCC55u;
