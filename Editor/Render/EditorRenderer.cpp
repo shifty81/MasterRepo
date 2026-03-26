@@ -69,8 +69,11 @@ static constexpr uint32_t kAxisZ        = 0x5588E0FF;
 static constexpr uint32_t kHighlight    = 0x007ACCFF;
 
 // ── Editor defaults ────────────────────────────────────────────────────────
-static constexpr float    kRotSnapDeg   = 15.f;  // rotation snap angle (degrees)
+static constexpr float    kRotSnapDeg        = 15.f;  // rotation snap angle (degrees)
 static constexpr char     kDefaultScenePath[] = "Projects/NovaForge/Scenes/editor_save.scene";
+static constexpr float    kPIEOrbitSpeedFactor = 0.06f; // orbit speed divisor in PIE animation
+static constexpr float    kScrollToBottom      = 99999.f; // sentinel to auto-scroll to bottom
+static constexpr float    kApproxCharWidth     = 7.f;    // pixels per char for stb_easy_font at scale 1
 
 // ── Layout constants ───────────────────────────────────────────────────────
 static constexpr float kTitleH    = 26.f;
@@ -532,7 +535,7 @@ void EditorRenderer::OnKey(int key, bool pressed) {
                     Engine::Core::Logger::Info(buf);
                 } else {
                     // Both AI chat and ProjectAI use m_aiChat->SendMessage
-                    if (m_projectAIFocused) m_projectAIScrollY = 99999.f;
+                    if (m_projectAIFocused) m_projectAIScrollY = kScrollToBottom;
                     m_aiChat->SendMessage(buf);
                 }
                 buf.clear();
@@ -1176,7 +1179,7 @@ void EditorRenderer::DrawEntities3D() {
         if (m_playing) {
             float r = std::sqrt(wx*wx + wz*wz);
             if (r > 0.5f) {
-                float orbSpeed = 0.06f / std::max(r, 1.f);
+                float orbSpeed = kPIEOrbitSpeedFactor / std::max(r, 1.f);
                 float theta    = std::atan2(wz, wx) + orbSpeed * m_pieTime;
                 wx = r * std::cos(theta);
                 wz = r * std::sin(theta);
@@ -2726,7 +2729,7 @@ void EditorRenderer::DrawProjectAIPanel(float x, float y, float w, float h) {
         uint32_t bgCol = isUser ? 0x0A1828FF : 0x081208FF;
 
         std::string full = std::string(prefix) + msg.content;
-        int charsPerLine = std::max(1, (int)((w - 20.f) / 7.f));
+        int charsPerLine = std::max(1, (int)((w - 20.f) / kApproxCharWidth));
         for (size_t ci = 0; ci < full.size(); ci += charsPerLine) {
             std::string line = full.substr(ci, charsPerLine);
             if (ty + lineH >= chatY && ty < chatY + chatAreaH) {
@@ -2782,7 +2785,7 @@ void EditorRenderer::DrawProjectAIPanel(float x, float y, float w, float h) {
         std::string msg = m_projectAIInput;
         m_projectAIInput.clear();
         m_aiChat->SendMessage(msg);
-        m_projectAIScrollY = 99999.f;
+        m_projectAIScrollY = kScrollToBottom;
     }
 
     // ── Status bar ───────────────────────────────────────────────────────
