@@ -34,16 +34,27 @@ bool Window::Init() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, m_config.resizable ? GLFW_TRUE : GLFW_FALSE);
-    glfwWindowHint(GLFW_SAMPLES, 4); // 4x MSAA
-
     GLFWmonitor* monitor = nullptr;
     if (m_config.mode == WindowMode::Fullscreen)
         monitor = glfwGetPrimaryMonitor();
 
+    // Attempt with 4x MSAA first; some GPU/driver combos reject the pixel
+    // format when MSAA is combined with an older GL version, so fall back to
+    // no MSAA rather than leaving the user with no window at all.
+    glfwWindowHint(GLFW_SAMPLES, 4);
     GLFWwindow* win = glfwCreateWindow(
         m_config.width, m_config.height,
         m_config.title.c_str(),
         monitor, nullptr);
+
+    if (!win) {
+        Engine::Core::Logger::Warn("Window::Init — MSAA window failed, retrying without MSAA");
+        glfwWindowHint(GLFW_SAMPLES, 0);
+        win = glfwCreateWindow(
+            m_config.width, m_config.height,
+            m_config.title.c_str(),
+            monitor, nullptr);
+    }
 
     if (!win) {
         Engine::Core::Logger::Error("Window::Init — glfwCreateWindow() failed");

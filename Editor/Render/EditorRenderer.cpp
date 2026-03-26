@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <filesystem>
+#include <fstream>
 #include <cstdlib>
 #include <sstream>
 
@@ -61,6 +62,10 @@ static constexpr uint32_t kAxisX        = 0xE05555FF;
 static constexpr uint32_t kAxisY        = 0x55BB55FF;
 static constexpr uint32_t kAxisZ        = 0x5588E0FF;
 static constexpr uint32_t kHighlight    = 0x007ACCFF;
+
+// ── Editor defaults ────────────────────────────────────────────────────────
+static constexpr float    kRotSnapDeg   = 15.f;  // rotation snap angle (degrees)
+static constexpr char     kDefaultScenePath[] = "Projects/NovaForge/Scenes/editor_save.scene";
 
 // ── Layout constants ───────────────────────────────────────────────────────
 static constexpr float kTitleH    = 26.f;
@@ -142,24 +147,104 @@ EditorRenderer::~EditorRenderer() { Shutdown(); }
 void EditorRenderer::Shutdown() {}
 
 // ── Input forwarding ───────────────────────────────────────────────────────
-void EditorRenderer::OnMouseMove(double x, double y) { m_mouseX = x; m_mouseY = y; }
+void EditorRenderer::OnMouseMove(double x, double y) {
+    // Handle gizmo drag — move entity along the dragged axis
+    if (m_gizmoDragging && m_gizmoDragAxis != 0 &&
+        m_world && m_selectedEntity != 0 && m_world->IsAlive(m_selectedEntity))
+    {
+        double dx = x - m_dragLastX;
+        double dy = y - m_dragLastY;
+
+        auto* tr = m_world->GetComponent<Runtime::Components::Transform>(m_selectedEntity);
+        if (tr) {
+            float sensitivity = 0.05f; // pixels → world units
+            if (m_gizmoMode == 0) { // Move
+                if (m_gizmoDragAxis == 1) tr->position.x += (float)(dx * sensitivity);
+                if (m_gizmoDragAxis == 2) tr->position.y -= (float)(dy * sensitivity);
+                if (m_gizmoDragAxis == 3) tr->position.z += (float)(dx * sensitivity);
+                if (m_gridSnap) {
+                    tr->position.x = SnapToGrid(tr->position.x);
+                    tr->position.y = SnapToGrid(tr->position.y);
+                    tr->position.z = SnapToGrid(tr->position.z);
+                }
+            } else if (m_gizmoMode == 1) { // Rotate — compose quaternion delta
+                float angle = (float)(dx * 1.5f); // degrees per pixel
+                if (m_gridSnap) angle = std::round(angle / kRotSnapDeg) * kRotSnapDeg;
+                Engine::Math::Vec3 axis{0, 0, 0};
+                if (m_gizmoDragAxis == 1) axis = {1, 0, 0};
+                if (m_gizmoDragAxis == 2) axis = {0, 1, 0};
+                if (m_gizmoDragAxis == 3) axis = {0, 0, 1};
+                auto delta = Engine::Math::Quaternion::FromAxisAngle(axis, angle);
+                tr->rotation = (tr->rotation * delta).Normalized();
+            } else if (m_gizmoMode == 2) { // Scale
+                float delta = (float)(dx * sensitivity);
+                if (m_gizmoDragAxis == 1) tr->scale.x = std::max(0.01f, tr->scale.x + delta);
+                if (m_gizmoDragAxis == 2) tr->scale.y = std::max(0.01f, tr->scale.y - (float)(dy * sensitivity));
+                if (m_gizmoDragAxis == 3) tr->scale.z = std::max(0.01f, tr->scale.z + delta);
+                if (m_gridSnap) {
+                    tr->scale.x = SnapToGrid(tr->scale.x);
+                    tr->scale.y = SnapToGrid(tr->scale.y);
+                    tr->scale.z = SnapToGrid(tr->scale.z);
+                }
+            }
+        }
+    }
+
+    m_mouseX    = x;
+    m_mouseY    = y;
+    m_dragLastX = x;
+    m_dragLastY = y;
+}
 
 // EI-03: left-click in viewport → pick entity
 void EditorRenderer::OnMouseButton(int btn, bool pressed) {
-    if (btn == 0 && pressed) {
-        m_leftMousePressed = true;
-        // Check if the click is inside the viewport area
-        if (m_mouseX >= m_vpX && m_mouseX < m_vpX + m_vpW &&
-            m_mouseY >= m_vpY && m_mouseY < m_vpY + m_vpH)
-        {
-            uint32_t picked = PickEntityAt((float)m_mouseX, (float)m_mouseY);
-            if (picked != m_selectedEntity) {
-                m_selectedEntity = picked;
-                if (picked != 0)
-                    Engine::Core::Logger::Info("Selected entity #" + std::to_string(picked)
-                                               + " (" + EntityName(picked) + ")");
-                else
-                    Engine::Core::Logger::Info("Deselected");
+    if (btn == 0) {
+        if (pressed) {
+            m_leftMousePressed = true;
+
+            // Check if the click is inside the viewport area
+            if (m_mouseX >= m_vpX && m_mouseX < m_vpX + m_vpW &&
+                m_mouseY >= m_vpY && m_mouseY < m_vpY + m_vpH)
+            {
+                // If an entity is selected, check if user clicked on a gizmo axis
+                if (m_selectedEntity != 0 && m_world && m_world->IsAlive(m_selectedEntity)) {
+                    float cx = m_vpX + m_vpW * 0.5f;
+                    float cy = m_vpY + m_vpH * 0.5f;
+                    float ex = cx, ey = cy;
+                    auto* tr = m_world->GetComponent<Runtime::Components::Transform>(m_selectedEntity);
+                    if (tr) {
+                        ex = cx + tr->position.x * 20.f;
+                        ey = cy - tr->position.y * 20.f;
+                    }
+                    float gLen = 40.f;
+                    // Test axis hit before falling through to entity pick
+                    for (int axis = 1; axis <= 3; axis++) {
+                        if (GizmoAxisHit(ex, ey, axis, gLen)) {
+                            m_gizmoDragging = true;
+                            m_gizmoDragAxis = axis;
+                            m_dragLastX = m_mouseX;
+                            m_dragLastY = m_mouseY;
+                            return; // consumed by gizmo, don't pick entities
+                        }
+                    }
+                }
+
+                // Not on gizmo — pick entity
+                uint32_t picked = PickEntityAt((float)m_mouseX, (float)m_mouseY);
+                if (picked != m_selectedEntity) {
+                    m_selectedEntity = picked;
+                    if (picked != 0)
+                        Engine::Core::Logger::Info("Selected entity #"
+                            + std::to_string(picked) + " (" + EntityName(picked) + ")");
+                    else
+                        Engine::Core::Logger::Info("Deselected");
+                }
+            }
+        } else {
+            // Mouse button released — end any gizmo drag
+            if (m_gizmoDragging) {
+                m_gizmoDragging = false;
+                m_gizmoDragAxis = 0;
             }
         }
     }
@@ -169,27 +254,37 @@ void EditorRenderer::OnMouseButton(int btn, bool pressed) {
 void EditorRenderer::OnKey(int key, bool pressed) {
 #ifndef GLFW_KEY_Z
     // GLFW key constants (duplicated to avoid including GLFW here)
-    static constexpr int K_Z     = 90;
-    static constexpr int K_Y     = 89;
+    static constexpr int K_Z          = 90;
+    static constexpr int K_Y          = 89;
+    static constexpr int K_W          = 87;
+    static constexpr int K_E          = 69;
+    static constexpr int K_R          = 82;
+    static constexpr int K_G          = 71;
+    static constexpr int K_DELETE     = 261;
     static constexpr int K_LEFT_CTRL  = 341;
     static constexpr int K_RIGHT_CTRL = 345;
     static constexpr int K_LEFT_SHIFT = 340;
-    static constexpr int K_P     = 80;
-    static constexpr int K_S     = 83;
-    static constexpr int K_O     = 79;
-    static constexpr int K_B     = 66;
-    static constexpr int K_F5    = 294;
+    static constexpr int K_P          = 80;
+    static constexpr int K_S          = 83;
+    static constexpr int K_O          = 79;
+    static constexpr int K_B          = 66;
+    static constexpr int K_F5         = 294;
     (void)K_LEFT_SHIFT;
 #else
-    static constexpr int K_Z     = GLFW_KEY_Z;
-    static constexpr int K_Y     = GLFW_KEY_Y;
+    static constexpr int K_Z          = GLFW_KEY_Z;
+    static constexpr int K_Y          = GLFW_KEY_Y;
+    static constexpr int K_W          = GLFW_KEY_W;
+    static constexpr int K_E          = GLFW_KEY_E;
+    static constexpr int K_R          = GLFW_KEY_R;
+    static constexpr int K_G          = GLFW_KEY_G;
+    static constexpr int K_DELETE     = GLFW_KEY_DELETE;
     static constexpr int K_LEFT_CTRL  = GLFW_KEY_LEFT_CONTROL;
     static constexpr int K_RIGHT_CTRL = GLFW_KEY_RIGHT_CONTROL;
-    static constexpr int K_P     = GLFW_KEY_P;
-    static constexpr int K_S     = GLFW_KEY_S;
-    static constexpr int K_O     = GLFW_KEY_O;
-    static constexpr int K_B     = GLFW_KEY_B;
-    static constexpr int K_F5    = GLFW_KEY_F5;
+    static constexpr int K_P          = GLFW_KEY_P;
+    static constexpr int K_S          = GLFW_KEY_S;
+    static constexpr int K_O          = GLFW_KEY_O;
+    static constexpr int K_B          = GLFW_KEY_B;
+    static constexpr int K_F5         = GLFW_KEY_F5;
 #endif
 
     // Track Ctrl held state (both press and release)
@@ -216,18 +311,47 @@ void EditorRenderer::OnKey(int key, bool pressed) {
                 AppendConsole("[Info]  Redo: " + desc);
             }
         } else if (key == K_S) {
-            AppendConsole("[Info]  Save Scene — serialising world…");
+            SaveScene(kDefaultScenePath);
         } else if (key == K_O) {
-            AppendConsole("[Info]  Open Scene — pick a .scene file…");
+            AppendConsole("[Info]  Open Scene — loading from: " + std::string(kDefaultScenePath));
+            LoadScene(kDefaultScenePath);
         } else if (key == K_B) {
             TriggerBuild();
         }
     } else {
         if (key == K_P) {
             m_playing = !m_playing;
-            Engine::Core::Logger::Info(m_playing ? "PIE: Play" : "PIE: Stop");
+            Engine::Core::Logger::Info(m_playing ? "PIE: Play started" : "PIE: Play stopped");
         } else if (key == K_F5) {
             TriggerBuild();
+        }
+        // Gizmo mode shortcuts (like Unity/Unreal)
+        else if (key == K_W) {
+            m_gizmoMode = 0;
+            AppendConsole("[Info]  Gizmo mode: Move");
+        } else if (key == K_E) {
+            m_gizmoMode = 1;
+            AppendConsole("[Info]  Gizmo mode: Rotate");
+        } else if (key == K_R) {
+            m_gizmoMode = 2;
+            AppendConsole("[Info]  Gizmo mode: Scale");
+        }
+        // Grid snap toggle (G key like many editors)
+        else if (key == K_G) {
+            m_gridSnap = !m_gridSnap;
+            AppendConsole(m_gridSnap
+                ? "[Info]  Grid snap ON  (size=" + std::to_string(m_gridSize) + ")"
+                : "[Info]  Grid snap OFF");
+        }
+        // Delete selected entity
+        else if (key == K_DELETE) {
+            if (m_world && m_selectedEntity != 0 && m_world->IsAlive(m_selectedEntity)) {
+                std::string name = EntityName(m_selectedEntity);
+                m_world->DestroyEntity(m_selectedEntity);
+                AppendConsole("[Info]  Deleted entity: " + name);
+                Engine::Core::Logger::Info("Deleted entity: " + name);
+                m_selectedEntity = 0;
+            }
         }
     }
 }
@@ -270,6 +394,122 @@ void EditorRenderer::TriggerBuild() {
     std::string cmd = "Scripts/Tools/build_all.sh --debug-only >> Logs/Build/editor_build.log 2>&1 &";
     std::system(cmd.c_str());
     AppendConsole("[Info]  Build running in background — see Logs/Build/editor_build.log");
+}
+
+// ── GizmoAxisHit — returns true if mouse is within ~8px of the axis arrow ─
+bool EditorRenderer::GizmoAxisHit(float ex, float ey, int axis, float gLen) const {
+    float ax = ex, ay = ey;  // arrow tip
+    if (axis == 1) { ax = ex + gLen; ay = ey; }          // X →
+    if (axis == 2) { ax = ex;        ay = ey - gLen; }   // Y ↑
+    if (axis == 3) { ax = ex + gLen * 0.6f; ay = ey - gLen * 0.6f; } // Z ↗
+    // Test: is mouse within a rectangle along the axis shaft?
+    float mx = (float)m_mouseX, my = (float)m_mouseY;
+    float threshold = 8.f;
+    // Simplified hit: distance from mouse to segment (ex,ey)→(ax,ay)
+    float dx = ax - ex, dy = ay - ey;
+    float len2 = dx * dx + dy * dy;
+    if (len2 < 0.0001f) return false;
+    float t = ((mx - ex) * dx + (my - ey) * dy) / len2;
+    t = std::max(0.f, std::min(1.f, t));
+    float px = ex + t * dx, py = ey + t * dy;
+    float distSq = (mx - px) * (mx - px) + (my - py) * (my - py);
+    return distSq <= threshold * threshold;
+}
+
+// ── SnapToGrid ────────────────────────────────────────────────────────────
+float EditorRenderer::SnapToGrid(float v) const {
+    if (m_gridSize < 0.0001f) return v;
+    return std::round(v / m_gridSize) * m_gridSize;
+}
+
+// ── SaveScene — write entities to a simple JSON file ─────────────────────
+void EditorRenderer::SaveScene(const std::string& path) {
+    if (!m_world) { AppendConsole("[Warn]  Cannot save scene: world object is null"); return; }
+    try {
+        // Make sure the output directory exists
+        auto dir = std::filesystem::path(path).parent_path();
+        if (!dir.empty()) std::filesystem::create_directories(dir);
+
+        std::ofstream f(path);
+        if (!f.is_open()) {
+            AppendConsole("[Error] Cannot write scene to: " + path);
+            return;
+        }
+        f << "{\n  \"scene\": \"NovaForge_Dev\",\n  \"entities\": [\n";
+        auto entities = m_world->GetEntities();
+        for (size_t i = 0; i < entities.size(); i++) {
+            auto id = entities[i];
+            f << "    {\"id\":" << id;
+            auto* tag = m_world->GetComponent<Runtime::Components::Tag>(id);
+            if (tag) f << ",\"name\":\"" << tag->name << "\"";
+            auto* tr = m_world->GetComponent<Runtime::Components::Transform>(id);
+            if (tr) {
+                f << ",\"pos\":[" << tr->position.x << "," << tr->position.y
+                  << "," << tr->position.z << "]";
+                f << ",\"rot\":[" << tr->rotation.x << "," << tr->rotation.y
+                  << "," << tr->rotation.z << "," << tr->rotation.w << "]";
+                f << ",\"scale\":[" << tr->scale.x << "," << tr->scale.y
+                  << "," << tr->scale.z << "]";
+            }
+            f << "}";
+            if (i + 1 < entities.size()) f << ",";
+            f << "\n";
+        }
+        f << "  ]\n}\n";
+        AppendConsole("[Info]  Scene saved → " + path);
+        Engine::Core::Logger::Info("Scene saved to " + path);
+    } catch (const std::exception& ex) {
+        AppendConsole("[Error] Save failed: " + std::string(ex.what()));
+    }
+}
+
+// ── LoadScene — read entities from a simple JSON file ────────────────────
+void EditorRenderer::LoadScene(const std::string& path) {
+    if (!m_world) { AppendConsole("[Warn]  Cannot load scene: world object is null"); return; }
+    std::ifstream f(path);
+    if (!f.is_open()) {
+        AppendConsole("[Error] Cannot open scene: " + path);
+        return;
+    }
+    // Minimal JSON parse: look for "name", "pos", "rot", "scale" per entity
+    std::string content((std::istreambuf_iterator<char>(f)),
+                         std::istreambuf_iterator<char>());
+
+    // Clear existing world
+    for (auto id : m_world->GetEntities()) m_world->DestroyEntity(id);
+    m_selectedEntity = 0;
+
+    int count = 0;
+    size_t pos = 0;
+    while ((pos = content.find("\"name\":", pos)) != std::string::npos) {
+        size_t s = content.find('"', pos + 7);
+        if (s == std::string::npos) break;
+        size_t e = content.find('"', s + 1);
+        if (e == std::string::npos) break;
+        std::string name = content.substr(s + 1, e - s - 1);
+
+        auto id = m_world->CreateEntity();
+        m_world->AddComponent(id, Runtime::Components::Tag{name, {}});
+        Runtime::Components::Transform tr;
+        // Parse pos
+        size_t pp = content.find("\"pos\":[", pos);
+        if (pp != std::string::npos && pp < pos + 400) {
+            try {
+                size_t pb = pp + 7;
+                tr.position.x = std::stof(content.substr(pb));
+                pb = content.find(',', pb) + 1;
+                tr.position.y = std::stof(content.substr(pb));
+                pb = content.find(',', pb) + 1;
+                tr.position.z = std::stof(content.substr(pb));
+            } catch (...) {}
+        }
+        m_world->AddComponent(id, tr);
+        ++count;
+        pos = e + 1;
+    }
+    AppendConsole("[Info]  Scene loaded from " + path
+                  + " — " + std::to_string(count) + " entities");
+    Engine::Core::Logger::Info("Scene loaded: " + path);
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -448,14 +688,14 @@ void EditorRenderer::DrawMenuBar(float x, float y, float w, float h) {
             // EI-07 / EI-08: handle clicks
             if (hov && m_leftMousePressed) {
                 std::string label = item;
-                if (label.find("Save Scene")    != std::string::npos) {
-                    AppendConsole("[Info]  Saving scene to Projects/NovaForge/Scenes/…");
-                } else if (label.find("Open Scene")  != std::string::npos) {
-                    AppendConsole("[Info]  Open Scene — select a .scene file");
+                if (label.find("Save Scene") != std::string::npos) {
+                    SaveScene(kDefaultScenePath);
+                } else if (label.find("Open Scene") != std::string::npos) {
+                    LoadScene(kDefaultScenePath);
                 } else if (label.find("Build All") != std::string::npos
                        ||  label.find("Build Debug") != std::string::npos) {
                     TriggerBuild();
-                } else if (label.find("AI Chat")   != std::string::npos) {
+                } else if (label.find("AI Chat") != std::string::npos) {
                     m_aiChatVisible = !m_aiChatVisible;
                 } else if (label.find("Undo") != std::string::npos) {
                     if (UndoableCommandBus::Instance().CanUndo())
@@ -495,10 +735,12 @@ void EditorRenderer::DrawToolbar(float x, float y, float w, float h) {
     DrawRect(x, y, w, h, 0x2A2A2AFF);
     DrawLine(x, y + h - 1.f, x + w, y + h - 1.f, kBorderColor);
 
-    // Play button
-    float bx = x + w * 0.5f - 36.f;
     float by = y + 4.f;
-    float bw = 30.f, bh = 20.f;
+    float bh = 20.f;
+
+    // ── Play / Stop buttons (centre) ────────────────────────────────────
+    float bx = x + w * 0.5f - 36.f;
+    float bw = 30.f;
     bool playHov = (m_mouseX >= bx && m_mouseX < bx + bw &&
                     m_mouseY >= by && m_mouseY < by + bh);
     DrawRect(bx, by, bw, bh, m_playing ? 0x005522FF : (playHov ? 0x005522AA : 0x003311FF));
@@ -509,7 +751,6 @@ void EditorRenderer::DrawToolbar(float x, float y, float w, float h) {
         Engine::Core::Logger::Info(m_playing ? "PIE: Play started" : "PIE: Play stopped");
     }
 
-    // Stop button
     float sx = bx + bw + 4.f;
     bool stopHov = (m_mouseX >= sx && m_mouseX < sx + bw &&
                     m_mouseY >= by && m_mouseY < by + bh);
@@ -520,20 +761,58 @@ void EditorRenderer::DrawToolbar(float x, float y, float w, float h) {
         Engine::Core::Logger::Info("PIE: Play stopped");
     }
 
-    // Mode buttons
-    static const char* modes[] = {"Select", "Place", "Paint"};
-    float mx = x + 8.f;
-    for (auto* m : modes) {
-        int tw = TextWidth(m, 1.f);
-        bool mhov = (m_mouseX >= mx - 2 && m_mouseX < mx + tw + 4 &&
-                     m_mouseY >= by      && m_mouseY < by + bh);
-        DrawRect(mx - 2.f, by, (float)tw + 6.f, bh, mhov ? 0x3E3E52FF : 0x2A2A2AFF);
-        DrawRectOutline(mx - 2.f, by, (float)tw + 6.f, bh, kBorderColor);
-        DrawText(m, mx, by + 5.f, kTextNormal);
-        mx += tw + 14.f;
+    // ── Gizmo mode buttons (W/E/R — left side, after Select/Place/Paint) ─
+    static const char* gizmoLabels[] = { "W Move", "E Rotate", "R Scale" };
+    float gx = x + 8.f;
+    for (int i = 0; i < 3; i++) {
+        int tw = TextWidth(gizmoLabels[i], 1.f);
+        bool active = (m_gizmoMode == i);
+        bool ghov   = (m_mouseX >= gx - 2 && m_mouseX < gx + tw + 4 &&
+                       m_mouseY >= by      && m_mouseY < by + bh);
+        uint32_t bg = active ? 0x094771FF : (ghov ? 0x3E3E52FF : 0x2A2A2AFF);
+        DrawRect(gx - 2.f, by, (float)tw + 6.f, bh, bg);
+        DrawRectOutline(gx - 2.f, by, (float)tw + 6.f, bh, active ? kHighlight : kBorderColor);
+        DrawText(gizmoLabels[i], gx, by + 5.f, active ? 0xFFFFFFFF : kTextNormal);
+        if (ghov && m_leftMousePressed) { m_gizmoMode = i; }
+        gx += tw + 10.f;
     }
 
-    // Right side: AI chat toggle
+    // ── Grid snap toggle ──────────────────────────────────────────────────
+    gx += 4.f;
+    const char* snapLabel = m_gridSnap ? "G Snap ON" : "G Snap";
+    int stw = TextWidth(snapLabel, 1.f);
+    bool snapHov = (m_mouseX >= gx - 2 && m_mouseX < gx + stw + 4 &&
+                    m_mouseY >= by      && m_mouseY < by + bh);
+    DrawRect(gx - 2.f, by, (float)stw + 6.f, bh,
+             m_gridSnap ? 0x226622FF : (snapHov ? 0x3E3E52FF : 0x2A2A2AFF));
+    DrawRectOutline(gx - 2.f, by, (float)stw + 6.f, bh,
+                    m_gridSnap ? 0x44AA44FF : kBorderColor);
+    DrawText(snapLabel, gx, by + 5.f, m_gridSnap ? kTextSuccess : kTextNormal);
+    if (snapHov && m_leftMousePressed) {
+        m_gridSnap = !m_gridSnap;
+        AppendConsole(m_gridSnap ? "[Info]  Grid snap ON" : "[Info]  Grid snap OFF");
+    }
+
+    // ── New Entity button ─────────────────────────────────────────────────
+    float nex = gx + stw + 18.f;
+    bool neHov = (m_mouseX >= nex - 2 && m_mouseX < nex + 62 &&
+                  m_mouseY >= by       && m_mouseY < by + bh);
+    DrawRect(nex - 2.f, by, 62.f, bh, neHov ? 0x226633FF : 0x1A3322FF);
+    DrawRectOutline(nex - 2.f, by, 62.f, bh, 0x44AA66FF);
+    DrawText("+ Entity", nex + 2.f, by + 5.f, 0x4EC94EFF);
+    if (neHov && m_leftMousePressed && m_world) {
+        auto id = m_world->CreateEntity();
+        Runtime::Components::Tag tag;
+        tag.name = "NewEntity_" + std::to_string(id);
+        m_world->AddComponent(id, tag);
+        Runtime::Components::Transform tr;
+        m_world->AddComponent(id, tr);
+        m_selectedEntity = id;
+        AppendConsole("[Info]  Created entity: " + tag.name);
+        Engine::Core::Logger::Info("New entity: " + tag.name);
+    }
+
+    // ── Right side: AI chat toggle ────────────────────────────────────────
     float acx = x + w - 80.f;
     bool achov = (m_mouseX >= acx && m_mouseX < acx + 72.f &&
                   m_mouseY >= by  && m_mouseY < by + bh);
@@ -673,7 +952,6 @@ void EditorRenderer::DrawViewportGizmo(float vpX, float vpY, float vpW, float vp
         ex = cx + tr->position.x * 20.f;
         ey = cy - tr->position.y * 20.f;
     } else {
-        // Fallback: position along entity index row
         auto entities = m_world->GetEntities();
         auto it = std::find(entities.begin(), entities.end(), m_selectedEntity);
         if (it != entities.end()) {
@@ -682,29 +960,80 @@ void EditorRenderer::DrawViewportGizmo(float vpX, float vpY, float vpW, float vp
         }
     }
 
-    float gLen = 40.f;
-    float aSize = 6.f; // arrowhead half-size
+    float gLen  = 40.f;
+    float aSize = 6.f;
 
-    // X axis (red) →
-    DrawLine(ex, ey, ex + gLen, ey, kAxisX, 2.5f);
-    DrawLine(ex + gLen, ey, ex + gLen - aSize, ey - aSize, kAxisX, 1.5f);
-    DrawLine(ex + gLen, ey, ex + gLen - aSize, ey + aSize, kAxisX, 1.5f);
-    DrawText("X", ex + gLen + 3.f, ey - 6.f, kAxisX, 1.1f);
+    // Highlight colour for the axis being dragged
+    auto axisCol = [&](int axis, uint32_t base) -> uint32_t {
+        return (m_gizmoDragging && m_gizmoDragAxis == axis) ? 0xFFFF00FF : base;
+    };
 
-    // Y axis (green) ↑
-    DrawLine(ex, ey, ex, ey - gLen, kAxisY, 2.5f);
-    DrawLine(ex, ey - gLen, ex - aSize, ey - gLen + aSize, kAxisY, 1.5f);
-    DrawLine(ex, ey - gLen, ex + aSize, ey - gLen + aSize, kAxisY, 1.5f);
-    DrawText("Y", ex + 4.f, ey - gLen - 10.f, kAxisY, 1.1f);
+    if (m_gizmoMode == 0) {
+        // ── Move gizmo: arrows ────────────────────────────────────────────
+        // X (red) →
+        DrawLine(ex, ey, ex + gLen, ey, axisCol(1, kAxisX), 2.5f);
+        DrawLine(ex + gLen, ey, ex + gLen - aSize, ey - aSize, axisCol(1, kAxisX), 1.5f);
+        DrawLine(ex + gLen, ey, ex + gLen - aSize, ey + aSize, axisCol(1, kAxisX), 1.5f);
+        DrawText("X", ex + gLen + 3.f, ey - 6.f, axisCol(1, kAxisX), 1.1f);
+        // Y (green) ↑
+        DrawLine(ex, ey, ex, ey - gLen, axisCol(2, kAxisY), 2.5f);
+        DrawLine(ex, ey - gLen, ex - aSize, ey - gLen + aSize, axisCol(2, kAxisY), 1.5f);
+        DrawLine(ex, ey - gLen, ex + aSize, ey - gLen + aSize, axisCol(2, kAxisY), 1.5f);
+        DrawText("Y", ex + 4.f, ey - gLen - 10.f, axisCol(2, kAxisY), 1.1f);
+        // Z (blue) ↗
+        float zex = ex + gLen * 0.6f, zey = ey - gLen * 0.6f;
+        DrawLine(ex, ey, zex, zey, axisCol(3, kAxisZ), 2.5f);
+        DrawText("Z", zex + 3.f, zey - 8.f, axisCol(3, kAxisZ), 1.1f);
 
-    // Z axis (blue) ↗ (projected)
-    float zex = ex + gLen * 0.6f;
-    float zey = ey - gLen * 0.6f;
-    DrawLine(ex, ey, zex, zey, kAxisZ, 2.5f);
-    DrawText("Z", zex + 3.f, zey - 8.f, kAxisZ, 1.1f);
+    } else if (m_gizmoMode == 1) {
+        // ── Rotate gizmo: arc rings ────────────────────────────────────────
+        // Draw simple circle approximations for each axis
+        auto DrawRing = [&](uint32_t col, int axis) {
+            int segs = 24;
+            uint32_t c = axisCol(axis, col);
+            glLineWidth(2.f);
+            SetColor(c);
+            glBegin(GL_LINE_LOOP);
+            for (int i = 0; i < segs; i++) {
+                float a = (float)i / (float)segs * 6.2832f;
+                if (axis == 1) glVertex2f(ex + gLen * std::cos(a), ey + gLen * 0.4f * std::sin(a));
+                if (axis == 2) glVertex2f(ex + gLen * std::cos(a) * 0.4f, ey - gLen * std::sin(a));
+                if (axis == 3) glVertex2f(ex + gLen * 0.7f * std::cos(a), ey - gLen * 0.7f * std::sin(a));
+            }
+            glEnd();
+            glLineWidth(1.f);
+        };
+        DrawRing(kAxisX, 1);
+        DrawRing(kAxisY, 2);
+        DrawRing(kAxisZ, 3);
+        DrawText("X", ex + gLen + 3.f, ey - 6.f,       axisCol(1, kAxisX), 1.0f);
+        DrawText("Y", ex + 4.f,        ey - gLen - 8.f, axisCol(2, kAxisY), 1.0f);
+        DrawText("Z", ex + gLen * 0.7f + 3.f, ey - gLen * 0.7f - 8.f, axisCol(3, kAxisZ), 1.0f);
+
+    } else {
+        // ── Scale gizmo: lines with cube handles ──────────────────────────
+        float hSz = 5.f;
+        // X
+        DrawLine(ex, ey, ex + gLen, ey, axisCol(1, kAxisX), 2.f);
+        DrawRect(ex + gLen - hSz * 0.5f, ey - hSz * 0.5f, hSz, hSz, axisCol(1, kAxisX));
+        DrawText("X", ex + gLen + 4.f, ey - 6.f, axisCol(1, kAxisX), 1.0f);
+        // Y
+        DrawLine(ex, ey, ex, ey - gLen, axisCol(2, kAxisY), 2.f);
+        DrawRect(ex - hSz * 0.5f, ey - gLen - hSz * 0.5f, hSz, hSz, axisCol(2, kAxisY));
+        DrawText("Y", ex + 4.f, ey - gLen - 10.f, axisCol(2, kAxisY), 1.0f);
+        // Z
+        float zex = ex + gLen * 0.6f, zey = ey - gLen * 0.6f;
+        DrawLine(ex, ey, zex, zey, axisCol(3, kAxisZ), 2.f);
+        DrawRect(zex - hSz * 0.5f, zey - hSz * 0.5f, hSz, hSz, axisCol(3, kAxisZ));
+        DrawText("Z", zex + 3.f, zey - 8.f, axisCol(3, kAxisZ), 1.0f);
+    }
 
     // Centre dot
     DrawRect(ex - 4.f, ey - 4.f, 8.f, 8.f, 0xFFFFFFFF);
+
+    // Mode label near the gizmo
+    static const char* modeNames[] = { "Move", "Rotate", "Scale" };
+    DrawText(modeNames[m_gizmoMode], ex + 10.f, ey - gLen - 14.f, 0xCCCCCCCC, 0.9f);
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -896,6 +1225,69 @@ void EditorRenderer::DrawInspector(float x, float y, float w, float h) {
                    m_mouseY >= cy    && m_mouseY < cy + 20);
     DrawRect(x + 6.f, cy, w - 12.f, 20.f, hovBtn ? 0x1177BBFF : 0x007ACCFF);
     DrawText("+ Add Component", x + w * 0.25f, cy + 4.f, 0xFFFFFFFF);
+    if (hovBtn && m_leftMousePressed && m_selectedEntity != 0) {
+        m_addCompMenuOpen = !m_addCompMenuOpen;
+    }
+
+    // Add-component popup (drawn as overlay)
+    if (m_addCompMenuOpen && m_selectedEntity != 0) {
+        DrawAddCompMenu(x, cy - 80.f, w - 12.f, 78.f);
+    }
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Add-Component popup — appears above the button, lists available components
+// ──────────────────────────────────────────────────────────────────────────
+void EditorRenderer::DrawAddCompMenu(float x, float y, float w, float h) {
+    DrawRect(x + 6.f, y, w, h, 0x252526FF);
+    DrawRectOutline(x + 6.f, y, w, h, kHighlight);
+
+    struct CompEntry { const char* label; int id; };
+    static const CompEntry entries[] = {
+        { "Transform",    0 },
+        { "MeshRenderer", 1 },
+        { "RigidBody",    2 },
+        { "Tag",          3 },
+    };
+    float iy = y + 4.f;
+    for (auto& ce : entries) {
+        bool hov = (m_mouseX >= x + 8 && m_mouseX < x + 8 + w - 4 &&
+                    m_mouseY >= iy    && m_mouseY < iy + 16.f);
+        if (hov) DrawRect(x + 8.f, iy, w - 4.f, 16.f, 0x094771FF);
+        DrawText(ce.label, x + 12.f, iy + 2.f, hov ? 0xFFFFFFFF : kTextNormal);
+
+        if (hov && m_leftMousePressed && m_world && m_world->IsAlive(m_selectedEntity)) {
+            std::string ename = EntityName(m_selectedEntity);
+            bool added = false;
+            if (ce.id == 0 && !m_world->GetComponent<Runtime::Components::Transform>(m_selectedEntity)) {
+                m_world->AddComponent(m_selectedEntity, Runtime::Components::Transform{});
+                added = true;
+            } else if (ce.id == 1 && !m_world->GetComponent<Runtime::Components::MeshRenderer>(m_selectedEntity)) {
+                m_world->AddComponent(m_selectedEntity, Runtime::Components::MeshRenderer{});
+                added = true;
+            } else if (ce.id == 2 && !m_world->GetComponent<Runtime::Components::RigidBody>(m_selectedEntity)) {
+                m_world->AddComponent(m_selectedEntity, Runtime::Components::RigidBody{});
+                added = true;
+            } else if (ce.id == 3 && !m_world->GetComponent<Runtime::Components::Tag>(m_selectedEntity)) {
+                Runtime::Components::Tag t; t.name = ename;
+                m_world->AddComponent(m_selectedEntity, t);
+                added = true;
+            }
+            if (added)
+                AppendConsole("[Info]  Added " + std::string(ce.label) + " to " + ename);
+            else
+                AppendConsole("[Info]  " + std::string(ce.label) + " already exists on " + ename);
+            m_addCompMenuOpen = false;
+        }
+        iy += 18.f;
+    }
+
+    // Close popup if click outside
+    if (m_leftMousePressed) {
+        bool inside = (m_mouseX >= x + 6 && m_mouseX < x + 6 + w &&
+                       m_mouseY >= y      && m_mouseY < y + h);
+        if (!inside) m_addCompMenuOpen = false;
+    }
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -1146,19 +1538,23 @@ void EditorRenderer::DrawAIChat(float x, float y, float w, float h) {
 void EditorRenderer::DrawStatusBar(float x, float y, float w, float h) {
     DrawRect(x, y, w, h, kBgStatusBar);
 
+    static const char* gizmoNames[] = { "Move", "Rotate", "Scale" };
     int entityCount = m_world ? (int)m_world->EntityCount() : 0;
-    char statusBuf[128];
+    char statusBuf[256];
     snprintf(statusBuf, sizeof(statusBuf),
-             "  %s  |  Scene: NovaForge_Dev  |  Entities: %d  |  PCG: idle%s",
+             "  %s  |  Scene: NovaForge_Dev  |  Entities: %d  |  Gizmo: %s%s%s%s",
              UndoableCommandBus::Instance().CanUndo()
                  ? ("Undo: " + UndoableCommandBus::Instance().NextUndoDescription()).c_str()
                  : "Ready",
              entityCount,
-             m_playing ? "  |  ▶ PIE" : "");
+             gizmoNames[m_gizmoMode],
+             m_gridSnap ? "  |  Grid ON" : "",
+             m_playing  ? "  |  ▶ PIE"  : "",
+             m_gizmoDragging ? "  |  DRAGGING" : "");
     DrawText(statusBuf, x + 4.f, y + 5.f, 0xFFFFFFFF);
 
-    char buf[64];
-    snprintf(buf, sizeof(buf), "%.0f FPS  |  GL 2.1  ", m_fps);
+    char buf[80];
+    snprintf(buf, sizeof(buf), "W/E/R:gizmo  G:snap  Del:delete  %.0f FPS  |  GL 2.1  ", m_fps);
     int tw = TextWidth(buf);
     DrawText(buf, x + w - tw - 4.f, y + 5.f, 0xFFFFFFFF);
 }
@@ -1174,6 +1570,11 @@ void EditorRenderer::Render(double dt) {
         m_fps = m_fpsFrames / m_fpsAccum;
         m_fpsAccum  = 0.0;
         m_fpsFrames = 0;
+    }
+
+    // EI-13: tick ECS world when PIE is active
+    if (m_playing && m_world) {
+        m_world->Update((float)dt);
     }
 
     float W = (float)m_width;

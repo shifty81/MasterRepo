@@ -27,11 +27,15 @@
 #include "Runtime/Sim/AIMinerStateMachine/AIMinerStateMachine.h"
 #include "PCG/Structures/StructureGenerator/StructureGenerator.h"
 #include "Engine/Core/Logger.h"
+// ── NovaForgeHUD requires stb_easy_font implementation in this TU ─────────
+#define STB_EASY_FONT_IMPLEMENTATION
+#include "Projects/NovaForge/NovaForgeHUD.h"
 #include <iostream>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <chrono>
 
 // ── Simple key-state tracker (GLFW-independent polling) ────────────────────
 namespace {
@@ -88,9 +92,6 @@ void LoadRecipes(Runtime::CraftingSystem& crafting, const std::string& path) {
 int main() {
     namespace fs = std::filesystem;
 
-    std::cout << "[NovaForge] Working directory: "
-              << fs::current_path().string() << "\n";
-
     // ── Engine ──────────────────────────────────────────────────────────────
     Engine::Core::EngineConfig cfg;
     cfg.mode        = Engine::Core::EngineMode::Client;
@@ -105,6 +106,7 @@ int main() {
 
     Engine::Core::Logger::Init();
     Engine::Core::Logger::Info("NovaForge initializing…");
+    Engine::Core::Logger::Info("Working directory: " + fs::current_path().string());
 
     // ── NF-09: Audio ────────────────────────────────────────────────────────
     Engine::Audio::AudioEngine audio;
@@ -469,6 +471,38 @@ int main() {
     });
 
     Engine::Core::Logger::Info("NovaForge ready — press ESC to quit, F5 quicksave, F9 quickload");
+
+    // ── NovaForge HUD — graphical overlay drawn into the engine window ──────
+    // The HUD is rendered via the RenderCallback so it happens inside the
+    // engine's own BeginFrame/EndFrame pair each tick.
+    NovaForge::HUD gameHud;
+
+    // Feed every Logger line into the HUD's log panel
+    Engine::Core::Logger::SetSink([&](const std::string& msg) {
+        gameHud.AppendLog(msg);
+    });
+
+    // Track real frame time for accurate HUD FPS display
+    auto lastFrameTime = std::chrono::steady_clock::now();
+
+    // Capture references for the render callback
+    engine.SetRenderCallback([&](int w, int h) {
+        auto now = std::chrono::steady_clock::now();
+        double dt = std::chrono::duration<double>(now - lastFrameTime).count();
+        lastFrameTime = now;
+        if (dt <= 0.0 || dt > 1.0) dt = 1.0 / 60.0; // clamp outliers
+
+        auto state = gameHud.BuildState(
+            /* entities  */ static_cast<int>(engine.GetWorld().EntityCount()),
+            /* miners    */ miners.MinerCount(),
+            /* earnings  */ miners.TotalEarnings(),
+            /* crafting  */ crafting.Stats().activeSessions,
+            /* builder   */ builderActive,
+            /* fps       */ 0.0  // HUD computes FPS from dt internally
+        );
+        gameHud.Draw(w, h, state, dt);
+    });
+
     engine.Run();
 
     // Perform final save on clean exit

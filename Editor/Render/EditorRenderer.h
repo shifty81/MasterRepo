@@ -4,6 +4,8 @@
 #include <functional>
 #include <cstdint>
 #include <memory>
+#include <cmath>
+#include "Engine/Math/Math.h"
 
 // Forward declarations to avoid heavy headers in the interface
 namespace Runtime::ECS  { class World; }
@@ -103,6 +105,21 @@ private:
     // ── EI-13: PIE (play-in-editor) ─────────────────────────────────────
     bool m_playing = false;
 
+    // ── Gizmo drag (from ideas123gui.md) ─────────────────────────────────
+    // Gizmo mode: 0=Move, 1=Rotate, 2=Scale
+    int  m_gizmoMode     = 0;
+    // Drag state: which axis is being dragged (0=none, 1=X, 2=Y, 3=Z)
+    int  m_gizmoDragAxis = 0;
+    bool m_gizmoDragging = false;
+    double m_dragLastX   = 0.0, m_dragLastY = 0.0;
+
+    // ── Grid snapping (from ideas123gui.md) ──────────────────────────────
+    bool  m_gridSnap     = false;
+    float m_gridSize     = 1.0f;
+
+    // ── Add-component popup state ────────────────────────────────────────
+    bool m_addCompMenuOpen = false;
+
     // ── Menu bar click tracking ──────────────────────────────────────────
     // which top-level menu is open (-1 = none)
     int  m_activeMenu    = -1;
@@ -137,6 +154,7 @@ private:
     void DrawAIChat     (float x, float y, float w, float h);     // EI-14
     void DrawPanelHeader(const char* title, float x, float y, float w, float h,
                          uint32_t headerCol);
+    void DrawAddCompMenu(float x, float y, float w, float h);    // add-component popup
 
     // ── 3D viewport helpers ────────────────────────────────────────────────
     void DrawViewportGrid (float vpX, float vpY, float vpW, float vpH);
@@ -146,8 +164,18 @@ private:
     // EI-03: pick entity at screen coord inside viewport
     uint32_t PickEntityAt(float screenX, float screenY);
 
+    // Gizmo helpers — returns true if mouse is over the given axis arrow
+    bool GizmoAxisHit(float ex, float ey, int axis, float gLen) const;
+
+    // Apply grid snapping to a value
+    float SnapToGrid(float v) const;
+
     // EI-08: launch build and forward output to logger/error panel
     void TriggerBuild();
+
+    // Scene save / load
+    void SaveScene(const std::string& path);
+    void LoadScene(const std::string& path);
 
     // Helper: get entity display name (Tag.name or "Entity #N")
     std::string EntityName(uint32_t id) const;

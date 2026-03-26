@@ -119,10 +119,12 @@ void Engine::Run() {
         });
         if (m_frameCallback) m_frameCallback(dt);
 
-        // Render: clear → game draws → present
+        // Render: clear → custom game draw → present
         if (m_renderer && m_window) {
             m_renderer->BeginFrame();
             m_renderer->Clear();
+            if (m_renderCallback)
+                m_renderCallback(m_window->GetWidth(), m_window->GetHeight());
             m_renderer->EndFrame();
             m_window->SwapBuffers();
         }
