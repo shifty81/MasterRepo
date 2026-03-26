@@ -2153,8 +2153,81 @@ void EditorRenderer::DrawAIChat(float x, float y, float w, float h) {
                     sendHov ? 0x2288DDFF : 0x1166BBFF);
     DrawText("Send", x + w - 38.f, iy + 8.f, 0xFFFFFFFF);
     if (sendHov && m_leftMousePressed && !m_aiInput.empty()) {
-        m_aiChat->SendMessage(m_aiInput);
+        // Project-aware quick responses for NovaForge game design questions
+        std::string q = m_aiInput;
+        std::string lower = q;
+        for (auto& c : lower) c = (char)std::tolower((unsigned char)c);
+
+        std::string autoReply;
+        if (lower.find("faction") != std::string::npos ||
+            lower.find("solari") != std::string::npos  ||
+            lower.find("veyren") != std::string::npos  ||
+            lower.find("aurelian")!= std::string::npos ||
+            lower.find("keldari") != std::string::npos) {
+            autoReply = "NovaForge has 4 factions: Solari (armor+energy), Veyren (shield+hybrids), Aurelian (speed+drones+ECM), Keldari (missiles+ECM). Void Syndicate is the main pirate faction. Starting system: Thyrkstad (Veyren high-sec). Rep range: -1000 to +1000.";
+        } else if (lower.find("gas") != std::string::npos ||
+                   lower.find("harvest") != std::string::npos) {
+            autoReply = "Gas harvesting: anchor near a Gas Giant and deploy harvest drones. Gas types: Nebuline-C50 (common, polymers), Vaporin (uncommon lowsec, combat boosters), Helion-3 (rare, fusion fuel). Drones collect gas into cargo hold.";
+        } else if (lower.find("land") != std::string::npos ||
+                   lower.find("planet") != std::string::npos) {
+            autoReply = "Landing system: approach within 50 world units of a Landable planet (Rocky/Habitable) to see the landing prompt [F]. Gas Giants and Ice Giants are orbital-anchor-only — deploy harvest drones. Planet surface uses same modular PCG as ship interiors.";
+        } else if (lower.find("ship") != std::string::npos ||
+                   lower.find("class") != std::string::npos) {
+            autoReply = "Ship classes: Frigate < Destroyer < Cruiser < Battlecruiser < Battleship < Capital < Titan. Ships = module graphs (interior-driven hull). Tags: Fighter/Freighter/Miner/Industrial. Player starts in Nova Fighter Mk1 (Frigate class).";
+        } else if (lower.find("module") != std::string::npos ||
+                   lower.find("build") != std::string::npos) {
+            autoReply = "Ship Builder: drag-and-drop snap-grid. Modules: Engine, Reactor, WeaponSpine, BellyBay, DroneBay, RigDock. Size classes: XS/S/M/L/XL/XXL/XXXL/Titan. Interior layout drives exterior hull shape. F2 = toggle build mode.";
+        } else if (lower.find("mine") != std::string::npos ||
+                   lower.find("ore") != std::string::npos ||
+                   lower.find("asteroid") != std::string::npos) {
+            autoReply = "Mining: approach an asteroid belt (AsteroidBelt tag), activate mining laser. Ore types by security: highsec=dustite/ferrite, lowsec=corite/crystite/nocxium_ore. Use mining barges for volume; exhumers for deep ore.";
+        } else if (lower.find("warp") != std::string::npos ||
+                   lower.find("jump") != std::string::npos ||
+                   lower.find("travel") != std::string::npos) {
+            autoReply = "Travel: approach a Jump Gate (JumpGate tag) to warp to connected systems. Warp channels are cinematic — layered audio + visual tunnel. Fleet warps in formation. Wormholes: scan anomalies to find unstable connections to null-sec regions.";
+        } else if (lower.find("editor") != std::string::npos ||
+                   lower.find("atlas") != std::string::npos) {
+            autoReply = "AtlasEditor: W=Move, E=Rotate, R=Scale gizmos. G=grid snap. Del=delete entity. F5=quicksave. F9=quickload. View menu=toggle panels. Scene menu=New/Duplicate Entity. Build menu=compile project. AI Chat=this panel (Ctrl+Space).";
+        }
+
+        if (!autoReply.empty()) {
+            m_aiChat->AppendMessage(IDE::ChatRole::User,      q);
+            m_aiChat->AppendMessage(IDE::ChatRole::Assistant, autoReply);
+        } else {
+            m_aiChat->SendMessage(m_aiInput);
+        }
         m_aiInput.clear();
+    }
+
+    // ── Quick-action buttons below input ──────────────────────────────────────
+    static const char* kQuickLabels[] = {
+        "Factions","Gas Harvest","Planet Land","Ship Classes","Mining","Warp"
+    };
+    static const char* kQuickQueries[] = {
+        "What are the factions in NovaForge?",
+        "How does gas harvesting work?",
+        "How do I land on a planet?",
+        "What are the ship classes?",
+        "How does mining work?",
+        "How does warp travel work?"
+    };
+    float qbY = iy + inputH + 2.f;
+    float qbW = (w - 8.f) / 3.f;
+    float qbH = 14.f;
+    for (int qi = 0; qi < 6; qi++) {
+        int col   = qi % 3;
+        int row   = qi / 3;
+        float qbX = x + 4.f + col * qbW;
+        float qbYi = qbY + row * (qbH + 2.f);
+        bool qhov = (m_mouseX >= qbX && m_mouseX < qbX + qbW - 2.f &&
+                     m_mouseY >= qbYi && m_mouseY < qbYi + qbH);
+        DrawRoundedRect(qbX, qbYi, qbW - 2.f, qbH, 3.f,
+                        qhov ? 0x223355FF : 0x161625FF);
+        DrawRoundedRectOutline(qbX, qbYi, qbW - 2.f, qbH, 3.f, 0x334466FF);
+        DrawText(kQuickLabels[qi], qbX + 3.f, qbYi + 3.f, 0x7799BBFF, 0.85f);
+        if (qhov && m_leftMousePressed && m_aiInput.empty()) {
+            m_aiInput = kQuickQueries[qi];
+        }
     }
 
     // Click on input to focus

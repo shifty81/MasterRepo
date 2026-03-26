@@ -1,7 +1,7 @@
 # Migration Status — MasterRepo Consolidation
 
-> **Living document** tracking the merge of 4 source repositories into MasterRepo.
-> Last updated: 2025-07-15
+> **Living document** tracking the merge of source repositories into MasterRepo.
+> Last updated: 2026-03-26 — standalone shifty81/NovaForge merge initiated.
 
 ---
 
@@ -429,3 +429,36 @@ Several files exist in multiple source repos and need auditing to pick the best 
 | **Total** | **~195** | **245 archived** | **✅ 32** | **⬜ ~163** |
 
 > **Next action:** Phase 2 — Extract and refactor window/platform layer from Expeditions (Win32Window, X11Window) into `Engine/Platform/` and `Engine/Window/`.
+
+---
+
+## 5. Standalone NovaForge Merge (shifty81/NovaForge)
+
+> Source: https://github.com/shifty81/NovaForge
+> Merge initiated: 2026-03-26
+
+### Completed
+
+| Component | Status | MasterRepo Path |
+|-----------|--------|----------------|
+| Universe data (Thyrkstad, Solari, Duskfall, Aurendis) | ✅ | `Projects/NovaForge/Data/Universe/systems.json` |
+| Gas types catalog | ✅ | `Projects/NovaForge/Data/gas_types.json` |
+| Faction definitions (5 factions) | ✅ | `Projects/NovaForge/Data/factions.json` |
+| UniverseData C++ structures | ✅ | `Runtime/Universe/UniverseData.h/.cpp` |
+| UniverseLoader (ECS population) | ✅ | `Runtime/Universe/UniverseLoader.h` |
+| FactionSystem wired to universe | ✅ | `Projects/NovaForge/main.cpp` |
+| AI chat project-aware responses | ✅ | `Editor/Render/EditorRenderer.cpp` |
+| Design Bible | ✅ | `Docs/NovaForge/DESIGN_BIBLE.md` |
+
+### Pending (future sessions)
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Ship database (102 ships JSON) | ⬜ | `data/ships/*.json` from standalone |
+| Module database (159 modules JSON) | ⬜ | `data/modules/` from standalone |
+| Skills system (137 skills) | ⬜ | `data/skills/` from standalone |
+| Warp mechanic cinematic | ⬜ | `data/universe/warp_mechanics.json` |
+| NPC faction AI | ⬜ | `data/npcs/` from standalone |
+| Planet surface PCG | ⬜ | Interior = exterior PCG parity |
+| Ship builder modular UI | ⬜ | Drag-drop snap-grid builder |
+| Multi-deck interior generation | ⬜ | Belly bay + rover + drone bay |

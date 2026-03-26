@@ -26,6 +26,9 @@
 #include "Runtime/BuilderRuntime/NovaForgeBuilderIntegration.h"
 #include "Runtime/SaveLoad/SaveLoad.h"
 #include "Runtime/Sim/AIMinerStateMachine/AIMinerStateMachine.h"
+#include "Runtime/Universe/UniverseData.h"
+#include "Runtime/Universe/UniverseLoader.h"
+#include "Runtime/Factions/FactionSystem.h"
 #include "PCG/Structures/StructureGenerator/StructureGenerator.h"
 #include "Engine/Core/Logger.h"
 // ── NovaForgeHUD requires stb_easy_font implementation in this TU ─────────
@@ -123,37 +126,26 @@ int main() {
     // ── ECS world ───────────────────────────────────────────────────────────
     Runtime::ECS::World world;
 
-    // NF-01: Player entity
+    // ── Faction System ────────────────────────────────────────────────────────
+    Runtime::FactionSystem factionSystem;
+    factionSystem.Init();
+
+    // NF-01: Player entity (always first — camera follows this entity)
     auto playerEntity = world.CreateEntity();
-    world.AddComponent(playerEntity, Runtime::Components::Tag{"Player", {"Player","Controllable","Ship"}});
+    world.AddComponent(playerEntity, Runtime::Components::Tag{"Player", {"Player","Controllable","Ship","Fighter"}});
     Runtime::Components::Transform playerTr;
     playerTr.position = {0.f, 0.f, 0.f};
     world.AddComponent(playerEntity, playerTr);
 
-    // ── Initial scene objects visible from the spawn camera ──────────────
-    // Prometheus Station directly ahead (looking down +Z at yaw=0)
-    auto stationEntity = world.CreateEntity();
-    world.AddComponent(stationEntity, Runtime::Components::Tag{"Prometheus Station", {"Station"}});
-    Runtime::Components::Transform stTr; stTr.position = {0.f, 0.f, 300.f};
-    world.AddComponent(stationEntity, stTr);
+    // NF-01b: Populate the star system from the universe registry
+    // Universe data: 4 factions (Solari, Veyren, Aurelian, Keldari), Thyrkstad is starter
+    Runtime::Universe::UniverseRegistry universeReg = Runtime::Universe::BuiltinUniverse();
+    Runtime::Universe::UniverseLoader    universeLoader(universeReg);
+    universeLoader.SetStartSystem("thyrkstad");
+    universeLoader.PopulateECS(world, nullptr); // pass &factionSystem once it's created
 
-    // Nearby companion ship to give the scene life
-    auto escortEntity = world.CreateEntity();
-    world.AddComponent(escortEntity, Runtime::Components::Tag{"Escort_Vanguard", {"Ship","Fighter","NPC"}});
-    Runtime::Components::Transform escTr; escTr.position = {30.f, 5.f, 120.f};
-    world.AddComponent(escortEntity, escTr);
-
-    // Nearby planet (Novus Prime) close enough to be clearly visible
-    auto planetEntity = world.CreateEntity();
-    world.AddComponent(planetEntity, Runtime::Components::Tag{"Novus Prime", {"Planet","Rocky","Habitable"}});
-    Runtime::Components::Transform ptTr; ptTr.position = {-200.f, -50.f, 800.f};
-    world.AddComponent(planetEntity, ptTr);
-
-    // The home star (Sol-equivalent) far in the distance
-    auto starEntity = world.CreateEntity();
-    world.AddComponent(starEntity, Runtime::Components::Tag{"Sol", {"Star"}});
-    Runtime::Components::Transform starTr; starTr.position = {0.f, 200.f, 5000.f};
-    world.AddComponent(starEntity, starTr);
+    Engine::Core::Logger::Info("NF-01: Universe populated — Thyrkstad system ("
+        + std::to_string(world.EntityCount()) + " entities incl. player)");
 
     // Deposit entities for miners
     auto deposit1 = world.CreateEntity();
