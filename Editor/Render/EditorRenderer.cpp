@@ -2069,6 +2069,7 @@ void EditorRenderer::DrawAIChat(float x, float y, float w, float h) {
     // Header
     DrawRoundedRect(x, y, w, kPanelHdrH, 6.f, 0x2A2A3EFF);
     DrawLine(x, y + kPanelHdrH, x + w, y + kPanelHdrH, 0x4A4A6AFF);
+    // "\xE2\x9C\xBF" = U+270F (pencil), "\xe2\x80\x94" = U+2014 (em-dash)
     DrawText("  \xE2\x9C\xBF AI Chat  \xe2\x80\x94  Ollama", x + 6.f, y + 4.f, 0x88AAFFFF, 1.1f);
 
     // Close button
@@ -2084,7 +2085,9 @@ void EditorRenderer::DrawAIChat(float x, float y, float w, float h) {
     float chatH  = h - kPanelHdrH - inputH - 8.f;
     float bubblePad = 6.f;
     float bubbleMaxW = w * 0.78f;
-    int   charsPerLine = std::max(10, (int)(bubbleMaxW / 7.f)); // ~7px per char
+    // Approximate pixels-per-character for stb_easy_font at scale 1
+    static constexpr float kApproxCharW = 7.f;
+    int   charsPerLine = std::max(10, (int)(bubbleMaxW / kApproxCharW));
 
     // Scissor the conversation area
     glScissor((int)x, (int)(m_height - y - kPanelHdrH - chatH), (int)w, (int)chatH);

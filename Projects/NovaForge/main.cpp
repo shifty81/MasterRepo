@@ -609,7 +609,8 @@ int main() {
                     minDist = dist;
                     state.nearestBody.name     = obj.name;
                     state.nearestBody.distance = dist;
-                    // tag detection via name heuristic
+                    // WorldObject carries only name+size (no tags vector), so
+                    // gas-giant detection falls back to name matching.
                     bool isGas = (obj.name.find("Jupiter")!=std::string::npos ||
                                   obj.name.find("Saturn") !=std::string::npos ||
                                   obj.name.find("Uranus") !=std::string::npos ||
