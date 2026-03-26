@@ -125,6 +125,13 @@ private:
     // ── EI-13: PIE (play-in-editor) ─────────────────────────────────────
     bool m_playing = false;
 
+    // ── Panel visibility toggles (View menu) ────────────────────────────
+    bool m_outlinerVisible   = true;
+    bool m_inspectorVisible  = true;
+    bool m_consoleVisible    = true;
+    bool m_viewportVisible   = true;
+    bool m_contentBrowserVisible = false;
+
     // ── Gizmo drag (from ideas123gui.md) ─────────────────────────────────
     // Gizmo mode: 0=Move, 1=Rotate, 2=Scale
     int  m_gizmoMode     = 0;
@@ -153,8 +160,10 @@ private:
     // Packed RGBA (0xRRGGBBAA)
     static void SetColor(uint32_t rgba);
 
-    void DrawRect        (float x, float y, float w, float h, uint32_t fill);
-    void DrawRectOutline (float x, float y, float w, float h, uint32_t col, float lw = 1.f);
+    void DrawRect             (float x, float y, float w, float h, uint32_t fill);
+    void DrawRectOutline      (float x, float y, float w, float h, uint32_t col, float lw = 1.f);
+    void DrawRoundedRect      (float x, float y, float w, float h, float radius, uint32_t fill);
+    void DrawRoundedRectOutline(float x, float y, float w, float h, float radius, uint32_t col, float lw = 1.f);
     void DrawLine        (float x0, float y0, float x1, float y1, uint32_t col, float lw = 1.f);
     void DrawText        (const std::string& text, float x, float y,
                           uint32_t col = 0xFFFFFFFF, float scale = 1.f);

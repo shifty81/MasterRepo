@@ -862,6 +862,58 @@ void EditorRenderer::DrawFloorGrid3D() {
     glLineWidth(1.f);
 }
 
+// Draw a filled sphere using latitude/longitude subdivision
+static void DrawFilledSphere3D(float cx, float cy, float cz, float radius,
+                                float r, float g, float b, float a,
+                                int slices = 18, int stacks = 12) {
+    const float pi = 3.14159265f;
+    for (int i = 0; i < stacks; i++) {
+        float lat0 = pi * (-0.5f + (float) i      / stacks);
+        float lat1 = pi * (-0.5f + (float)(i + 1) / stacks);
+        float sinL0 = std::sin(lat0), cosL0 = std::cos(lat0);
+        float sinL1 = std::sin(lat1), cosL1 = std::cos(lat1);
+        // Slightly vary shading per stack for banding effect
+        float shade = 0.7f + 0.3f * (float)(i + 1) / stacks;
+        glColor4f(r * shade, g * shade, b * shade, a);
+        glBegin(GL_QUAD_STRIP);
+        for (int j = 0; j <= slices; j++) {
+            float lng = 2.f * pi * (float)j / slices;
+            float cosLng = std::cos(lng), sinLng = std::sin(lng);
+            glVertex3f(cx + radius * cosL0 * cosLng, cy + radius * sinL0, cz + radius * cosL0 * sinLng);
+            glVertex3f(cx + radius * cosL1 * cosLng, cy + radius * sinL1, cz + radius * cosL1 * sinLng);
+        }
+        glEnd();
+    }
+    // Equator highlight ring
+    glColor4f(r * 1.1f, g * 1.1f, b * 1.1f, a * 0.5f);
+    glLineWidth(1.5f);
+    glBegin(GL_LINE_LOOP);
+    for (int j = 0; j < 32; j++) {
+        float ang = 2.f * pi * (float)j / 32;
+        glVertex3f(cx + radius * std::cos(ang), cy, cz + radius * std::sin(ang));
+    }
+    glEnd();
+    glLineWidth(1.f);
+}
+
+// Draw a wireframe sphere (3 circles) for ships / stations
+static void DrawWireSphere3D(float cx, float cy, float cz, float radius,
+                              float r, float g, float b, int segments = 20) {
+    const float pi = 3.14159265f;
+    glColor4f(r, g, b, 1.f);
+    for (int plane = 0; plane < 3; plane++) {
+        glBegin(GL_LINE_LOOP);
+        for (int i = 0; i < segments; i++) {
+            float ang = 2.f * pi * (float)i / segments;
+            float s = std::sin(ang) * radius, c2 = std::cos(ang) * radius;
+            if (plane == 0) glVertex3f(cx + c2, cy + s, cz);
+            else if (plane == 1) glVertex3f(cx + c2, cy, cz + s);
+            else                 glVertex3f(cx, cy + s, cz + c2);
+        }
+        glEnd();
+    }
+}
+
 // Helper: draw a wireframe box centred at (x,y,z) with half-size hs
 static void DrawWireBox(float x, float y, float z, float hs, bool selected = false) {
     float lw = selected ? 2.5f : 1.f;
@@ -886,43 +938,108 @@ static void DrawWireBox(float x, float y, float z, float hs, bool selected = fal
     glLineWidth(1.f);
 }
 
-// ── Draw all ECS entities as 3D wireframe boxes ───────────────────────────
+// ── Draw all ECS entities: spheres for celestial bodies, boxes for others ──
 void EditorRenderer::DrawEntities3D() {
     if (!m_world) return;
     auto entities = m_world->GetEntities();
 
-    static const uint32_t kEntityColors[] = {
-        0x4A90D9FF, 0x7ED321FF, 0xF5A623FF, 0xBD10E0FF, 0xE05555FF, 0x55BBEEFF
-    };
-
     for (size_t i = 0; i < entities.size(); i++) {
         auto id = entities[i];
         float wx = 0.f, wy = 0.f, wz = 0.f;
-        float boxSize = 1.0f;
 
         auto* tr  = m_world->GetComponent<Runtime::Components::Transform>(id);
         auto* tag = m_world->GetComponent<Runtime::Components::Tag>(id);
         if (tr) { wx = tr->position.x; wy = tr->position.y; wz = tr->position.z; }
 
-        // Size hint from tags
+        bool selected = (id == m_selectedEntity);
+
+        // Determine entity type and visual properties from tags
+        enum class EntityKind { Generic, Star, Planet, GasGiant, IceGiant, Moon,
+                                 DwarfPlanet, Asteroid, Station, Ship, Background };
+        EntityKind kind = EntityKind::Generic;
+        float radius = 0.5f;
+        float cr = 0.5f, cg = 0.5f, cb = 1.f; // default: blue
+
         if (tag) {
             for (auto& t : tag->tags) {
-                if (t == "Star")      { boxSize = 5.0f; break; }
-                if (t == "GasGiant") { boxSize = 3.0f; break; }
-                if (t == "Planet")   { boxSize = 2.0f; break; }
-                if (t == "Station" || t == "JumpGate") { boxSize = 2.5f; break; }
-                if (t == "AsteroidBelt") { boxSize = 0.5f; break; }
+                if (t == "Star")         { kind = EntityKind::Star;       radius = 4.0f; cr=1.f;  cg=0.85f; cb=0.2f;  break; }
+                if (t == "GasGiant")     { kind = EntityKind::GasGiant;   radius = 2.8f; cr=0.9f; cg=0.6f;  cb=0.3f;  break; }
+                if (t == "IceGiant")     { kind = EntityKind::IceGiant;   radius = 2.0f; cr=0.3f; cg=0.7f;  cb=1.0f;  break; }
+                if (t == "Planet") {
+                    kind = EntityKind::Planet; radius = 1.5f;
+                    // Color by planet name
+                    std::string n = tag->name;
+                    if      (n == "Earth")   { cr=0.2f; cg=0.5f; cb=1.f; }
+                    else if (n == "Mars")    { cr=0.9f; cg=0.3f; cb=0.2f; }
+                    else if (n == "Venus")   { cr=0.9f; cg=0.8f; cb=0.4f; }
+                    else if (n == "Mercury") { cr=0.6f; cg=0.6f; cb=0.6f; }
+                    else                     { cr=0.5f; cg=0.6f; cb=0.7f; }
+                    break;
+                }
+                if (t == "Moon")         { kind = EntityKind::Moon;       radius = 0.4f; cr=0.7f; cg=0.7f;  cb=0.7f;  break; }
+                if (t == "DwarfPlanet")  { kind = EntityKind::DwarfPlanet;radius = 0.5f; cr=0.6f; cg=0.5f;  cb=0.5f;  break; }
+                if (t == "Asteroid")     { kind = EntityKind::Asteroid;   radius = 0.2f; cr=0.5f; cg=0.45f; cb=0.4f;  break; }
+                if (t == "AsteroidBelt") { kind = EntityKind::Asteroid;   radius = 0.3f; cr=0.55f;cg=0.5f;  cb=0.45f; break; }
+                if (t == "Station")      { kind = EntityKind::Station;    radius = 1.0f; cr=0.7f; cg=0.8f;  cb=0.9f;  break; }
+                if (t == "JumpGate")     { kind = EntityKind::Station;    radius = 1.2f; cr=0.4f; cg=0.9f;  cb=0.6f;  break; }
+                if (t == "Ship" || t == "Fighter" || t == "PlayerShip" || t == "Freighter") {
+                    kind = EntityKind::Ship; radius = 0.4f; cr=0.4f; cg=0.8f; cb=0.4f; break;
+                }
+                if (t == "Background" || t == "Galaxy") { kind = EntityKind::Background; break; }
             }
         }
 
-        bool selected = (id == m_selectedEntity);
-        uint32_t col  = selected ? 0xFFCC00FF : kEntityColors[i % 6];
-        float r = (float)((col >> 24) & 0xFF) / 255.f;
-        float g = (float)((col >> 16) & 0xFF) / 255.f;
-        float b = (float)((col >>  8) & 0xFF) / 255.f;
-        glColor4f(r, g, b, 1.f);
+        if (kind == EntityKind::Background) continue; // skip skybox entity
 
-        DrawWireBox(wx, wy, wz, boxSize * 0.5f, selected);
+        // Selection colour tint
+        if (selected) { cr = std::min(1.f,cr*1.3f+0.2f); cg = std::min(1.f,cg*1.3f+0.2f); cb = 0.f; }
+
+        float selLineW = selected ? 2.5f : 1.f;
+
+        switch (kind) {
+            case EntityKind::Star:
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                DrawFilledSphere3D(wx, wy, wz, radius, cr, cg, cb, 1.0f, 24, 14);
+                // Glow halo
+                DrawFilledSphere3D(wx, wy, wz, radius * 1.25f, cr, cg*0.7f, 0.f, 0.18f, 16, 10);
+                glDisable(GL_BLEND);
+                break;
+            case EntityKind::GasGiant:
+            case EntityKind::IceGiant:
+            case EntityKind::Planet:
+            case EntityKind::Moon:
+            case EntityKind::DwarfPlanet:
+                DrawFilledSphere3D(wx, wy, wz, radius, cr, cg, cb, 1.0f, 20, 12);
+                if (selected) {
+                    glLineWidth(selLineW);
+                    DrawWireSphere3D(wx, wy, wz, radius * 1.15f, 1.f, 0.8f, 0.f, 24);
+                    glLineWidth(1.f);
+                }
+                break;
+            case EntityKind::Asteroid:
+                glColor4f(cr, cg, cb, 1.f);
+                glLineWidth(selLineW);
+                DrawWireBox(wx, wy, wz, radius, selected);
+                glLineWidth(1.f);
+                break;
+            case EntityKind::Station:
+            case EntityKind::Ship:
+            case EntityKind::Generic:
+            default:
+                glColor4f(cr, cg, cb, 1.f);
+                glLineWidth(selLineW);
+                DrawWireBox(wx, wy, wz, radius, selected);
+                glLineWidth(1.f);
+                break;
+        }
+
+        // Name label (2D projected overlay)
+        float sx = 0.f, sy = 0.f;
+        if (tag && Project3D(wx, wy + radius + 0.3f, wz, sx, sy)) {
+            DrawText(tag->name, sx - (float)TextWidth(tag->name) * 0.5f, sy - 14.f,
+                     selected ? 0xFFDD00FF : 0x888899FF, 0.85f);
+        }
     }
 }
 
@@ -1006,6 +1123,63 @@ void EditorRenderer::DrawViewportGizmo(float /*vpX*/, float /*vpY*/,
 // ──────────────────────────────────────────────────────────────────────────
 // Drawing primitives
 // ──────────────────────────────────────────────────────────────────────────
+// Draw a rounded rectangle using a fan of triangles at each corner
+void EditorRenderer::DrawRoundedRect(float x, float y, float w, float h,
+                                      float radius, uint32_t fill) {
+    SetColor(fill);
+    radius = std::min(radius, std::min(w * 0.5f, h * 0.5f));
+    const int segs = 6; // segments per corner
+    const float pi = 3.14159265f;
+    // Centre quad + 4 corner fans
+    glBegin(GL_TRIANGLES);
+    // Fill with two centre rects (horizontal and vertical strips)
+    auto quad = [&](float qx, float qy, float qw, float qh) {
+        glVertex2f(qx,      qy);       glVertex2f(qx + qw, qy);
+        glVertex2f(qx + qw, qy + qh);
+        glVertex2f(qx,      qy);
+        glVertex2f(qx + qw, qy + qh);
+        glVertex2f(qx,      qy + qh);
+    };
+    quad(x + radius, y,          w - 2*radius, h);           // vertical strip
+    quad(x,          y + radius, radius,        h - 2*radius); // left strip
+    quad(x + w - radius, y + radius, radius, h - 2*radius);   // right strip
+    // Corner fans
+    float cx2[4] = { x+radius,   x+w-radius, x+w-radius, x+radius   };
+    float cy2[4] = { y+radius,   y+radius,   y+h-radius, y+h-radius  };
+    float a0[4]  = { pi,         pi*1.5f,    0.f,         pi*0.5f    };
+    for (int c = 0; c < 4; c++) {
+        for (int i = 0; i < segs; i++) {
+            float a1 = a0[c] + (float)i     / segs * (pi * 0.5f);
+            float a2 = a0[c] + (float)(i+1) / segs * (pi * 0.5f);
+            glVertex2f(cx2[c], cy2[c]);
+            glVertex2f(cx2[c] + radius * std::cos(a1), cy2[c] + radius * std::sin(a1));
+            glVertex2f(cx2[c] + radius * std::cos(a2), cy2[c] + radius * std::sin(a2));
+        }
+    }
+    glEnd();
+}
+
+void EditorRenderer::DrawRoundedRectOutline(float x, float y, float w, float h,
+                                             float radius, uint32_t col, float lw) {
+    SetColor(col);
+    glLineWidth(lw);
+    radius = std::min(radius, std::min(w * 0.5f, h * 0.5f));
+    const int segs = 6;
+    const float pi = 3.14159265f;
+    float cx2[4] = { x+radius,   x+w-radius, x+w-radius, x+radius   };
+    float cy2[4] = { y+radius,   y+radius,   y+h-radius, y+h-radius  };
+    float a0[4]  = { pi,         pi*1.5f,    0.f,         pi*0.5f    };
+    glBegin(GL_LINE_LOOP);
+    for (int c = 0; c < 4; c++) {
+        for (int i = 0; i <= segs; i++) {
+            float a = a0[c] + (float)i / segs * (pi * 0.5f);
+            glVertex2f(cx2[c] + radius * std::cos(a), cy2[c] + radius * std::sin(a));
+        }
+    }
+    glEnd();
+    glLineWidth(1.f);
+}
+
 void EditorRenderer::DrawRect(float x, float y, float w, float h, uint32_t fill) {
     SetColor(fill);
     glBegin(GL_QUADS);
@@ -1074,7 +1248,10 @@ int EditorRenderer::TextWidth(const std::string& text, float scale) {
 void EditorRenderer::DrawPanelHeader(const char* title,
                                       float x, float y, float w, float h,
                                       uint32_t headerCol) {
+    // Slightly brighter top edge for depth illusion
     DrawRect(x, y, w, h, headerCol);
+    DrawLine(x, y, x + w, y, (headerCol & 0xFFFFFF00) | 0xFF, 1.f); // brighter top
+    DrawLine(x, y + h - 1.f, x + w, y + h - 1.f, 0x00000088, 1.f); // darker bottom
     DrawText(title, x + 6.f, y + 4.f, kTextNormal, 1.1f);
 }
 
@@ -1113,14 +1290,22 @@ void EditorRenderer::DrawMenuBar(float x, float y, float w, float h) {
                                          "Save Scene", "Open Scene...", nullptr, "Exit" };
     static const char* editItems[]  = { "Undo  Ctrl+Z", "Redo  Ctrl+Y", nullptr,
                                          "Preferences..." };
+    static const char* viewItems[]  = { "Toggle Outliner", "Toggle Inspector",
+                                         "Toggle Console", nullptr,
+                                         "Toggle Content Browser", "Toggle Code Editor" };
+    static const char* toolsItems[] = { "Code Editor", "Content Browser", nullptr,
+                                         "Error Panel", "AI Assistant" };
+    static const char* sceneItems[] = { "New Entity", "Duplicate Entity", nullptr,
+                                         "Save Scene", "Load Scene", nullptr,
+                                         "Clear Scene" };
     static const char* buildItems[] = { "Build All  F5", "Build Debug Only", nullptr,
                                          "Clean" };
     static const char* aiItems[]    = { "AI Chat  Ctrl+Space", "Code Completion", nullptr,
                                          "Build Error Fix" };
     static const char** subMenus[kMenuCount] = {
-        fileItems, editItems, nullptr, nullptr, nullptr, aiItems, buildItems, nullptr
+        fileItems, editItems, viewItems, toolsItems, sceneItems, aiItems, buildItems, nullptr
     };
-    static const int subMenuCounts[kMenuCount] = { 7, 4, 0, 0, 0, 4, 4, 0 };
+    static const int subMenuCounts[kMenuCount] = { 7, 4, 6, 5, 7, 4, 4, 0 };
 
     float cx = x + 8.f;
     float menuXs[kMenuCount];
@@ -1170,12 +1355,14 @@ void EditorRenderer::DrawMenuBar(float x, float y, float w, float h) {
                 std::string label = item;
                 if (label.find("Save Scene") != std::string::npos) {
                     SaveScene(kDefaultScenePath);
-                } else if (label.find("Open Scene") != std::string::npos) {
+                } else if (label.find("Load Scene") != std::string::npos
+                        || label.find("Open Scene") != std::string::npos) {
                     LoadScene(kDefaultScenePath);
                 } else if (label.find("Build All") != std::string::npos
                        ||  label.find("Build Debug") != std::string::npos) {
                     TriggerBuild();
-                } else if (label.find("AI Chat") != std::string::npos) {
+                } else if (label.find("AI Chat") != std::string::npos
+                        || label.find("AI Assistant") != std::string::npos) {
                     m_aiChatVisible = !m_aiChatVisible;
                 } else if (label.find("Undo") != std::string::npos) {
                     if (UndoableCommandBus::Instance().CanUndo())
@@ -1183,6 +1370,46 @@ void EditorRenderer::DrawMenuBar(float x, float y, float w, float h) {
                 } else if (label.find("Redo") != std::string::npos) {
                     if (UndoableCommandBus::Instance().CanRedo())
                         UndoableCommandBus::Instance().Redo();
+                } else if (label.find("Toggle Outliner") != std::string::npos) {
+                    m_outlinerVisible = !m_outlinerVisible;
+                } else if (label.find("Toggle Inspector") != std::string::npos) {
+                    m_inspectorVisible = !m_inspectorVisible;
+                } else if (label.find("Toggle Console") != std::string::npos) {
+                    m_consoleVisible = !m_consoleVisible;
+                } else if (label.find("Toggle Content Browser") != std::string::npos) {
+                    m_contentBrowserVisible = !m_contentBrowserVisible;
+                } else if (label.find("Toggle Code Editor") != std::string::npos
+                        || label.find("Code Editor") != std::string::npos) {
+                    m_codeEditorVisible = !m_codeEditorVisible;
+                } else if (label.find("Content Browser") != std::string::npos) {
+                    m_contentBrowserVisible = !m_contentBrowserVisible;
+                } else if (label.find("Error Panel") != std::string::npos) {
+                    // error panel is always shown in console area; toggle console
+                    m_consoleVisible = !m_consoleVisible;
+                } else if (label.find("New Entity") != std::string::npos) {
+                    if (m_world) {
+                        auto ne = m_world->CreateEntity();
+                        Runtime::Components::Tag t; t.name = "New Entity";
+                        t.tags.push_back("Entity");
+                        m_world->AddComponent(ne, t);
+                        Runtime::Components::Transform tr;
+                        m_world->AddComponent(ne, tr);
+                        m_selectedEntity = ne;
+                        Engine::Core::Logger::Info("Scene: New Entity created id=" + std::to_string(ne));
+                    }
+                } else if (label.find("Duplicate Entity") != std::string::npos) {
+                    if (m_world && m_selectedEntity != 0 && m_world->IsAlive(m_selectedEntity)) {
+                        auto ne = m_world->CreateEntity();
+                        auto* srcTag = m_world->GetComponent<Runtime::Components::Tag>(m_selectedEntity);
+                        auto* srcTr  = m_world->GetComponent<Runtime::Components::Transform>(m_selectedEntity);
+                        if (srcTag) { auto t = *srcTag; t.name += "_copy"; m_world->AddComponent(ne, t); }
+                        if (srcTr)  { auto tr = *srcTr; tr.position.x += 2.f; m_world->AddComponent(ne, tr); }
+                        m_selectedEntity = ne;
+                        Engine::Core::Logger::Info("Scene: Duplicated entity id=" + std::to_string(ne));
+                    }
+                } else if (label.find("Clear Scene") != std::string::npos) {
+                    // keep just logging a warning - destructive action
+                    Engine::Core::Logger::Warn("Scene: Clear Scene — not implemented (would destroy all entities)");
                 }
                 m_activeMenu = -1;
             }
@@ -1810,60 +2037,127 @@ void EditorRenderer::DrawCodeEditor(float x, float y, float w, float h) {
     glDisable(GL_SCISSOR_TEST);
 }
 
-// ── EI-14: AI chat panel ──────────────────────────────────────────────────
+// ── EI-14: AI chat panel ─────────────────────────────────────────────────
+// Helper: wrap a string to fit within maxChars characters per line,
+// splitting on spaces. Returns the wrapped lines.
+static std::vector<std::string> WrapText(const std::string& text, int maxChars) {
+    std::vector<std::string> lines;
+    if (text.empty()) { lines.push_back(""); return lines; }
+    std::istringstream stream(text);
+    std::string word, current;
+    while (stream >> word) {
+        if (!current.empty() && (int)(current.size() + 1 + word.size()) > maxChars) {
+            lines.push_back(current);
+            current = word;
+        } else {
+            if (!current.empty()) current += ' ';
+            current += word;
+        }
+    }
+    if (!current.empty()) lines.push_back(current);
+    if (lines.empty()) lines.push_back("");
+    return lines;
+}
+
 void EditorRenderer::DrawAIChat(float x, float y, float w, float h) {
     if (!m_aiChatVisible) return;
-    DrawRect(x, y, w, h, 0x1E1E28FF);
-    DrawRectOutline(x, y, w, h, kBorderColor);
-    DrawPanelHeader("  AI Chat  (Ollama)", x, y, w, kPanelHdrH, kBgHeader);
 
-    // Close
-    float cx = x + w - 22.f;
-    bool closeHov = (m_mouseX >= cx && m_mouseX < cx + 20.f &&
-                     m_mouseY >= y  && m_mouseY < y + kPanelHdrH);
-    DrawRect(cx, y + 2.f, 18.f, kPanelHdrH - 4.f, closeHov ? 0xE04040FF : 0x555555FF);
-    DrawText("X", cx + 5.f, y + 5.f, 0xFFFFFFFF);
+    // Panel background with subtle gradient feel
+    DrawRoundedRect(x, y, w, h, 6.f, 0x1A1A24FF);
+    DrawRoundedRectOutline(x, y, w, h, 6.f, 0x4A4A6AFF, 1.5f);
+
+    // Header
+    DrawRoundedRect(x, y, w, kPanelHdrH, 6.f, 0x2A2A3EFF);
+    DrawLine(x, y + kPanelHdrH, x + w, y + kPanelHdrH, 0x4A4A6AFF);
+    DrawText("  \xE2\x9C\xBF AI Chat  \xe2\x80\x94  Ollama", x + 6.f, y + 4.f, 0x88AAFFFF, 1.1f);
+
+    // Close button
+    float cbx = x + w - 22.f;
+    bool closeHov = (m_mouseX >= cbx && m_mouseX < cbx + 20.f &&
+                     m_mouseY >= y   && m_mouseY < y + kPanelHdrH);
+    DrawRoundedRect(cbx, y + 2.f, 18.f, kPanelHdrH - 4.f, 3.f,
+                    closeHov ? 0xE04040FF : 0x3A3A4AFF);
+    DrawText("x", cbx + 5.f, y + 5.f, 0xFFFFFFFF);
     if (closeHov && m_leftMousePressed) m_aiChatVisible = false;
 
-    // Conversation
-    float inputH = 24.f;
-    float chatH  = h - kPanelHdrH - inputH - 4.f;
+    float inputH = 30.f;
+    float chatH  = h - kPanelHdrH - inputH - 8.f;
+    float bubblePad = 6.f;
+    float bubbleMaxW = w * 0.78f;
+    int   charsPerLine = std::max(10, (int)(bubbleMaxW / 7.f)); // ~7px per char
 
+    // Scissor the conversation area
     glScissor((int)x, (int)(m_height - y - kPanelHdrH - chatH), (int)w, (int)chatH);
     glEnable(GL_SCISSOR_TEST);
 
-    float lineH = 14.f;
-    float fy    = y + kPanelHdrH + chatH - lineH;
     const auto& msgs = m_aiChat->Messages();
+
+    // First pass: compute total height to render from bottom up
+    float fy = y + kPanelHdrH + chatH - 4.f;
     for (int i = (int)msgs.size() - 1; i >= 0 && fy > y + kPanelHdrH; i--) {
-        const auto& m = msgs[i];
-        uint32_t col = (m.role == IDE::ChatRole::User)    ? 0xFFFFFFFF
-                     : (m.role == IDE::ChatRole::System)  ? kTextMuted
-                     :                                      kTextAccent;
-        const char* prefix = (m.role == IDE::ChatRole::User) ? "You: " : "AI:  ";
-        DrawText(prefix + m.content, x + 4.f, fy, col);
-        fy -= lineH;
+        const auto& msg = msgs[i];
+        bool isUser = (msg.role == IDE::ChatRole::User);
+        const std::string prefix = isUser ? "You" : "AI";
+        auto lines = WrapText(msg.content, charsPerLine);
+        float lineH = 13.f;
+        float bubbleH = (float)lines.size() * lineH + bubblePad * 2.f + 12.f; // +12 for label
+        fy -= bubbleH + 6.f;
+        if (fy < y + kPanelHdrH) break;
+
+        float bubbleW = 0.f;
+        for (auto& l : lines)
+            bubbleW = std::max(bubbleW, (float)TextWidth(l, 1.f) + bubblePad * 2.f + 4.f);
+        bubbleW = std::min(bubbleW, bubbleMaxW);
+        bubbleW = std::max(bubbleW, 60.f);
+
+        float bx = isUser ? (x + w - bubbleW - 8.f) : (x + 8.f);
+
+        // Bubble background
+        uint32_t bubbleBg  = isUser ? 0x1155AACC : 0x2A2A3ACC;
+        uint32_t bubbleBdr = isUser ? 0x3388FFFF : 0x5555AAFF;
+        DrawRoundedRect(bx, fy, bubbleW, bubbleH, 8.f, bubbleBg);
+        DrawRoundedRectOutline(bx, fy, bubbleW, bubbleH, 8.f, bubbleBdr, 1.f);
+
+        // Sender label
+        uint32_t labelCol = isUser ? 0x88CCFFFF : 0xAABBFFFF;
+        DrawText(prefix + ":", bx + bubblePad, fy + 4.f, labelCol, 0.9f);
+
+        // Message lines
+        float ly = fy + 16.f;
+        uint32_t textCol = isUser ? 0xEEEEFFFF : 0xCCDDFFFF;
+        for (auto& l : lines) {
+            DrawText(l, bx + bubblePad, ly, textCol, 1.f);
+            ly += lineH;
+        }
     }
     glDisable(GL_SCISSOR_TEST);
 
-    // Input line
-    float iy = y + kPanelHdrH + chatH + 2.f;
-    DrawLine(x, iy - 1.f, x + w, iy - 1.f, kBorderColor);
-    uint32_t aiBg     = m_aiInputFocused ? 0x1E2030FF : 0x141414FF;
-    uint32_t aiBorder = m_aiInputFocused ? kHighlight  : kBorderColor;
-    DrawRect(x + 2.f, iy, w - 40.f, inputH - 2.f, aiBg);
-    DrawRectOutline(x + 2.f, iy, w - 40.f, inputH - 2.f, aiBorder);
-    DrawText(m_aiInput + (m_aiInputFocused ? "_" : ""), x + 6.f, iy + 5.f, kTextNormal);
+    // Input area
+    float iy = y + kPanelHdrH + chatH + 4.f;
+    DrawLine(x + 4.f, iy - 2.f, x + w - 4.f, iy - 2.f, 0x3A3A5AFF);
 
-    bool sendHov = (m_mouseX >= x + w - 36.f && m_mouseX < x + w - 4.f &&
+    uint32_t aiBg     = m_aiInputFocused ? 0x1E2040FF : 0x14141EFF;
+    uint32_t aiBorder = m_aiInputFocused ? 0x5577FFFF : 0x3A3A5AFF;
+    DrawRoundedRect(x + 4.f, iy, w - 48.f, inputH - 2.f, 5.f, aiBg);
+    DrawRoundedRectOutline(x + 4.f, iy, w - 48.f, inputH - 2.f, 5.f, aiBorder, 1.5f);
+    DrawText(m_aiInput + (m_aiInputFocused ? "_" : ""), x + 10.f, iy + 8.f, kTextNormal);
+    if (m_aiInput.empty() && !m_aiInputFocused)
+        DrawText("Ask the AI...", x + 10.f, iy + 8.f, 0x555577FF);
+
+    bool sendHov = (m_mouseX >= x + w - 42.f && m_mouseX < x + w - 4.f &&
                     m_mouseY >= iy && m_mouseY < iy + inputH - 2.f);
-    DrawRect(x + w - 36.f, iy, 32.f, inputH - 2.f,
-             sendHov ? 0x1177BBFF : 0x007ACCFF);
-    DrawText("Send", x + w - 34.f, iy + 5.f, 0xFFFFFFFF);
+    DrawRoundedRect(x + w - 42.f, iy, 38.f, inputH - 2.f, 5.f,
+                    sendHov ? 0x2288DDFF : 0x1166BBFF);
+    DrawText("Send", x + w - 38.f, iy + 8.f, 0xFFFFFFFF);
     if (sendHov && m_leftMousePressed && !m_aiInput.empty()) {
         m_aiChat->SendMessage(m_aiInput);
         m_aiInput.clear();
     }
+
+    // Click on input to focus
+    bool inputClick = (m_mouseX >= x + 4.f && m_mouseX < x + w - 48.f &&
+                       m_mouseY >= iy && m_mouseY < iy + inputH - 2.f);
+    if (inputClick && m_leftMousePressed) m_aiInputFocused = true;
 }
 
 // ──────────────────────────────────────────────────────────────────────────
