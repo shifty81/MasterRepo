@@ -29,7 +29,8 @@
 | Suggested Next Features (Phase 37) | 12/12 | 0 | 12 |
 | v10.7 Production Polish & AI Enhancement (Phase 38) | 10/10 | 0 | 10 |
 | Shippable Game Foundations (Phase 39) | 10/10 | 0 | 10 |
-| **TOTAL** | **221/221** | **0** | **221** |
+| Live Services & Advanced AI (Phase 40) | 10/10 | 0 | 10 |
+| **TOTAL** | **231/231** | **0** | **231** |
 
 ---
 
@@ -928,6 +929,26 @@ All three paths converge for the final product.
 
 ---
 
+## Phase 40 – Live Services & Advanced AI ✅
+
+> Closes the remaining gaps in AI tooling, world simulation, and live-game services.
+> All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 40.01 | Prompt Template Engine | High | Parameterised `{{var}}` prompt templates with conditionals, partials, filters | `AI/PromptTemplate/PromptTemplateEngine.h/.cpp` |
+| ✅ 40.02 | Multi-Agent Coordinator | High | Fan-out, pipeline, and voting coordination over registered AI agents | `AI/MultiAgent/MultiAgentCoordinator.h/.cpp` |
+| ✅ 40.03 | Spatial Audio System | High | 3D positional audio: HRTF panning, distance attenuation, reverb zones, Doppler | `Engine/Audio/Spatial/SpatialAudio.h/.cpp` |
+| ✅ 40.04 | Planet Generator | High | Procedural planet via fBm sphere: biome map, albedo, heightmap, PGM/PPM export | `PCG/Planet/PlanetGenerator.h/.cpp` |
+| ✅ 40.05 | Leaderboard System | Medium | Local-first named boards, score submission, rank queries, JSON persistence | `Runtime/Leaderboard/LeaderboardSystem.h/.cpp` |
+| ✅ 40.06 | Feature Flag System | Medium | Bool / percentage / variant flags, user-bucket hashing, runtime overrides | `Core/FeatureFlags/FeatureFlagSystem.h/.cpp` |
+| ✅ 40.07 | Timeline Editor Panel | Medium | Visual timeline for cinematics: tracks, keyframes, playhead scrub, transport | `Editor/Panels/TimelineEditor/TimelineEditorPanel.h/.cpp` |
+| ✅ 40.08 | Notification System | Medium | Priority-queued toasts with categories, muting, expiry, and action callbacks | `Runtime/Notification/NotificationSystem.h/.cpp` |
+| ✅ 40.09 | NavMesh Pathfinding | High | A* over polygon nav-graph, dynamic obstacles, area costs, smooth paths | `Engine/Pathfinding/NavMesh/NavMesh.h/.cpp` |
+| ✅ 40.10 | Sampling Profiler | Low | CPU sampling profiler: flat profile, flame graph JSON export, CSV flat table | `Core/Profiling/SamplingProfiler.h/.cpp` |
+
+---
+
 ## Appendix B — Rules & Conventions
 
 | Rule | Description |
@@ -973,5 +994,6 @@ All three paths converge for the final product.
 | 37 | Suggested Next Features — Multiplayer sync, Economy system, Faction & reputation, Ship-to-ship combat, Player progression, Modding/Lua hooks, Environmental hazards, AI fleet intelligence, Procedural narrative, Full UI theme system, Build-mode preview, Integration test suite. |
 | 38 | v10.7 Production Polish & AI Enhancement — ReasoningVisualizer, CyclicDependencyResolver, SessionMemory, SuggestionSandbox, AnomalyAlerting, BuildReport, DeterministicVerifier (PCG), AssetMetadata (Core), HeadlessServer (Runtime), AIProfilerPanel (Editor). |
 | 39 | Shippable Game Foundations — RuntimeAnalytics (Runtime), CinematicSystem (Engine), GamepadSystem (Engine/Input), GraphicsSettings (Engine), SaveGameManager (Runtime), PackagingPipeline (Builder), TelemetryReporter (Core), NetworkReplication (Engine/Net), CloudSyncManager (Core), ShipExporter (Builder). |
+| 40 | Live Services & Advanced AI — PromptTemplateEngine (AI), MultiAgentCoordinator (AI), SpatialAudio (Engine/Audio), PlanetGenerator (PCG), LeaderboardSystem (Runtime), FeatureFlagSystem (Core), TimelineEditorPanel (Editor/Panels), NotificationSystem (Runtime), NavMesh (Engine/Pathfinding), SamplingProfiler (Core/Profiling). |
 
 </details>
