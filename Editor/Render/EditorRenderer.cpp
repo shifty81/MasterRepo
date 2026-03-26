@@ -9,7 +9,10 @@
 #include "Engine/Core/Logger.h"
 #ifdef _WIN32
 #  define WIN32_LEAN_AND_MEAN
-#  include <windows.h>   // must precede GL/gl.h on Windows (defines WINGDIAPI/APIENTRY)
+#  define NOMINMAX          // prevent min/max macro pollution
+#  include <windows.h>     // must precede GL/gl.h on Windows (defines WINGDIAPI/APIENTRY)
+#  undef DrawText           // prevent DrawText → DrawTextA macro expansion
+#  undef SendMessage        // prevent SendMessage → SendMessageA macro expansion
 #endif
 #include <GL/gl.h>
 #include <cmath>
