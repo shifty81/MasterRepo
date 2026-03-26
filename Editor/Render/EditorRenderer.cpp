@@ -148,16 +148,39 @@ void EditorRenderer::Shutdown() {}
 
 // ── Input forwarding ───────────────────────────────────────────────────────
 void EditorRenderer::OnMouseMove(double x, double y) {
+    double dx = x - m_dragLastX;
+    double dy = y - m_dragLastY;
+
+    // ── RMB: pan camera (orbit in 2-D ortho view = pan) ──────────────────
+    if (m_rmbDown) {
+        // Only pan when the pointer is (or started) in the viewport region
+        m_camOffX += (float)dx;
+        m_camOffY += (float)dy;
+        m_mouseX    = x;
+        m_mouseY    = y;
+        m_dragLastX = x;
+        m_dragLastY = y;
+        return;
+    }
+
+    // ── MMB: pan camera ───────────────────────────────────────────────────
+    if (m_mmbDown) {
+        m_camOffX += (float)dx;
+        m_camOffY += (float)dy;
+        m_mouseX    = x;
+        m_mouseY    = y;
+        m_dragLastX = x;
+        m_dragLastY = y;
+        return;
+    }
+
     // Handle gizmo drag — move entity along the dragged axis
     if (m_gizmoDragging && m_gizmoDragAxis != 0 &&
         m_world && m_selectedEntity != 0 && m_world->IsAlive(m_selectedEntity))
     {
-        double dx = x - m_dragLastX;
-        double dy = y - m_dragLastY;
-
         auto* tr = m_world->GetComponent<Runtime::Components::Transform>(m_selectedEntity);
         if (tr) {
-            float sensitivity = 0.05f; // pixels → world units
+            float sensitivity = 0.05f / m_camZoom; // pixels → world units (zoom-aware)
             if (m_gizmoMode == 0) { // Move
                 if (m_gizmoDragAxis == 1) tr->position.x += (float)(dx * sensitivity);
                 if (m_gizmoDragAxis == 2) tr->position.y -= (float)(dy * sensitivity);
@@ -196,11 +219,51 @@ void EditorRenderer::OnMouseMove(double x, double y) {
     m_dragLastY = y;
 }
 
-// EI-03: left-click in viewport → pick entity
+// EI-03: left-click in viewport → pick entity; RMB/MMB → camera drag
 void EditorRenderer::OnMouseButton(int btn, bool pressed) {
-    if (btn == 0) {
+    if (btn == 0) { // ── Left mouse ────────────────────────────────────────
         if (pressed) {
             m_leftMousePressed = true;
+
+            // ── Compute floating-panel bounds so we can block click-through ──
+            float W = (float)m_width;
+            float mainY = kMenuH + kToolbarH;
+
+            // AI chat panel bounds
+            float acW = 300.f, acH = 400.f;
+            float acX = W - kInspectorW - acW - 4.f;
+            float acY = mainY + 10.f;
+            bool inAIPanel = m_aiChatVisible &&
+                             m_mouseX >= acX && m_mouseX < acX + acW &&
+                             m_mouseY >= acY && m_mouseY < acY + acH;
+
+            if (inAIPanel) {
+                // Focus the AI input field if the click is on it
+                float inputH = 24.f;
+                float chatH  = acH - kPanelHdrH - inputH - 4.f;
+                float iy     = acY + kPanelHdrH + chatH + 2.f;
+                if (m_mouseX >= acX + 2.f && m_mouseX < acX + acW - 40.f &&
+                    m_mouseY >= iy         && m_mouseY < iy + inputH - 2.f) {
+                    m_aiInputFocused  = true;
+                    m_consoleFocused  = false;
+                }
+                return; // consumed by AI panel – do not pick entities
+            }
+
+            // Console input bar bounds
+            float consoleY = (float)m_height - kStatusH - kConsoleH;
+            float consW    = (float)m_width * 0.65f;
+            float inputBarY = consoleY + kConsoleH - 19.f;
+            if (m_mouseX >= 2.f && m_mouseX < 2.f + consW - 4.f &&
+                m_mouseY >= inputBarY && m_mouseY < inputBarY + 18.f) {
+                m_consoleFocused = true;
+                m_aiInputFocused = false;
+                return; // consumed by console input
+            }
+
+            // If click is outside all text inputs, clear focus
+            m_consoleFocused = false;
+            m_aiInputFocused = false;
 
             // Check if the click is inside the viewport area
             if (m_mouseX >= m_vpX && m_mouseX < m_vpX + m_vpW &&
@@ -208,13 +271,13 @@ void EditorRenderer::OnMouseButton(int btn, bool pressed) {
             {
                 // If an entity is selected, check if user clicked on a gizmo axis
                 if (m_selectedEntity != 0 && m_world && m_world->IsAlive(m_selectedEntity)) {
-                    float cx = m_vpX + m_vpW * 0.5f;
-                    float cy = m_vpY + m_vpH * 0.5f;
+                    float cx = m_vpX + m_vpW * 0.5f + m_camOffX;
+                    float cy = m_vpY + m_vpH * 0.5f + m_camOffY;
                     float ex = cx, ey = cy;
                     auto* tr = m_world->GetComponent<Runtime::Components::Transform>(m_selectedEntity);
                     if (tr) {
-                        ex = cx + tr->position.x * 20.f;
-                        ey = cy - tr->position.y * 20.f;
+                        ex = cx + tr->position.x * 20.f * m_camZoom;
+                        ey = cy - tr->position.y * 20.f * m_camZoom;
                     }
                     float gLen = 40.f;
                     // Test axis hit before falling through to entity pick
@@ -247,6 +310,18 @@ void EditorRenderer::OnMouseButton(int btn, bool pressed) {
                 m_gizmoDragAxis = 0;
             }
         }
+    } else if (btn == 1) { // ── Right mouse (orbit / pan) ──────────────────
+        m_rmbDown = pressed;
+        if (pressed) {
+            m_dragLastX = m_mouseX;
+            m_dragLastY = m_mouseY;
+        }
+    } else if (btn == 2) { // ── Middle mouse (pan) ────────────────────────
+        m_mmbDown = pressed;
+        if (pressed) {
+            m_dragLastX = m_mouseX;
+            m_dragLastY = m_mouseY;
+        }
     }
 }
 
@@ -269,6 +344,10 @@ void EditorRenderer::OnKey(int key, bool pressed) {
     static constexpr int K_O          = 79;
     static constexpr int K_B          = 66;
     static constexpr int K_F5         = 294;
+    static constexpr int K_BACKSPACE  = 259;
+    static constexpr int K_ENTER      = 257;
+    static constexpr int K_ESCAPE     = 256;
+    static constexpr int K_F          = 70;
     (void)K_LEFT_SHIFT;
 #else
     static constexpr int K_Z          = GLFW_KEY_Z;
@@ -285,6 +364,10 @@ void EditorRenderer::OnKey(int key, bool pressed) {
     static constexpr int K_O          = GLFW_KEY_O;
     static constexpr int K_B          = GLFW_KEY_B;
     static constexpr int K_F5         = GLFW_KEY_F5;
+    static constexpr int K_BACKSPACE  = GLFW_KEY_BACKSPACE;
+    static constexpr int K_ENTER      = GLFW_KEY_ENTER;
+    static constexpr int K_ESCAPE     = GLFW_KEY_ESCAPE;
+    static constexpr int K_F          = GLFW_KEY_F;
 #endif
 
     // Track Ctrl held state (both press and release)
@@ -294,6 +377,34 @@ void EditorRenderer::OnKey(int key, bool pressed) {
     }
 
     if (!pressed) return;  // ignore key-up for non-modifier keys
+
+    // ── Text-input fields take priority (console or AI chat) ──────────────
+    if (m_consoleFocused || m_aiInputFocused) {
+        std::string& buf = m_consoleFocused ? m_consoleInput : m_aiInput;
+        if (key == K_BACKSPACE) {
+            if (!buf.empty()) buf.pop_back();
+            return;
+        }
+        if (key == K_ENTER) {
+            if (!buf.empty()) {
+                if (m_consoleFocused) {
+                    AppendConsole("> " + buf);
+                    Engine::Core::Logger::Info(buf);
+                } else {
+                    m_aiChat->SendMessage(buf);
+                }
+                buf.clear();
+            }
+            return;
+        }
+        if (key == K_ESCAPE) {
+            m_consoleFocused = false;
+            m_aiInputFocused = false;
+            return;
+        }
+        // Allow Ctrl shortcuts even when text field is focused
+        if (!m_ctrlHeld) return;
+    }
 
     if (m_ctrlHeld) {
         if (key == K_Z) {
@@ -343,6 +454,13 @@ void EditorRenderer::OnKey(int key, bool pressed) {
                 ? "[Info]  Grid snap ON  (size=" + std::to_string(m_gridSize) + ")"
                 : "[Info]  Grid snap OFF");
         }
+        // F key: reset camera view to centre
+        else if (key == K_F) {
+            m_camOffX = 0.f;
+            m_camOffY = 0.f;
+            m_camZoom = 1.f;
+            AppendConsole("[Info]  View reset");
+        }
         // Delete selected entity
         else if (key == K_DELETE) {
             if (m_world && m_selectedEntity != 0 && m_world->IsAlive(m_selectedEntity)) {
@@ -360,6 +478,29 @@ void EditorRenderer::AppendConsole(const std::string& line) {
     m_consoleLines.push_back(line);
     if ((int)m_consoleLines.size() > kMaxConsoleLines)
         m_consoleLines.erase(m_consoleLines.begin());
+}
+
+// ── Character input — feed focused text field ──────────────────────────────
+void EditorRenderer::OnChar(unsigned int codepoint) {
+    // Accept printable ASCII and common extended characters
+    if (codepoint < 32 || codepoint > 126) return;
+    char ch = static_cast<char>(codepoint);
+    if (m_consoleFocused) {
+        m_consoleInput += ch;
+    } else if (m_aiInputFocused) {
+        m_aiInput += ch;
+    }
+}
+
+// ── Scroll wheel — zoom viewport when pointer is over it ──────────────────
+void EditorRenderer::OnScroll(double /*dx*/, double dy) {
+    // Only zoom when mouse is over the viewport
+    if (m_mouseX >= m_vpX && m_mouseX < m_vpX + m_vpW &&
+        m_mouseY >= m_vpY && m_mouseY < m_vpY + m_vpH)
+    {
+        float factor = (dy > 0) ? 1.12f : (1.f / 1.12f);
+        m_camZoom = std::max(0.05f, std::min(20.f, m_camZoom * factor));
+    }
 }
 
 // ── EI-02 helper: entity display name ────────────────────────────────────
@@ -841,23 +982,26 @@ void EditorRenderer::DrawViewport(float x, float y, float w, float h) {
 
     // Render entity representations when world is available (EI-02)
     if (m_world) {
-        float cx = vx + vw * 0.5f;
-        float cy = vy + vh * 0.5f;
+        float cx = vx + vw * 0.5f + m_camOffX;
+        float cy = vy + vh * 0.5f + m_camOffY;
         auto entities = m_world->GetEntities();
         static const uint32_t kEntityColors[] = {
             0x4A90D9FF, 0x7ED321FF, 0xF5A623FF, 0xBD10E0FF, 0xE05555FF, 0x55BBEEFF
         };
         for (size_t i = 0; i < entities.size(); i++) {
             auto id = entities[i];
-            float ex = cx + ((float)i - (float)entities.size() * 0.5f) * 90.f;
-            float ey = cy - 20.f;
-            float ew = 70.f, eh = 40.f;
+            float ex = cx + ((float)i - (float)entities.size() * 0.5f) * 90.f * m_camZoom;
+            float ey = cy - 20.f * m_camZoom;
+            float ew = 70.f * m_camZoom, eh = 40.f * m_camZoom;
+            // clamp minimum visible size
+            if (ew < 4.f) ew = 4.f;
+            if (eh < 2.f) eh = 2.f;
 
             // Use Transform component offset if available
             auto* tr = m_world->GetComponent<Runtime::Components::Transform>(id);
             if (tr) {
-                ex = cx + tr->position.x * 20.f;
-                ey = cy - tr->position.y * 20.f;
+                ex = cx + tr->position.x * 20.f * m_camZoom;
+                ey = cy - tr->position.y * 20.f * m_camZoom;
             }
 
             uint32_t col = kEntityColors[i % 6];
@@ -867,10 +1011,12 @@ void EditorRenderer::DrawViewport(float x, float y, float w, float h) {
             DrawRectOutline(ex - ew * 0.5f, ey - eh * 0.5f, ew, eh,
                             selected ? 0xFFCC00FF : col, selected ? 2.f : 1.f);
 
-            std::string name = EntityName(id);
-            int tw = TextWidth(name);
-            DrawText(name, ex - tw * 0.5f, ey - eh * 0.5f - 12.f,
-                     selected ? 0xFFFFFFFF : col);
+            if (m_camZoom > 0.3f) {
+                std::string name = EntityName(id);
+                int tw = TextWidth(name);
+                DrawText(name, ex - tw * 0.5f, ey - eh * 0.5f - 12.f,
+                         selected ? 0xFFFFFFFF : col);
+            }
         }
     } else {
         // Legacy dummy objects when no world is set
@@ -889,8 +1035,16 @@ void EditorRenderer::DrawViewport(float x, float y, float w, float h) {
 
     glDisable(GL_SCISSOR_TEST);
 
-    DrawText("RMB: orbit  MMB: pan  Scroll: zoom  LMB: select",
+    DrawText("RMB/MMB: pan  Scroll: zoom  LMB: select  F: reset view",
              vx + 6.f, vy + vh - 18.f, kTextMuted);
+
+    // Zoom level indicator (top-right of viewport)
+    {
+        char zBuf[32];
+        snprintf(zBuf, sizeof(zBuf), "%.0f%%", m_camZoom * 100.f);
+        int zw = TextWidth(zBuf);
+        DrawText(zBuf, vx + vw - zw - 8.f, vy + 6.f, kTextMuted);
+    }
 
     if (m_playing) {
         DrawText("  ▶ PIE ACTIVE", vx + vw * 0.5f - 50.f, vy + 8.f, kTextSuccess, 1.3f);
@@ -903,25 +1057,32 @@ void EditorRenderer::DrawViewport(float x, float y, float w, float h) {
 }
 
 void EditorRenderer::DrawViewportGrid(float vpX, float vpY, float vpW, float vpH) {
-    float cx = vpX + vpW * 0.5f;
-    float cy = vpY + vpH * 0.5f;
+    // Camera-aware centre point
+    float cx = vpX + vpW * 0.5f + m_camOffX;
+    float cy = vpY + vpH * 0.5f + m_camOffY;
 
-    for (float gx = cx; gx < vpX + vpW; gx += 30.f)
+    float step = 30.f * m_camZoom;
+    // Clamp step so grid doesn't get absurdly dense or sparse
+    while (step < 8.f)  step *= 5.f;
+    while (step > 200.f) step /= 5.f;
+
+    for (float gx = cx; gx < vpX + vpW; gx += step)
         DrawLine(gx, vpY, gx, vpY + vpH, kGridLine);
-    for (float gx = cx - 30.f; gx > vpX; gx -= 30.f)
+    for (float gx = cx - step; gx > vpX; gx -= step)
         DrawLine(gx, vpY, gx, vpY + vpH, kGridLine);
-    for (float gy = cy; gy < vpY + vpH; gy += 30.f)
+    for (float gy = cy; gy < vpY + vpH; gy += step)
         DrawLine(vpX, gy, vpX + vpW, gy, kGridLine);
-    for (float gy = cy - 30.f; gy > vpY; gy -= 30.f)
+    for (float gy = cy - step; gy > vpY; gy -= step)
         DrawLine(vpX, gy, vpX + vpW, gy, kGridLine);
 
-    for (float gx = cx; gx < vpX + vpW; gx += 150.f)
+    float stepMain = step * 5.f;
+    for (float gx = cx; gx < vpX + vpW; gx += stepMain)
         DrawLine(gx, vpY, gx, vpY + vpH, kGridLineMain, 1.5f);
-    for (float gx = cx - 150.f; gx > vpX; gx -= 150.f)
+    for (float gx = cx - stepMain; gx > vpX; gx -= stepMain)
         DrawLine(gx, vpY, gx, vpY + vpH, kGridLineMain, 1.5f);
-    for (float gy = cy; gy < vpY + vpH; gy += 150.f)
+    for (float gy = cy; gy < vpY + vpH; gy += stepMain)
         DrawLine(vpX, gy, vpX + vpW, gy, kGridLineMain, 1.5f);
-    for (float gy = cy - 150.f; gy > vpY; gy -= 150.f)
+    for (float gy = cy - stepMain; gy > vpY; gy -= stepMain)
         DrawLine(vpX, gy, vpX + vpW, gy, kGridLineMain, 1.5f);
 }
 
@@ -942,21 +1103,21 @@ void EditorRenderer::DrawViewportAxes(float vpX, float vpBottom) {
 void EditorRenderer::DrawViewportGizmo(float vpX, float vpY, float vpW, float vpH) {
     if (!m_world || m_selectedEntity == 0) return;
 
-    float cx = vpX + vpW * 0.5f;
-    float cy = vpY + vpH * 0.5f;
+    float cx = vpX + vpW * 0.5f + m_camOffX;
+    float cy = vpY + vpH * 0.5f + m_camOffY;
 
     // Project entity position to screen
     float ex = cx, ey = cy;
     auto* tr = m_world->GetComponent<Runtime::Components::Transform>(m_selectedEntity);
     if (tr) {
-        ex = cx + tr->position.x * 20.f;
-        ey = cy - tr->position.y * 20.f;
+        ex = cx + tr->position.x * 20.f * m_camZoom;
+        ey = cy - tr->position.y * 20.f * m_camZoom;
     } else {
         auto entities = m_world->GetEntities();
         auto it = std::find(entities.begin(), entities.end(), m_selectedEntity);
         if (it != entities.end()) {
             size_t idx = (size_t)(it - entities.begin());
-            ex = cx + ((float)idx - (float)entities.size() * 0.5f) * 90.f;
+            ex = cx + ((float)idx - (float)entities.size() * 0.5f) * 90.f * m_camZoom;
         }
     }
 
@@ -1226,7 +1387,12 @@ void EditorRenderer::DrawInspector(float x, float y, float w, float h) {
     DrawRect(x + 6.f, cy, w - 12.f, 20.f, hovBtn ? 0x1177BBFF : 0x007ACCFF);
     DrawText("+ Add Component", x + w * 0.25f, cy + 4.f, 0xFFFFFFFF);
     if (hovBtn && m_leftMousePressed && m_selectedEntity != 0) {
-        m_addCompMenuOpen = !m_addCompMenuOpen;
+        if (!m_addCompMenuOpen) {
+            m_addCompMenuOpen       = true;
+            m_addCompMenuJustOpened = true;  // suppress close in same frame
+        } else {
+            m_addCompMenuOpen = false;
+        }
     }
 
     // Add-component popup (drawn as overlay)
@@ -1282,12 +1448,13 @@ void EditorRenderer::DrawAddCompMenu(float x, float y, float w, float h) {
         iy += 18.f;
     }
 
-    // Close popup if click outside
-    if (m_leftMousePressed) {
+    // Close popup if click outside (but not in the same frame it was opened)
+    if (m_leftMousePressed && !m_addCompMenuJustOpened) {
         bool inside = (m_mouseX >= x + 6 && m_mouseX < x + 6 + w &&
                        m_mouseY >= y      && m_mouseY < y + h);
         if (!inside) m_addCompMenuOpen = false;
     }
+    m_addCompMenuJustOpened = false;
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -1323,8 +1490,13 @@ void EditorRenderer::DrawConsole(float x, float y, float w, float h) {
     glDisable(GL_SCISSOR_TEST);
 
     DrawLine(x, y + h - 20.f, x + consW, y + h - 20.f, kBorderColor);
-    DrawRect(x + 2.f, y + h - 19.f, consW - 4.f, 18.f, 0x141414FF);
-    DrawText("> _", x + 6.f, y + h - 16.f, kTextAccent);
+    // Input bar — highlight border when focused
+    uint32_t inputBg = m_consoleFocused ? 0x1E2030FF : 0x141414FF;
+    uint32_t inputBorder = m_consoleFocused ? kHighlight : kBorderColor;
+    DrawRect(x + 2.f, y + h - 19.f, consW - 4.f, 18.f, inputBg);
+    DrawRectOutline(x + 2.f, y + h - 19.f, consW - 4.f, 18.f, inputBorder);
+    std::string displayText = "> " + m_consoleInput + (m_consoleFocused ? "_" : "");
+    DrawText(displayText, x + 6.f, y + h - 16.f, kTextAccent);
 
     // Separator
     DrawLine(errX - 1.f, y, errX - 1.f, y + h, kBorderColor);
@@ -1518,8 +1690,11 @@ void EditorRenderer::DrawAIChat(float x, float y, float w, float h) {
     // Input line
     float iy = y + kPanelHdrH + chatH + 2.f;
     DrawLine(x, iy - 1.f, x + w, iy - 1.f, kBorderColor);
-    DrawRect(x + 2.f, iy, w - 40.f, inputH - 2.f, 0x141414FF);
-    DrawText(m_aiInput + "_", x + 6.f, iy + 5.f, kTextNormal);
+    uint32_t aiBg     = m_aiInputFocused ? 0x1E2030FF : 0x141414FF;
+    uint32_t aiBorder = m_aiInputFocused ? kHighlight  : kBorderColor;
+    DrawRect(x + 2.f, iy, w - 40.f, inputH - 2.f, aiBg);
+    DrawRectOutline(x + 2.f, iy, w - 40.f, inputH - 2.f, aiBorder);
+    DrawText(m_aiInput + (m_aiInputFocused ? "_" : ""), x + 6.f, iy + 5.f, kTextNormal);
 
     bool sendHov = (m_mouseX >= x + w - 36.f && m_mouseX < x + w - 4.f &&
                     m_mouseY >= iy && m_mouseY < iy + inputH - 2.f);

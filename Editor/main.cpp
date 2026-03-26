@@ -37,6 +37,8 @@ int main() {
         if (key == GLFW_KEY_ESCAPE && pressed)
             glfwSetWindowShouldClose(window.GetGLFWHandle(), GLFW_TRUE);
     };
+    window.onChar   = [&](unsigned int cp) { renderer.OnChar(cp); };
+    window.onScroll = [&](double dx, double dy) { renderer.OnScroll(dx, dy); };
     window.onResize = [&](int w, int h) { renderer.Resize(w, h); };
 
     if (!window.Init()) {
@@ -102,62 +104,205 @@ int main() {
 
     renderer.AppendConsole("[Info]  All editor systems online");
 
-    // EI-02: Create a live ECS world and populate it with default entities
+    // ── ECS World — First Solar System Scene ─────────────────────────────────
+    // Layout (2-D top-down, 1 world-unit ≈ 20 px at default zoom):
+    //   Star (Sol) at origin; planets orbit at increasing radii;
+    //   asteroid belts between Mars/Jupiter and beyond Neptune;
+    //   stations at strategic jump points; player ship + character near station.
     Runtime::ECS::World world;
 
-    // PlayerShip entity
+    auto addEntity = [&](const char* name,
+                         std::initializer_list<const char*> tags,
+                         float x, float y, float z,
+                         const char* mesh   = nullptr,
+                         const char* mat    = nullptr,
+                         bool hasMesh       = false,
+                         float mass         = 0.f,
+                         bool kinematic     = true) -> uint32_t
     {
         auto id = world.CreateEntity();
-        world.AddComponent(id, Runtime::Components::Tag{"PlayerShip", {"Player", "Ship"}});
+        Runtime::Components::Tag t;
+        t.name = name;
+        for (auto* tag : tags) t.tags.push_back(tag);
+        world.AddComponent(id, t);
         Runtime::Components::Transform tr;
-        tr.position = {0.f, 0.f, 0.f};
+        tr.position = {x, y, z};
         world.AddComponent(id, tr);
-        Runtime::Components::MeshRenderer mr;
-        mr.meshId = "player_ship.obj"; mr.materialId = "ship_mat"; mr.visible = true;
-        world.AddComponent(id, mr);
-    }
-    // Station Hull
+        if (hasMesh) {
+            Runtime::Components::MeshRenderer mr;
+            mr.meshId     = mesh  ? mesh  : "";
+            mr.materialId = mat   ? mat   : "";
+            mr.visible    = true;
+            world.AddComponent(id, mr);
+        }
+        if (mass > 0.f) {
+            Runtime::Components::RigidBody rb;
+            rb.mass       = mass;
+            rb.isKinematic = kinematic;
+            world.AddComponent(id, rb);
+        }
+        return id;
+    };
+
+    // ── Galaxy backdrop ──────────────────────────────────────────────────────
+    addEntity("Galaxy_MilkyWay", {"Galaxy","Background"},
+              0.f, 0.f, -1000.f,
+              "galaxy_skybox.obj", "galaxy_mat", true);
+
+    // ── Star: Sol ────────────────────────────────────────────────────────────
+    addEntity("Sol", {"Star","Light","CelestialBody"},
+              0.f, 0.f, 0.f,
+              "star_sphere.obj", "star_mat_sol", true,
+              1.989e6f, true);
+
+    // ── Inner Planets ────────────────────────────────────────────────────────
+    addEntity("Mercury", {"Planet","Rocky","CelestialBody"},
+               4.f, 0.f, 0.f,
+               "planet_sphere.obj", "planet_mat_mercury", true,
+               3.3e2f, true);
+
+    addEntity("Venus",   {"Planet","Rocky","CelestialBody"},
+               7.f, 0.f, 0.f,
+               "planet_sphere.obj", "planet_mat_venus", true,
+               4.87e3f, true);
+
+    addEntity("Earth",   {"Planet","Rocky","Habitable","CelestialBody"},
+              11.f, 0.f, 0.f,
+              "planet_sphere.obj", "planet_mat_earth", true,
+              5.97e3f, true);
+
+    addEntity("Luna",    {"Moon","Rocky","CelestialBody"},
+              12.f, 0.f, 0.f,
+              "moon_sphere.obj",   "planet_mat_luna",  true,
+              7.35e1f, true);
+
+    addEntity("Mars",    {"Planet","Rocky","CelestialBody"},
+              15.f, 0.f, 0.f,
+              "planet_sphere.obj", "planet_mat_mars",  true,
+              6.39e2f, true);
+
+    // ── Asteroid Belt Alpha (between Mars and Jupiter) ───────────────────────
+    addEntity("AsteroidBelt_Alpha", {"AsteroidBelt","PCG","Debris"},
+              20.f, 0.f, 0.f);
     {
-        auto id = world.CreateEntity();
-        world.AddComponent(id, Runtime::Components::Tag{"Station_Hull", {"Structure","Snappable"}});
-        Runtime::Components::Transform tr; tr.position = {3.f, 0.f, 0.f};
-        world.AddComponent(id, tr);
-        Runtime::Components::MeshRenderer mr; mr.meshId = "hull_v2.obj";
-        world.AddComponent(id, mr);
-        Runtime::Components::RigidBody rb; rb.mass = 1200.f; rb.isKinematic = false;
-        world.AddComponent(id, rb);
+        // Scatter a handful of named asteroids for testing
+        static const char* aNames[] = {
+            "Ceres","Vesta","Pallas","Hygiea","Interamnia"
+        };
+        static const float aOff[][2] = {
+            {19.f,-1.5f},{20.5f,2.f},{18.5f,1.f},{21.f,-0.5f},{19.5f,2.5f}
+        };
+        for (int i = 0; i < 5; i++) {
+            addEntity(aNames[i], {"Asteroid","Debris"},
+                      aOff[i][0], aOff[i][1], 0.f,
+                      "asteroid.obj", "asteroid_mat", true,
+                      5.f + i * 2.f, false);
+        }
     }
-    // Engine_L
-    {
-        auto id = world.CreateEntity();
-        world.AddComponent(id, Runtime::Components::Tag{"Engine_L", {"Engine"}});
-        Runtime::Components::Transform tr; tr.position = {-2.f, -1.f, 0.f};
-        world.AddComponent(id, tr);
-    }
-    // Engine_R
-    {
-        auto id = world.CreateEntity();
-        world.AddComponent(id, Runtime::Components::Tag{"Engine_R", {"Engine"}});
-        Runtime::Components::Transform tr; tr.position = {2.f, -1.f, 0.f};
-        world.AddComponent(id, tr);
-    }
-    // Turret_01
-    {
-        auto id = world.CreateEntity();
-        world.AddComponent(id, Runtime::Components::Tag{"Turret_01", {"Weapon"}});
-        Runtime::Components::Transform tr; tr.position = {-1.f, 2.f, 0.f};
-        world.AddComponent(id, tr);
-    }
-    // AsteroidCluster
-    {
-        auto id = world.CreateEntity();
-        world.AddComponent(id, Runtime::Components::Tag{"AsteroidCluster", {"PCG", "Debris"}});
-        Runtime::Components::Transform tr; tr.position = {6.f, 3.f, 0.f};
-        world.AddComponent(id, tr);
-    }
+
+    // ── Outer Planets ────────────────────────────────────────────────────────
+    addEntity("Jupiter", {"Planet","GasGiant","CelestialBody"},
+              28.f, 0.f, 0.f,
+              "planet_sphere.obj", "planet_mat_jupiter", true,
+              1.898e6f, true);
+
+    addEntity("Saturn",  {"Planet","GasGiant","CelestialBody"},
+              38.f, 0.f, 0.f,
+              "planet_sphere.obj", "planet_mat_saturn",  true,
+              5.68e5f, true);
+
+    addEntity("Uranus",  {"Planet","IceGiant","CelestialBody"},
+              48.f, 0.f, 0.f,
+              "planet_sphere.obj", "planet_mat_uranus",  true,
+              8.68e4f, true);
+
+    addEntity("Neptune", {"Planet","IceGiant","CelestialBody"},
+              57.f, 0.f, 0.f,
+              "planet_sphere.obj", "planet_mat_neptune", true,
+              1.02e5f, true);
+
+    // ── Kuiper Belt (outer debris field) ─────────────────────────────────────
+    addEntity("KuiperBelt", {"AsteroidBelt","PCG","Debris"},
+              65.f, 0.f, 0.f);
+    addEntity("Pluto",   {"DwarfPlanet","KBO"},
+              67.f, 2.f, 0.f,
+              "asteroid.obj","planet_mat_pluto",true, 1.3e1f, true);
+    addEntity("Eris",    {"DwarfPlanet","KBO"},
+              69.f,-1.5f,0.f,
+              "asteroid.obj","planet_mat_pluto",true, 1.66e1f, true);
+
+    // ── Space Stations ───────────────────────────────────────────────────────
+    // Orbital Station near Earth — L2 point
+    addEntity("EarthStation_Athena",
+              {"Station","Structure","SpaceStation","Dockable"},
+              11.5f, 1.f, 0.f,
+              "station_hull.obj", "station_mat", true,
+              12000.f, false);
+
+    // Deep-space refuelling outpost near Jupiter
+    addEntity("JupiterOutpost_Forge",
+              {"Station","Structure","SpaceStation","Dockable","Refuel"},
+              29.f, 2.f, 0.f,
+              "station_hull.obj", "station_mat_deep", true,
+              8500.f, false);
+
+    // Jump gate at system edge
+    addEntity("JumpGate_Helios",
+              {"JumpGate","Structure","Warp"},
+              72.f, 0.f, 0.f,
+              "jumpgate.obj", "gate_mat", true,
+              50000.f, true);
+
+    // ── Player Character ─────────────────────────────────────────────────────
+    addEntity("Player_Avatar",
+              {"Player","Character","Humanoid"},
+              11.5f, 1.2f, 0.f,
+              "character_player.obj", "character_mat", true,
+              80.f, false);
+
+    // ── Player Ship ──────────────────────────────────────────────────────────
+    auto playerShipId =
+    addEntity("NovaFighter_Mk1",
+              {"PlayerShip","Ship","Fighter"},
+              11.5f, 0.8f, 0.f,
+              "nova_fighter.obj", "ship_mat_nova", true,
+              2400.f, false);
+    // Attach sub-components to player ship
+    addEntity("Engine_L",  {"Engine","ShipPart"}, 11.1f, 0.6f, 0.f,
+              nullptr, nullptr, false);
+    addEntity("Engine_R",  {"Engine","ShipPart"}, 11.9f, 0.6f, 0.f,
+              nullptr, nullptr, false);
+    addEntity("Turret_Fwd",{"Weapon","ShipPart"},  11.5f, 1.1f, 0.f,
+              nullptr, nullptr, false);
+    addEntity("Shield_Gen",{"Shield","ShipPart"},  11.5f, 0.8f, 0.f,
+              nullptr, nullptr, false);
+    (void)playerShipId;
+
+    // ── NPC Ships ────────────────────────────────────────────────────────────
+    addEntity("NPC_Freighter_01",
+              {"NPC","Ship","Freighter"},
+              12.f, -1.f, 0.f,
+              "freighter.obj", "ship_mat_freighter", true,
+              15000.f, false);
+
+    addEntity("NPC_Patrol_01",
+              {"NPC","Ship","Fighter","Faction_Guard"},
+              10.5f, 1.5f, 0.f,
+              "patrol_ship.obj", "ship_mat_guard", true,
+              1800.f, false);
+
+    // ── Misc POIs ────────────────────────────────────────────────────────────
+    addEntity("DerelictShip_Echo7",
+              {"Derelict","POI","Salvage"},
+              22.f, -3.f, 0.f,
+              "derelict.obj", "mat_derelict", true,
+              3000.f, false);
+
+    addEntity("NavigationBeacon_Sol1",
+              {"Beacon","Navigation"},
+              0.f, -8.f, 0.f);
 
     renderer.SetWorld(&world);
-
     Engine::Core::Logger::Info("AtlasEditor running — press ESC to quit");
 
     // ── Main render loop ─────────────────────────────────────────────────────

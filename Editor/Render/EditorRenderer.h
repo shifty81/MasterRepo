@@ -52,6 +52,8 @@ public:
     void OnMouseMove  (double x, double y);
     void OnMouseButton(int btn, bool pressed);
     void OnKey        (int key, bool pressed);
+    void OnChar       (unsigned int codepoint);
+    void OnScroll     (double dx, double dy);
 
     // Feed lines into the console panel  (EI-01)
     void AppendConsole(const std::string& line);
@@ -71,6 +73,20 @@ private:
     double m_mouseX = 0, m_mouseY = 0;
     bool   m_leftMousePressed = false;
     bool   m_ctrlHeld         = false;
+
+    // RMB / MMB drag state for camera pan
+    bool   m_rmbDown    = false;
+    bool   m_mmbDown    = false;
+
+    // Camera pan offset and zoom (applied in viewport rendering)
+    float  m_camOffX    = 0.f;
+    float  m_camOffY    = 0.f;
+    float  m_camZoom    = 1.f;
+
+    // Text-input focus (console input bar or AI chat input)
+    bool   m_consoleFocused  = false;
+    bool   m_aiInputFocused  = false;
+    std::string m_consoleInput;         // console command being typed
 
     // Console state
     std::vector<std::string> m_consoleLines;
@@ -118,7 +134,8 @@ private:
     float m_gridSize     = 1.0f;
 
     // ── Add-component popup state ────────────────────────────────────────
-    bool m_addCompMenuOpen = false;
+    bool m_addCompMenuOpen       = false;
+    bool m_addCompMenuJustOpened = false;   // suppress same-frame close
 
     // ── Menu bar click tracking ──────────────────────────────────────────
     // which top-level menu is open (-1 = none)
