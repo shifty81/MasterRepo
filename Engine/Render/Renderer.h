@@ -40,6 +40,9 @@ private:
     RenderConfig m_config;
     bool         m_initialized  = false;
     int          m_drawCallCount = 0;
+    int          m_width  = 1280;
+    int          m_height = 720;
+    float        m_clearR = 0.06f, m_clearG = 0.06f, m_clearB = 0.10f, m_clearA = 1.0f;
 };
 
 } // namespace Engine::Render

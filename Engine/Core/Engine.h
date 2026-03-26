@@ -45,7 +45,8 @@ struct EngineConfig {
 
 class Engine {
 public:
-    using FrameCallback = std::function<void(float dt)>;
+    using FrameCallback  = std::function<void(float dt)>;
+    using RenderCallback = std::function<void(int w, int h)>;
 
     explicit Engine(const EngineConfig& cfg);
     ~Engine();
@@ -71,6 +72,12 @@ public:
      *  Useful for editor UI drawing, asset hot-reload polling, etc. */
     void SetFrameCallback(FrameCallback cb) { m_frameCallback = std::move(cb); }
 
+    /** Register a render callback invoked each frame between Clear() and
+     *  SwapBuffers(). Use this to draw custom OpenGL content into the window
+     *  (e.g. a game HUD). The callback receives the current framebuffer
+     *  width and height. */
+    void SetRenderCallback(RenderCallback cb) { m_renderCallback = std::move(cb); }
+
     /** Number of ticks executed so far. */
     uint64_t TickCount() const { return m_tickCount; }
 
@@ -87,7 +94,8 @@ private:
     ::Runtime::ECS::World m_world;
     net::NetContext m_net;
     Sim::TickScheduler m_scheduler;
-    FrameCallback m_frameCallback;
+    FrameCallback  m_frameCallback;
+    RenderCallback m_renderCallback;
     std::unique_ptr<::Engine::Window::Window>   m_window;
     std::unique_ptr<::Engine::Render::Renderer> m_renderer;
 };
