@@ -32,7 +32,8 @@
 | Live Services & Advanced AI (Phase 40) | 10/10 | 0 | 10 |
 | Developer Experience & World Simulation (Phase 41) | 10/10 | 0 | 10 |
 | Immersive Technologies & Live Infrastructure (Phase 42) | 10/10 | 0 | 10 |
-| **TOTAL** | **251/251** | **0** | **251** |
+| Game Systems & Engine Tooling (Phase 43) | 10/10 | 0 | 10 |
+| **TOTAL** | **261/261** | **0** | **261** |
 
 ---
 
@@ -991,6 +992,26 @@ All three paths converge for the final product.
 
 ---
 
+## Phase 43 – Game Systems & Engine Tooling ✅
+
+> Core RPG / action gameplay systems plus essential engine utilities.
+> All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 43.01 | Interaction System | High | Proximity/ray interactable registration, candidate sorting, cooldown, one-shot | `Runtime/Gameplay/InteractionSystem/InteractionSystem.h/.cpp` |
+| ✅ 43.02 | Damage Pipeline | High | Typed damage (Physical…True), modifiers, resistances, crit roll, entity HP | `Runtime/Combat/DamagePipeline/DamagePipeline.h/.cpp` |
+| ✅ 43.03 | Ability System | High | GAS-style: grant/revoke, mana/stamina cost, cooldown, charges, tags, regen | `Runtime/Combat/AbilitySystem/AbilitySystem.h/.cpp` |
+| ✅ 43.04 | Inventory System | High | Grid inventory, stacking, weight, equipment slots, transfer, JSON persist | `Runtime/Inventory/InventorySystem/InventorySystem.h/.cpp` |
+| ✅ 43.05 | Status Effect System | Medium | Buffs/debuffs: DoT tick, stacks (Refresh/Additive/Max), immunity tags | `Runtime/Combat/StatusEffects/StatusEffectSystem.h/.cpp` |
+| ✅ 43.06 | Game Event Bus | Medium | Pub-sub bus: priority, one-shot, filter predicate, deferred (thread-safe) | `Core/Events/GameEventBus/GameEventBus.h/.cpp` |
+| ✅ 43.07 | Texture Atlas Builder | Medium | Shelf-packing sprite atlas: RGBA blit, UV map, PPM+JSON export | `Engine/Render/TextureAtlas/TextureAtlasBuilder.h/.cpp` |
+| ✅ 43.08 | Debug Draw | Low | Immediate-mode debug overlay: lines, spheres, boxes, text, groups, lifetime | `Engine/Debug/DebugDraw/DebugDraw.h/.cpp` |
+| ✅ 43.09 | Constraint Solver | Medium | Sequential-impulse solver: distance, spring, hinge, slider constraints | `Engine/Physics/ConstraintSolver/ConstraintSolver.h/.cpp` |
+| ✅ 43.10 | Screenshot System | Low | Frame capture (PNG/JPEG), supersampling, sequence capture, async save | `Engine/Render/Screenshot/ScreenshotSystem.h/.cpp` |
+
+---
+
 ## Appendix B — Rules & Conventions
 
 | Rule | Description |
@@ -1039,5 +1060,6 @@ All three paths converge for the final product.
 | 40 | Live Services & Advanced AI — PromptTemplateEngine (AI), MultiAgentCoordinator (AI), SpatialAudio (Engine/Audio), PlanetGenerator (PCG), LeaderboardSystem (Runtime), FeatureFlagSystem (Core), TimelineEditorPanel (Editor/Panels), NotificationSystem (Runtime), NavMesh (Engine/Pathfinding), SamplingProfiler (Core/Profiling). |
 | 41 | Developer Experience & World Simulation — ShaderGraph (Engine/Shader), BehaviorTreeEditorPanel (Editor/Panels), FluidSimulation (Engine/Sim), EventReplaySystem (Core), CrowdSimulation (Runtime), DataTableSystem (Core), ProceduralAnimation (Engine/Animation), BlueprintCompiler (Builder), MinimapSystem (Runtime), GPUParticleSystem (Engine/Particles). |
 | 42 | Immersive Technologies & Live Infrastructure — SplineSystem (Engine/Spline), WeatherSystem (PCG/Weather), ConversationGraph (Runtime/Dialogue), InputRemapper (Engine/Input/Remapping), LODManager (Engine/Lod), RPCSystem (Engine/Net/RPC), LightBaker (Engine/Lighting), ObjectiveSystem (Runtime/Gameplay), VoiceManager (Runtime/Audio), SceneStreamingSystem (Runtime/Streaming). |
+| 43 | Game Systems & Engine Tooling — InteractionSystem (Runtime/Gameplay), DamagePipeline (Runtime/Combat), AbilitySystem (Runtime/Combat), InventorySystem (Runtime/Inventory), StatusEffectSystem (Runtime/Combat), GameEventBus (Core/Events), TextureAtlasBuilder (Engine/Render), DebugDraw (Engine/Debug), ConstraintSolver (Engine/Physics), ScreenshotSystem (Engine/Render). |
 
 </details>
