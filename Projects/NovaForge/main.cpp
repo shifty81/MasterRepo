@@ -26,6 +26,9 @@
 #include "Runtime/BuilderRuntime/NovaForgeBuilderIntegration.h"
 #include "Runtime/SaveLoad/SaveLoad.h"
 #include "Runtime/Sim/AIMinerStateMachine/AIMinerStateMachine.h"
+#include "Runtime/Universe/UniverseData.h"
+#include "Runtime/Universe/UniverseLoader.h"
+#include "Runtime/Factions/FactionSystem.h"
 #include "PCG/Structures/StructureGenerator/StructureGenerator.h"
 #include "Engine/Core/Logger.h"
 // ── NovaForgeHUD requires stb_easy_font implementation in this TU ─────────
@@ -123,12 +126,26 @@ int main() {
     // ── ECS world ───────────────────────────────────────────────────────────
     Runtime::ECS::World world;
 
-    // NF-01: Player entity
+    // ── Faction System ────────────────────────────────────────────────────────
+    Runtime::FactionSystem factionSystem;
+    factionSystem.Init();
+
+    // NF-01: Player entity (always first — camera follows this entity)
     auto playerEntity = world.CreateEntity();
-    world.AddComponent(playerEntity, Runtime::Components::Tag{"Player", {"Player","Controllable"}});
+    world.AddComponent(playerEntity, Runtime::Components::Tag{"Player", {"Player","Controllable","Ship","Fighter"}});
     Runtime::Components::Transform playerTr;
     playerTr.position = {0.f, 0.f, 0.f};
     world.AddComponent(playerEntity, playerTr);
+
+    // NF-01b: Populate the star system from the universe registry
+    // Universe data: 4 factions (Solari, Veyren, Aurelian, Keldari), Thyrkstad is starter
+    Runtime::Universe::UniverseRegistry universeReg = Runtime::Universe::BuiltinUniverse();
+    Runtime::Universe::UniverseLoader    universeLoader(universeReg);
+    universeLoader.SetStartSystem("thyrkstad");
+    universeLoader.PopulateECS(world, nullptr); // pass &factionSystem once it's created
+
+    Engine::Core::Logger::Info("NF-01: Universe populated — Thyrkstad system ("
+        + std::to_string(world.EntityCount()) + " entities incl. player)");
 
     // Deposit entities for miners
     auto deposit1 = world.CreateEntity();
@@ -449,6 +466,31 @@ int main() {
         }
         player.Update(dt, input);
 
+        // Apply yaw-oriented movement directly to the player transform.
+        // PlayerController::Update is a stub (no World ref), so we handle
+        // position integration here with the camera's own basis vectors.
+        {
+            auto* tr = world.GetComponent<Runtime::Components::Transform>(playerEntity);
+            if (tr && (keyW || keyS || keyA || keyD || keySpace || keyShift)) {
+                const float yR  = playerYaw   * 3.14159265f / 180.f;
+                const float pR  = playerPitch * 3.14159265f / 180.f;
+                const float spd = player.GetMoveSpeed() * dt;
+                // Camera forward (matches FPSLoadViewMatrix convention)
+                const float fwdX = std::cos(pR) * std::sin(yR);
+                const float fwdY = std::sin(pR);
+                const float fwdZ = std::cos(pR) * std::cos(yR);
+                // Camera right = cross(forward, world_up) normalised
+                const float rightX = -std::cos(yR);   // -fz at pitch=0
+                const float rightZ =  std::sin(yR);   //  fx at pitch=0
+                if (keyW) { tr->position.x += fwdX  * spd; tr->position.y += fwdY * spd; tr->position.z += fwdZ  * spd; }
+                if (keyS) { tr->position.x -= fwdX  * spd; tr->position.y -= fwdY * spd; tr->position.z -= fwdZ  * spd; }
+                if (keyD) { tr->position.x += rightX * spd; tr->position.z += rightZ * spd; }
+                if (keyA) { tr->position.x -= rightX * spd; tr->position.z -= rightZ * spd; }
+                if (keySpace) tr->position.y += spd;
+                if (keyShift) tr->position.y -= spd;
+            }
+        }
+
         // NF-03: Tab key is handled by GLFW key callback in a full build.
         // The inventoryOpen flag is toggled by the real GLFW callback (not here);
         // this frame-callback only reflects the flag set externally.
@@ -498,7 +540,7 @@ int main() {
             double dx = x - lastMouseX;
             double dy = y - lastMouseY;
             lastMouseX = x; lastMouseY = y;
-            playerYaw   += (float)dx * 0.15f;
+            playerYaw   -= (float)dx * 0.15f;
             playerPitch -= (float)dy * 0.15f;
             playerPitch  = std::max(-89.f, std::min(89.f, playerPitch));
         };
@@ -545,6 +587,34 @@ int main() {
             0.0
         );
 
+        // ── Compute nearest celestial body for approach prompt ────────────
+        {
+            auto* playerTr2 = world.GetComponent<Runtime::Components::Transform>(playerEntity);
+            float ppx = playerTr2 ? playerTr2->position.x : 0.f;
+            float ppy = playerTr2 ? playerTr2->position.y : 0.f;
+            float ppz = playerTr2 ? playerTr2->position.z : 0.f;
+            float minDist = 1e9f;
+            for (auto& obj : state.worldObjects) {
+                float dx = obj.x - ppx, dy = obj.y - ppy, dz = obj.z - ppz;
+                float dist = std::sqrt(dx*dx + dy*dy + dz*dz);
+                if (dist < minDist && obj.size >= 1.5f) {
+                    minDist = dist;
+                    state.nearestBody.name     = obj.name;
+                    state.nearestBody.distance = dist;
+                    // WorldObject carries only name+size (no tags vector), so
+                    // gas-giant detection falls back to name matching.
+                    bool isGas = (obj.name.find("Jupiter")!=std::string::npos ||
+                                  obj.name.find("Saturn") !=std::string::npos ||
+                                  obj.name.find("Uranus") !=std::string::npos ||
+                                  obj.name.find("Neptune")!=std::string::npos ||
+                                  obj.name.find("Gas")    !=std::string::npos);
+                    state.nearestBody.isGasGiant = isGas;
+                    state.nearestBody.canLand    = !isGas && obj.size < 5.0f;
+                }
+            }
+            state.showApproachPrompt = (minDist < 50.f && minDist > 2.f);
+        }
+
         state.worldObjects.clear();
         {
             static const uint32_t kColors[] = {
@@ -567,6 +637,7 @@ int main() {
                         if (t == "GasGiant") { obj.size = 3.0f; break; }
                         if (t == "Planet")   { obj.size = 2.0f; break; }
                         if (t == "Station" || t == "JumpGate") { obj.size = 2.5f; break; }
+                        if (t == "Ship" || t == "Fighter") { obj.size = 1.5f; break; }
                     }
                 }
                 state.worldObjects.push_back(obj);

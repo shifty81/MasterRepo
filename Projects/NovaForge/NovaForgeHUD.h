@@ -54,6 +54,16 @@ struct HUDState {
     std::string sceneName       = "NovaForge_Dev";
     std::vector<std::string>  recentLog;
     std::vector<WorldObject>  worldObjects;  // for 3-D scene render
+
+    // Planet approach state
+    struct ApproachTarget {
+        std::string name;
+        float       distance   = 0.f;
+        bool        isGasGiant = false;
+        bool        canLand    = false;
+    };
+    ApproachTarget  nearestBody;
+    bool            showApproachPrompt = false;
 };
 
 class HUD {
@@ -94,6 +104,40 @@ public:
 
         // FPS crosshair
         DrawCrosshair(W, H);
+
+        // ── Planet approach prompt ────────────────────────────────────────
+        if (s.showApproachPrompt) {
+            const auto& nb = s.nearestBody;
+            char distBuf[64];
+            snprintf(distBuf, sizeof(distBuf), "%.0f km", nb.distance);
+            std::string line1 = nb.name + "  —  " + distBuf;
+            std::string line2 = nb.isGasGiant
+                ? "[F] Anchor in Orbit   [G] Deploy Harvest Drone"
+                : (nb.canLand ? "[F] Enter Atmosphere  [Esc] Stay in Orbit"
+                              : "[Orbit Only — No Landing Zone]");
+            float pw = std::max((float)stb_easy_font_width(const_cast<char*>(line1.c_str())),
+                                (float)stb_easy_font_width(const_cast<char*>(line2.c_str())));
+            pw = pw + 24.f;
+            float ph = 44.f;
+            float px2 = (W - pw) * 0.5f;
+            float py2 = H * 0.72f;
+            // Translucent panel
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            Col(0x0A0A1ACC);
+            glBegin(GL_QUADS);
+            glVertex2f(px2, py2); glVertex2f(px2+pw, py2);
+            glVertex2f(px2+pw, py2+ph); glVertex2f(px2, py2+ph);
+            glEnd();
+            Col(0x4466AAFF);
+            glBegin(GL_LINE_LOOP);
+            glVertex2f(px2, py2); glVertex2f(px2+pw, py2);
+            glVertex2f(px2+pw, py2+ph); glVertex2f(px2, py2+ph);
+            glEnd();
+            glDisable(GL_BLEND);
+            Text(line1, px2 + 12.f, py2 + 6.f,  0xAADDFFFF, 1.1f);
+            Text(line2, px2 + 12.f, py2 + 24.f, 0x88AADDFF, 1.0f);
+        }
 
         // Title bar
         Rect(0, 0, W, 28, 0x1A1A2ECC);
@@ -223,13 +267,37 @@ private:
         // ── Star field (dots) ─────────────────────────────────────────────
         DrawStarfield();
 
-        // ── World objects (wireframe boxes) ──────────────────────────────
+        // ── World objects: spheres for celestial bodies, boxes for ships ─
         for (auto& obj : s.worldObjects) {
             float r = (float)((obj.color >> 24) & 0xFF) / 255.f;
             float g = (float)((obj.color >> 16) & 0xFF) / 255.f;
             float b = (float)((obj.color >>  8) & 0xFF) / 255.f;
-            glColor4f(r, g, b, 0.9f);
-            DrawWireBox3D(obj.x, obj.y, obj.z, obj.size);
+            // Determine if this is a celestial body by size
+            if (obj.size >= 2.0f) {
+                // Large = planet / star — draw filled sphere
+                int sl = (obj.size >= 4.f) ? 20 : 16;
+                int st = (obj.size >= 4.f) ? 12 : 8;
+                DrawFilledSphere3D(obj.x, obj.y, obj.z, obj.size, r, g, b, 0.95f, sl, st);
+            } else if (obj.size >= 1.5f) {
+                // Station — wireframe sphere
+                glColor4f(r, g, b, 0.9f);
+                const float pi = 3.14159265f;
+                for (int pl = 0; pl < 3; pl++) {
+                    glBegin(GL_LINE_LOOP);
+                    for (int seg = 0; seg < 16; seg++) {
+                        float a2 = 2.f * pi * seg / 16;
+                        float s2 = std::sin(a2) * obj.size, c2 = std::cos(a2) * obj.size;
+                        if (pl==0) glVertex3f(obj.x+c2, obj.y+s2, obj.z);
+                        else if (pl==1) glVertex3f(obj.x+c2, obj.y, obj.z+s2);
+                        else glVertex3f(obj.x, obj.y+s2, obj.z+c2);
+                    }
+                    glEnd();
+                }
+            } else {
+                // Small = ship or asteroid — wireframe box
+                glColor4f(r, g, b, 0.9f);
+                DrawWireBox3D(obj.x, obj.y, obj.z, obj.size);
+            }
         }
 
         // Restore GL state for 2-D HUD
@@ -281,6 +349,29 @@ private:
             -(rx*px+ry*py+rz*pz),    -(ux*px+uy*py+uz*pz),     fx*px+fy*py+fz*pz,    1.f
         };
         glLoadMatrixf(m);
+    }
+
+    // Draw a filled sphere using lat/lon subdivision
+    static void DrawFilledSphere3D(float cx, float cy, float cz, float radius,
+                                    float r, float g, float b, float a,
+                                    int slices = 16, int stacks = 10) {
+        const float pi = 3.14159265f;
+        for (int i = 0; i < stacks; i++) {
+            float lat0 = pi * (-0.5f + (float) i      / stacks);
+            float lat1 = pi * (-0.5f + (float)(i + 1) / stacks);
+            float sinL0 = std::sin(lat0), cosL0 = std::cos(lat0);
+            float sinL1 = std::sin(lat1), cosL1 = std::cos(lat1);
+            float shade = 0.65f + 0.35f * (float)(i + 1) / stacks;
+            glColor4f(r * shade, g * shade, b * shade, a);
+            glBegin(GL_QUAD_STRIP);
+            for (int j = 0; j <= slices; j++) {
+                float lng    = 2.f * pi * (float)j / slices;
+                float cosLng = std::cos(lng), sinLng = std::sin(lng);
+                glVertex3f(cx + radius * cosL0 * cosLng, cy + radius * sinL0, cz + radius * cosL0 * sinLng);
+                glVertex3f(cx + radius * cosL1 * cosLng, cy + radius * sinL1, cz + radius * cosL1 * sinLng);
+            }
+            glEnd();
+        }
     }
 
     // Draw a sparse starfield using GL_POINTS

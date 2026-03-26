@@ -67,6 +67,8 @@ add_library(RuntimeLib STATIC
     Hazards/HazardSystem.cpp
     # Phase 37.08 — AI fleet intelligence: formations, patrol, escort, intercept
     AI/FleetController.cpp
+    # NovaForge — universe data (systems, factions, gas types)
+    Universe/UniverseData.cpp
 )
 
 target_include_directories(RuntimeLib PUBLIC ${CMAKE_SOURCE_DIR})

@@ -39,7 +39,7 @@ struct EngineConfig {
     EngineMode  mode        = EngineMode::Client;
     std::string assetRoot   = "assets";
     std::string windowTitle = "NovaForge";
-    uint32_t    tickRate    = 30;
+    uint32_t    tickRate    = 60;
     uint32_t    maxTicks    = 0; // 0 = unlimited (run forever), >0 = stop after N ticks
 };
 
