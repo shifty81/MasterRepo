@@ -228,7 +228,12 @@ OllamaResponse OllamaClient::Generate(const std::string& model,
     r.text       = ExtractField(raw, "response");
     r.httpStatus = 200;
     r.success    = !r.text.empty();
-    if (!r.success) r.error = "Empty response field — raw: " + raw.substr(0, 200);
+    if (!r.success) {
+        std::string apiError = ExtractField(raw, "error");
+        r.error = apiError.empty()
+            ? "Empty response field — raw: " + raw.substr(0, 200)
+            : apiError;
+    }
 
     if (m_streamCb) m_streamCb(r.text, true);
     return r;
