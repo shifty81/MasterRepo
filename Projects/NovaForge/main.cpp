@@ -237,7 +237,7 @@ int main() {
                 if (tag && tr) {
                     bool hab = false;
                     for (auto& t : tag->tags)
-                        if (t == "Habitable" || t == "Planet") { hab = true; break; }
+                        if (t == "Habitable") { hab = true; break; }
                     if (hab && tag->name != "Player") {
                         spawnX = tr->position.x;
                         spawnY = tr->position.y + 5.f;

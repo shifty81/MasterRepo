@@ -72,7 +72,6 @@ static constexpr uint32_t kHighlight    = 0x007ACCFF;
 // ── Editor defaults ────────────────────────────────────────────────────────
 static constexpr float    kRotSnapDeg        = 15.f;  // rotation snap angle (degrees)
 static constexpr char     kDefaultScenePath[] = "Projects/NovaForge/Scenes/editor_save.scene";
-static constexpr float    kPIEOrbitSpeedFactor = 0.06f; // orbit speed divisor in PIE animation
 static constexpr float    kScrollToBottom      = 99999.f; // sentinel to auto-scroll to bottom
 static constexpr float    kFontScale            = 1.35f;  // global text scale — improves readability
 static constexpr float    kApproxCharWidth     = 9.5f;   // pixels per char for stb_easy_font at kFontScale
@@ -2790,6 +2789,10 @@ void EditorRenderer::DrawKeybindsPanel(float x, float y, float w, float h) {
         { "G",               "Toggle grid snap"           },
         { "P",               "Play (PIE)"                 },
         { "ESC  (in PIE)",   "Stop PIE"                   },
+        { "WASD  (PIE)",     "FPS move fwd/back/strafe"   },
+        { "RMB drag  (PIE)", "FPS look"                   },
+        { "Space  (PIE)",    "FPS move up"                },
+        { "Shift  (PIE)",    "FPS move down"              },
         { "Ctrl+Z",          "Undo"                       },
         { "Ctrl+Y",          "Redo"                       },
         { "Ctrl+C",          "Copy entity"                },
