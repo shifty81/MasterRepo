@@ -34,7 +34,8 @@
 | Immersive Technologies & Live Infrastructure (Phase 42) | 10/10 | 0 | 10 |
 | Game Systems & Engine Tooling (Phase 43) | 10/10 | 0 | 10 |
 | Advanced Gameplay & Engine Utilities (Phase 44) | 10/10 | 0 | 10 |
-| **TOTAL** | **271/271** | **0** | **271** |
+| Rendering, AI, Core & Gameplay Plumbing (Phase 45) | 10/10 | 0 | 10 |
+| **TOTAL** | **281/281** | **0** | **281** |
 
 ---
 
@@ -1063,6 +1064,7 @@ All three paths converge for the final product.
 | 42 | Immersive Technologies & Live Infrastructure — SplineSystem (Engine/Spline), WeatherSystem (PCG/Weather), ConversationGraph (Runtime/Dialogue), InputRemapper (Engine/Input/Remapping), LODManager (Engine/Lod), RPCSystem (Engine/Net/RPC), LightBaker (Engine/Lighting), ObjectiveSystem (Runtime/Gameplay), VoiceManager (Runtime/Audio), SceneStreamingSystem (Runtime/Streaming). |
 | 43 | Game Systems & Engine Tooling — InteractionSystem (Runtime/Gameplay), DamagePipeline (Runtime/Combat), AbilitySystem (Runtime/Combat), InventorySystem (Runtime/Inventory), StatusEffectSystem (Runtime/Combat), GameEventBus (Core/Events), TextureAtlasBuilder (Engine/Render), DebugDraw (Engine/Debug), ConstraintSolver (Engine/Physics), ScreenshotSystem (Engine/Render). |
 | 44 | Advanced Gameplay & Engine Utilities — WaterSystem (Engine/Water), FootstepSystem (Runtime/Audio), ComboSystem (Runtime/Combat), PrefabSystem (Engine/Scene), GameModeManager (Runtime/Gameplay), SurfaceAnalyzer (Engine/Physics), AnimNotifySystem (Engine/Animation), TagSystem (Core/Tags), CameraShakeSystem (Engine/Camera), PickupSystem (Runtime/Gameplay). |
+| 45 | Rendering, AI, Core & Gameplay Plumbing — TweenSystem (Engine/Tween), WeaponSystem (Runtime/Combat), MaterialSystem (Engine/Render/Material), TimeManager (Core/Time), AsyncTaskQueue (Core/AsyncTask), StateMachine (Core/StateMachine), EnvironmentQuery (Engine/AI/EQS), RewardSystem (Runtime/Gameplay), PostProcessVolume (Engine/PostProcess), TriggerVolume (Engine/Physics). |
 
 </details>
 
@@ -1090,3 +1092,24 @@ All three paths converge for the final product.
 | ✅ 44.08 | Tag System | Medium | Hierarchical dot-notation tags, exclusive groups, batch ops, thread-safe query | `Core/Tags/TagSystem/TagSystem.h/.cpp` |
 | ✅ 44.09 | Camera Shake System | Medium | Trauma/decay model, Perlin-noise offsets, presets, directional bias, distance scale | `Engine/Camera/CameraShake/CameraShakeSystem.h/.cpp` |
 | ✅ 44.10 | Pickup System | Low | Type registry, spawn/despawn, proximity collection, magnet, respawn timer, team lock | `Runtime/Gameplay/PickupSystem/PickupSystem.h/.cpp` |
+
+---
+
+## Phase 45 – Rendering, AI, Core & Gameplay Plumbing ✅
+
+> Adds tweening, weapons, material instances, time management, async tasks,
+> hierarchical FSMs, AI environment queries, XP/loot rewards, post-process volumes,
+> and trigger volumes. All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 45.01 | Tween System | High | Value interpolation with 26 easing modes, sequences, loops, yoyo, callbacks | `Engine/Tween/TweenSystem/TweenSystem.h/.cpp` |
+| ✅ 45.02 | Weapon System | High | Weapon registry, fire modes (semi/burst/full-auto/charge), ammo/reload lifecycle | `Runtime/Combat/WeaponSystem/WeaponSystem.h/.cpp` |
+| ✅ 45.03 | Material System | High | Material instance registry, parameter overrides, layers, change callbacks | `Engine/Render/Material/MaterialSystem/MaterialSystem.h/.cpp` |
+| ✅ 45.04 | Time Manager | High | Game-time scale (tween), pause/unpause, fixed-timestep accumulator, per-actor scale, timers | `Core/Time/TimeManager/TimeManager.h/.cpp` |
+| ✅ 45.05 | Async Task Queue | High | Thread-pool task queue, priorities, progress, cancellation, batch completion | `Core/AsyncTask/AsyncTaskQueue/AsyncTaskQueue.h/.cpp` |
+| ✅ 45.06 | State Machine | Medium | Typed template FSM: states, guarded transitions, enter/tick/exit, hierarchy | `Core/StateMachine/StateMachine/StateMachine.h/.cpp` |
+| ✅ 45.07 | Environment Query | Medium | EQS: grid/ring/random generators, LOS/distance/direction/custom scoring, async queries | `Engine/AI/EQS/EnvironmentQuery/EnvironmentQuery.h/.cpp` |
+| ✅ 45.08 | Reward System | Medium | XP rules, loot tables, rarity tiers + luck, level-up callbacks, item drop dispatch | `Runtime/Gameplay/RewardSystem/RewardSystem.h/.cpp` |
+| ✅ 45.09 | Post-Process Volume | Medium | AABB/sphere volumes blend PP settings (bloom, DOF, fog, LUT) by proximity | `Engine/PostProcess/PostProcessVolume/PostProcessVolume.h/.cpp` |
+| ✅ 45.10 | Trigger Volume | Medium | AABB/sphere/capsule overlap detection, enter/stay/exit callbacks, one-shot, cooldown | `Engine/Physics/TriggerVolume/TriggerVolume.h/.cpp` |
