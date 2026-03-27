@@ -214,7 +214,9 @@ class ProjectIndexer:
         parts.append(f"=== MasterRepo Project Context ===\n{idx.summary}\n")
 
         # 2. Directory tree (trimmed)
-        tree_lines = idx.directory_tree.split("\n")[:60]
+        # Scale tree lines with available context budget
+        max_tree_lines = max(30, min(120, max_chars // 100))
+        tree_lines = idx.directory_tree.split("\n")[:max_tree_lines]
         parts.append("=== Directory Structure (top 3 levels) ===\n"
                      + "\n".join(tree_lines) + "\n")
 

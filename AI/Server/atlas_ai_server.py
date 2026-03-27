@@ -169,8 +169,15 @@ async def chat(req: ChatRequest):
     # Check for file read command: /read path/to/file
     if user_msg.startswith("/read ") and _indexer:
         rel_path = user_msg[6:].strip()
-        content  = _indexer.read_file(rel_path)
-        assistant_msg = f"**Contents of `{rel_path}`:**\n```\n{content[:4000]}\n```"
+        content = _indexer.read_file(rel_path)
+        # Truncate at a line boundary to avoid cutting tokens mid-line
+        if len(content) > 4000:
+            truncated = content[:4000]
+            last_nl = truncated.rfind('\n')
+            if last_nl > 0:
+                truncated = truncated[:last_nl]
+            content = truncated + "\n... (truncated — use /read for full content)"
+        assistant_msg = f"**Contents of `{rel_path}`:**\n```\n{content}\n```"
         _chat_history.append({"role": "user",      "content": user_msg})
         _chat_history.append({"role": "assistant", "content": assistant_msg})
         return {"reply": assistant_msg, "history_length": len(_chat_history)}

@@ -849,8 +849,9 @@ void EditorRenderer::LoadScene(const std::string& path) {
         auto id = m_world->CreateEntity();
         Runtime::Components::Tag entityTag;
         entityTag.name = name;
-        // Parse tags array if present
-        size_t tp = content.find("\"tags\":[", pos > 8 ? pos - 8 : 0);
+        // Parse tags array if present — search within a window around current pos
+        size_t tagSearchStart = (pos > 200) ? pos - 200 : 0;
+        size_t tp = content.find("\"tags\":[", tagSearchStart);
         if (tp != std::string::npos && tp < pos + 600) {
             size_t ts = tp + 8;
             size_t te = content.find(']', ts);
@@ -866,16 +867,22 @@ void EditorRenderer::LoadScene(const std::string& path) {
         }
         m_world->AddComponent(id, entityTag);
         Runtime::Components::Transform tr;
-        // Parse pos
+        // Parse pos — guard against npos+1 wrap
         size_t pp = content.find("\"pos\":[", pos);
         if (pp != std::string::npos && pp < pos + 400) {
             try {
                 size_t pb = pp + 7;
                 tr.position.x = std::stof(content.substr(pb));
-                pb = content.find(',', pb) + 1;
-                tr.position.y = std::stof(content.substr(pb));
-                pb = content.find(',', pb) + 1;
-                tr.position.z = std::stof(content.substr(pb));
+                size_t comma1 = content.find(',', pb);
+                if (comma1 != std::string::npos) {
+                    pb = comma1 + 1;
+                    tr.position.y = std::stof(content.substr(pb));
+                    size_t comma2 = content.find(',', pb);
+                    if (comma2 != std::string::npos) {
+                        pb = comma2 + 1;
+                        tr.position.z = std::stof(content.substr(pb));
+                    }
+                }
             } catch (...) {}
         }
         m_world->AddComponent(id, tr);
