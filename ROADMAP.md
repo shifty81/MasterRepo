@@ -1459,3 +1459,28 @@ All three paths converge for the final product.
 | ✅ 60.08 | Combat Logger | Medium | Damage/heal/kill/ability events, stats, CSV export | `Runtime/Combat/CombatLogger/CombatLogger/CombatLogger.h/.cpp` |
 | ✅ 60.09 | Light Probe System | Medium | SH projection, position-weighted interpolation | `Engine/Render/LightProbe/LightProbeSystem/LightProbeSystem.h/.cpp` |
 | ✅ 60.10 | Session Manager | High | Lobby/active/pause/end lifecycle, player roster, KV | `Runtime/Session/SessionManager/SessionManager.h/.cpp` |
+
+---
+
+## Phase 61 – Rendering, Networking, Audio, Gameplay & Tooling ✅
+
+> Decal projector with atlas UV and fade, typed-packet network layer with fragmentation
+> and ACK, zone-based environment sound system with crossfade and reverb, full ability
+> system (grant/activate/cooldown/cost/charges/resources), procedural mesh builder with
+> primitives and extrude, heightmap terrain with deform/erosion/splat, pooled particle
+> emitter system with LOD, keyframe-driven UI animator with sequences, item definition and
+> instance system with stacking/equipment/durability, and per-category memory profiler with
+> snapshots and diffs. All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 61.01 | Decal Projector | Medium | Atlas UV, fade-out, priority, expire callback | `Engine/Render/DecalProjector/DecalProjector/DecalProjector.h/.cpp` |
+| ✅ 61.02 | Network Packet System | High | Typed packets, seq/ACK, fragment/reassemble | `Engine/Net/Packet/NetworkPacketSystem/NetworkPacketSystem.h/.cpp` |
+| ✅ 61.03 | Environment Sound System | Medium | Zone-based ambient, crossfade, reverb, callbacks | `Engine/Audio/Environment/EnvironmentSoundSystem/EnvironmentSoundSystem.h/.cpp` |
+| ✅ 61.04 | Ability System | High | Grant/activate/cooldown/cost/charges/resources | `Runtime/Combat/Ability/AbilitySystem/AbilitySystem.h/.cpp` |
+| ✅ 61.05 | Procedural Mesh System | Medium | Box/sphere/cylinder/plane/torus/extrude, normals | `Engine/Render/ProceduralMesh/ProceduralMeshSystem/ProceduralMeshSystem.h/.cpp` |
+| ✅ 61.06 | Terrain System | High | Heightmap, deform, flatten, smooth, erosion, splat | `Engine/World/Terrain/TerrainSystem/TerrainSystem.h/.cpp` |
+| ✅ 61.07 | Particle Emitter Pool | Medium | Pooled instances, LOD, burst, spawn/return callbacks | `Engine/Particles/EmitterPool/ParticleEmitterPool/ParticleEmitterPool.h/.cpp` |
+| ✅ 61.08 | UI Animator | Medium | Keyframe tracks, loop/ping-pong, sequence play | `Runtime/UI/UIAnimator/UIAnimator/UIAnimator.h/.cpp` |
+| ✅ 61.09 | Item System | High | Def registry, stack/split/merge, equip, durability | `Runtime/Inventory/Item/ItemSystem/ItemSystem.h/.cpp` |
+| ✅ 61.10 | Memory Profiler | Medium | Category stats, snapshots, diffs, threshold alerts | `Core/Profiler/MemoryProfiler/MemoryProfiler.h/.cpp` |
