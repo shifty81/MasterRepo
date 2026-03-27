@@ -6,6 +6,7 @@
 #include "Editor/UndoableCommandBus.h"
 #include "IDE/CodeEditor/CodeEditor.h"
 #include "IDE/AIChat/AIChat.h"
+#include "IDE/BuildSystem/CygwinManager.h"
 #include "Engine/Core/Logger.h"
 #ifdef _WIN32
 #  define WIN32_LEAN_AND_MEAN
@@ -73,7 +74,8 @@ static constexpr float    kRotSnapDeg        = 15.f;  // rotation snap angle (de
 static constexpr char     kDefaultScenePath[] = "Projects/NovaForge/Scenes/editor_save.scene";
 static constexpr float    kPIEOrbitSpeedFactor = 0.06f; // orbit speed divisor in PIE animation
 static constexpr float    kScrollToBottom      = 99999.f; // sentinel to auto-scroll to bottom
-static constexpr float    kApproxCharWidth     = 7.f;    // pixels per char for stb_easy_font at scale 1
+static constexpr float    kFontScale            = 1.35f;  // global text scale — improves readability
+static constexpr float    kApproxCharWidth     = 9.5f;   // pixels per char for stb_easy_font at kFontScale
 
 // ── Layout constants ───────────────────────────────────────────────────────
 static constexpr float kTitleH    = 26.f;
@@ -463,6 +465,7 @@ void EditorRenderer::OnKey(int key, bool pressed) {
     static constexpr int K_LEFT_CTRL  = 341;
     static constexpr int K_RIGHT_CTRL = 345;
     static constexpr int K_LEFT_SHIFT = 340;
+    static constexpr int K_SPACE      = 32;
     static constexpr int K_P          = 80;
     static constexpr int K_S          = 83;
     static constexpr int K_O          = 79;
@@ -487,6 +490,7 @@ void EditorRenderer::OnKey(int key, bool pressed) {
     static constexpr int K_DELETE     = GLFW_KEY_DELETE;
     static constexpr int K_LEFT_CTRL  = GLFW_KEY_LEFT_CONTROL;
     static constexpr int K_RIGHT_CTRL = GLFW_KEY_RIGHT_CONTROL;
+    static constexpr int K_SPACE      = GLFW_KEY_SPACE;
     static constexpr int K_P          = GLFW_KEY_P;
     static constexpr int K_S          = GLFW_KEY_S;
     static constexpr int K_O          = GLFW_KEY_O;
@@ -607,6 +611,12 @@ void EditorRenderer::OnKey(int key, bool pressed) {
                     std::make_unique<CreateEntityCmd>(m_world, m_selectedEntity, newTag, newTr));
                 AppendConsole("[Info]  Duplicated: " + newTag.name);
             }
+        } else if (key == K_SPACE) {
+            // Ctrl+Space — toggle AI chat sidebar
+            m_projectAIVisible = !m_projectAIVisible;
+            AppendConsole(m_projectAIVisible
+                ? "[Info]  AI sidebar opened  (Ctrl+Space to close)"
+                : "[Info]  AI sidebar closed  (Ctrl+Space to reopen)");
         }
     } else {
         if (key == K_P) {
@@ -735,12 +745,36 @@ uint32_t EditorRenderer::PickEntityAt(float sx, float sy) {
 
 // ── EI-08: trigger build ──────────────────────────────────────────────────
 void EditorRenderer::TriggerBuild() {
-    AppendConsole("[Info]  Build triggered — running Scripts/Tools/build_all.sh --debug-only");
+    static constexpr char kBuildScript[] = "Scripts/Tools/build_all.sh --debug-only";
+    static constexpr char kBuildLog[]    = "Logs/Build/editor_build.log";
+
+    AppendConsole("[Info]  Build triggered — " + std::string(kBuildScript));
     Engine::Core::Logger::Info("Build started via editor");
-    // Launch build script in background; output is captured by logger sink
-    std::string cmd = "Scripts/Tools/build_all.sh --debug-only >> Logs/Build/editor_build.log 2>&1 &";
+
+#ifdef _WIN32
+    // On Windows route through Cygwin (embedded portable or system install)
+    // so that the bash build scripts can execute correctly.
+    auto& cygwin = IDE::BuildSystem::CygwinManager::Instance();
+    if (cygwin.Detect() != IDE::BuildSystem::CygwinManager::Status::NotFound) {
+        std::string cmd = cygwin.MakeShellCommand(kBuildScript, kBuildLog);
+        std::system(cmd.c_str());
+        AppendConsole("[Info]  Build complete — see " + std::string(kBuildLog));
+        return;
+    }
+
+    // Cygwin not found — offer to set it up
+    AppendConsole("[Warn]  Cygwin not found.  Setting up embedded installer...");
+    cygwin.SetupEmbedded([this](const std::string& msg) {
+        AppendConsole("[Info]  " + msg);
+    });
+    AppendConsole("[Warn]  Run Tools\\setup_cygwin_portable.cmd then restart AtlasEditor.");
+#else
+    // Linux / macOS — run script directly through system bash in background
+    std::string cmd = std::string("bash -c '") + kBuildScript + "' >> "
+                      + kBuildLog + " 2>&1 &";
     std::system(cmd.c_str());
-    AppendConsole("[Info]  Build running in background — see Logs/Build/editor_build.log");
+    AppendConsole("[Info]  Build running in background — see " + std::string(kBuildLog));
+#endif
 }
 
 // ── GizmoAxisHit — returns true if mouse is within ~8px of the axis arrow ─
@@ -1460,6 +1494,9 @@ void EditorRenderer::DrawText(const std::string& text, float x, float y,
                                uint32_t col, float scale) {
     if (text.empty()) return;
 
+    // Apply global scale multiplier for improved readability across all panels
+    float s = scale * kFontScale;
+
     static char vbuf[65536];
     unsigned char c[4] = { R(col), G(col), B(col), A(col) };
     int quads = stb_easy_font_print(0.f, 0.f,
@@ -1468,7 +1505,7 @@ void EditorRenderer::DrawText(const std::string& text, float x, float y,
 
     glPushMatrix();
     glTranslatef(x, y, 0.f);
-    glScalef(scale, scale, 1.f);
+    glScalef(s, s, 1.f);
 
     SetColor(col);
     glEnableClientState(GL_VERTEX_ARRAY);
@@ -1480,7 +1517,7 @@ void EditorRenderer::DrawText(const std::string& text, float x, float y,
 }
 
 int EditorRenderer::TextWidth(const std::string& text, float scale) {
-    return static_cast<int>(stb_easy_font_width(const_cast<char*>(text.c_str())) * scale);
+    return static_cast<int>(stb_easy_font_width(const_cast<char*>(text.c_str())) * scale * kFontScale);
 }
 
 // ──────────────────────────────────────────────────────────────────────────

@@ -36,6 +36,8 @@ set(IDE_SOURCES
     Console/ConsoleFilter/ConsoleFilter.cpp
     # Phase 34 — file-path navigation breadcrumb bar
     Breadcrumb/BreadcrumbBar/BreadcrumbBar.cpp
+    # IDE build system — Cygwin64 portable environment manager (Windows)
+    BuildSystem/CygwinManager.cpp
 )
 
 add_library(IDELib STATIC ${IDE_SOURCES})
