@@ -39,7 +39,8 @@
 | Networking, Physics, AI & Platform Utilities (Phase 47) | 10/10 | 0 | 10 |
 | Rendering, Editor Tools & Runtime Services (Phase 48) | 10/10 | 0 | 10 |
 | AI, Runtime & Engine Tooling (Phase 49) | 10/10 | 0 | 10 |
-| **TOTAL** | **321/321** | **0** | **321** |
+| Physics, AI, Rendering & Platform (Phase 50) | 10/10 | 0 | 10 |
+| **TOTAL** | **331/331** | **0** | **331** |
 
 ---
 
@@ -1073,6 +1074,7 @@ All three paths converge for the final product.
 | 47 | Networking, Physics, AI & Platform Utilities — NetworkManager (Runtime/Network/NetworkManager), RigidBodySystem (Engine/Physics/RigidBody), BehaviorTree (Engine/AI/BehaviorTree), AchievementSystem (Runtime/Achievement/AchievementSystem), AssetImporter (Engine/Asset/AssetImporter), ParticleSystem (Engine/Particles/ParticleSystem), ChunkSystem (Engine/World/ChunkSystem), ConfigSystem (Core/Config/ConfigSystem), AnimationBlendTree (Engine/Animation/BlendTree), ScriptingBridge (Engine/Scripting/ScriptingBridge). |
 | 48 | Rendering, Editor Tools & Runtime Services — ShadowSystem (Engine/Render/Shadow), DecalSystem (Engine/Render/Decal), IKSystem (Engine/Animation/IK), MapGenerator (PCG/MapGenerator), TrapSystem (Runtime/Gameplay/TrapSystem), QuestSystem (Runtime/Quest/QuestSystem), DebugConsole (Engine/Debug/DebugConsole), AudioMixer (Engine/Audio/Mixer), InputRecorder (Engine/Input/Recorder), WorldGenerator (PCG/WorldGenerator). |
 | 49 | AI, Runtime & Engine Tooling — VehicleSystem (Engine/Vehicle), CraftingSystem (Runtime/Crafting), GrappleSystem (Runtime/Gameplay/Grapple), GradientSky (Engine/Render/GradientSky), SubtitleSystem (Runtime/UI/Subtitle), CurveEditor (Engine/Curve), ReplaySystem (Runtime/Replay), SteamworksStub (Engine/Platform/Steamworks), HeatmapSystem (Runtime/Analytics/Heatmap), ModManager (Runtime/Mod). |
+| 50 | Physics, AI, Rendering & Platform — ClothSystem (Engine/Physics/Cloth), FactionSystem (Runtime/Faction), RagdollSystem (Engine/Physics/Ragdoll), PortalSystem (Engine/Render/Portal), SignalBus (Core/Signal), LensFlareSystem (Engine/Render/LensFlare), SteeringSystem (Engine/AI/Steering), VoxelTerrain (Engine/World/VoxelTerrain), LocalisationSystem (Core/Localisation), DynamicResolution (Engine/Render/DynamicResolution). |
 
 </details>
 
@@ -1209,3 +1211,25 @@ All three paths converge for the final product.
 | ✅ 49.08 | Steamworks Stub | Low | Achievement/stat/leaderboard stub, safe no-op when Steamworks not linked | `Engine/Platform/Steamworks/SteamworksStub/SteamworksStub.h/.cpp` |
 | ✅ 49.09 | Heatmap System | Low | 2D Gaussian splat accumulation, decay, normalise, PPM/CSV export, 3D projection | `Runtime/Analytics/Heatmap/HeatmapSystem/HeatmapSystem.h/.cpp` |
 | ✅ 49.10 | Mod Manager | Low | Manifest registry, topological load-order, conflict detection, enable/disable, JSON | `Runtime/Mod/ModManager/ModManager.h/.cpp` |
+
+---
+
+## Phase 50 – Physics, AI, Rendering & Platform ✅
+
+> Adds PBD cloth simulation, faction relations system, ragdoll physics, portal pairs,
+> typed signal bus, screen-space lens flare, Reynolds steering AI, sparse voxel terrain,
+> localisation/i18n system, and dynamic render resolution scaling.
+> All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 50.01 | Cloth System | High | PBD cloth: verlet integration, stretch/shear/bend constraints, wind, pins, sphere/plane collision, tear | `Engine/Physics/Cloth/ClothSystem/ClothSystem.h/.cpp` |
+| ✅ 50.02 | Faction System | High | Faction registry, signed reputation matrix, standing thresholds, war/peace declaration, entity membership | `Runtime/Faction/FactionSystem/FactionSystem.h/.cpp` |
+| ✅ 50.03 | Ragdoll System | High | Per-bone rigid bodies, joint limits, anim/physics blend weight, death trigger, per-bone impulse, sleep | `Engine/Physics/Ragdoll/RagdollSystem/RagdollSystem.h/.cpp` |
+| ✅ 50.04 | Portal System | Medium | Portal pairs, cross detection, position/dir remap, virtual camera, one-way, recursion depth | `Engine/Render/Portal/PortalSystem/PortalSystem.h/.cpp` |
+| ✅ 50.05 | Signal Bus | Medium | Typed pub/sub: subscribe/unsubscribe, fire, enqueue+dispatch, priority, wildcard, one-shot, thread-safe | `Core/Signal/SignalBus/SignalBus.h/.cpp` |
+| ✅ 50.06 | Lens Flare System | Medium | Screen-space flares: ghost/streak/halo/glow elements, occlusion fade, configurable templates | `Engine/Render/LensFlare/LensFlareSystem/LensFlareSystem.h/.cpp` |
+| ✅ 50.07 | Steering System | Medium | Reynolds steering: seek/flee/arrive/pursue/evade/wander/flocking, per-agent behaviour sets | `Engine/AI/Steering/SteeringSystem/SteeringSystem.h/.cpp` |
+| ✅ 50.08 | Voxel Terrain | Medium | Sparse voxel grid, naive face-culled mesh gen, FillBox/FillSphere, DDA raycast, chunk dirty tracking | `Engine/World/VoxelTerrain/VoxelTerrain/VoxelTerrain.h/.cpp` |
+| ✅ 50.09 | Localisation System | Low | Key→value table, CSV/JSON load, locale switch, fallback, plural forms, token format | `Core/Localisation/LocalisationSystem/LocalisationSystem.h/.cpp` |
+| ✅ 50.10 | Dynamic Resolution | Low | Frame-time history, scale up/down rules, min/max clamp, step, on-change callback | `Engine/Render/DynamicResolution/DynamicResolution/DynamicResolution.h/.cpp` |
