@@ -33,8 +33,9 @@ int main() {
     window.onMouseButton = [&](int btn, bool pressed) { renderer.OnMouseButton(btn, pressed); };
     window.onKey         = [&](int key, bool pressed) {
         renderer.OnKey(key, pressed);
-        // ESC closes the editor
-        if (key == GLFW_KEY_ESCAPE && pressed)
+        // ESC closes the editor only when NOT in PIE mode.
+        // When playing, OnKey already calls StopPIE() and the window stays open.
+        if (key == GLFW_KEY_ESCAPE && pressed && !renderer.IsPlaying())
             glfwSetWindowShouldClose(window.GetGLFWHandle(), GLFW_TRUE);
     };
     window.onChar   = [&](unsigned int cp) { renderer.OnChar(cp); };
