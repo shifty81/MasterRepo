@@ -135,7 +135,7 @@ public:
                 // Surface block: partial fill (sub-voxel heightmap)
                 if (surf) {
                     float subN = detail::OctaveNoise(nx * 16.f, 0.f, nz * 16.f, 2, 0.1f, m_seed+1);
-                    uint8_t fillY = (uint8_t)(subN * VoxelBlock::SIZE);
+                    uint8_t fillY = (uint8_t)(subN * (VoxelBlock::SIZE - 1));
                     vol.FillBox(svX0, svY0, svZ0,
                                 svX0 + VoxelBlock::SIZE - 1, svY0 + fillY,
                                 svZ0 + VoxelBlock::SIZE - 1,

@@ -25,6 +25,7 @@
 #include <cstdint>
 #include <array>
 #include <string>
+#include <memory>
 #include <vector>
 #include <unordered_map>
 #include <functional>
@@ -275,7 +276,6 @@ public:
         };
         ChunkKey3D key{FloorDiv(wx, chunkSide), FloorDiv(wy, chunkSide), FloorDiv(wz, chunkSide)};
         auto* chunk = GetChunk(key);
-        if (!chunk) return nullptr;
         if (!chunk) return nullptr;
         int32_t lx = wx - key.cx * chunkSide;
         int32_t ly = wy - key.cy * chunkSide;
