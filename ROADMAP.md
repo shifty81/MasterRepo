@@ -33,7 +33,8 @@
 | Developer Experience & World Simulation (Phase 41) | 10/10 | 0 | 10 |
 | Immersive Technologies & Live Infrastructure (Phase 42) | 10/10 | 0 | 10 |
 | Game Systems & Engine Tooling (Phase 43) | 10/10 | 0 | 10 |
-| **TOTAL** | **261/261** | **0** | **261** |
+| Advanced Gameplay & Engine Utilities (Phase 44) | 10/10 | 0 | 10 |
+| **TOTAL** | **271/271** | **0** | **271** |
 
 ---
 
@@ -1061,9 +1062,31 @@ All three paths converge for the final product.
 | 41 | Developer Experience & World Simulation — ShaderGraph (Engine/Shader), BehaviorTreeEditorPanel (Editor/Panels), FluidSimulation (Engine/Sim), EventReplaySystem (Core), CrowdSimulation (Runtime), DataTableSystem (Core), ProceduralAnimation (Engine/Animation), BlueprintCompiler (Builder), MinimapSystem (Runtime), GPUParticleSystem (Engine/Particles). |
 | 42 | Immersive Technologies & Live Infrastructure — SplineSystem (Engine/Spline), WeatherSystem (PCG/Weather), ConversationGraph (Runtime/Dialogue), InputRemapper (Engine/Input/Remapping), LODManager (Engine/Lod), RPCSystem (Engine/Net/RPC), LightBaker (Engine/Lighting), ObjectiveSystem (Runtime/Gameplay), VoiceManager (Runtime/Audio), SceneStreamingSystem (Runtime/Streaming). |
 | 43 | Game Systems & Engine Tooling — InteractionSystem (Runtime/Gameplay), DamagePipeline (Runtime/Combat), AbilitySystem (Runtime/Combat), InventorySystem (Runtime/Inventory), StatusEffectSystem (Runtime/Combat), GameEventBus (Core/Events), TextureAtlasBuilder (Engine/Render), DebugDraw (Engine/Debug), ConstraintSolver (Engine/Physics), ScreenshotSystem (Engine/Render). |
+| 44 | Advanced Gameplay & Engine Utilities — WaterSystem (Engine/Water), FootstepSystem (Runtime/Audio), ComboSystem (Runtime/Combat), PrefabSystem (Engine/Scene), GameModeManager (Runtime/Gameplay), SurfaceAnalyzer (Engine/Physics), AnimNotifySystem (Engine/Animation), TagSystem (Core/Tags), CameraShakeSystem (Engine/Camera), PickupSystem (Runtime/Gameplay). |
 
 </details>
 
 ### Phase Voxel-Chisel (Mar 2026)
 - [x] VoxelChiselSystem — 16×16×16 sub-voxel chisel blocks; VoxelCell, VoxelBlock, VoxelChunk, VoxelVolume; SetCell, FillBox, CarveBox, ChiselSphere ops; op history for undo (PCG/Voxel/VoxelChiselSystem/)
 - [x] VoxelPCGGen — PCG driver bridges noise/biome/cave/structure/planet systems into voxel volumes; GenerateTerrain, CarveCaves, StampStructure, GeneratePlanetSurface, GenerateAsteroid, GenerateShipHull (PCG/Voxel/VoxelPCGGen/)
+
+---
+
+## Phase 44 – Advanced Gameplay & Engine Utilities ✅
+
+> Fills in water simulation, footsteps, combo chains, prefabs, game-mode rules, surface
+> detection, animation notifies, entity tags, camera shake, and item pickups.
+> All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 44.01 | Water System | High | Gerstner waves, buoyancy impulse, swim-state machine, wetness, JSON save/load | `Engine/Water/WaterSystem/WaterSystem.h/.cpp` |
+| ✅ 44.02 | Footstep System | High | Surface-aware footstep audio/VFX, stride-length steps, landing/jump events, blended surfaces | `Runtime/Audio/FootstepSystem/FootstepSystem.h/.cpp` |
+| ✅ 44.03 | Combo System | High | Attack combo chains, timing link windows (early/perfect/late), branching, finishers | `Runtime/Combat/ComboSystem/ComboSystem.h/.cpp` |
+| ✅ 44.04 | Prefab System | High | Prefab templates, nested prefabs, per-instance overrides, live propagation, JSON | `Engine/Scene/PrefabSystem/PrefabSystem.h/.cpp` |
+| ✅ 44.05 | Game Mode Manager | High | Match phases (Countdown→Running→PostGame), score/kill tracking, win conditions, respawn | `Runtime/Gameplay/GameModeManager/GameModeManager.h/.cpp` |
+| ✅ 44.06 | Surface Analyzer | Medium | Surface material registry, raycast+contact-point resolution, blend weights, batch query | `Engine/Physics/SurfaceAnalyzer/SurfaceAnalyzer.h/.cpp` |
+| ✅ 44.07 | Anim Notify System | Medium | Keyframe-timed animation events, state notifies (enter/tick/exit), per-instance playback | `Engine/Animation/AnimNotify/AnimNotifySystem.h/.cpp` |
+| ✅ 44.08 | Tag System | Medium | Hierarchical dot-notation tags, exclusive groups, batch ops, thread-safe query | `Core/Tags/TagSystem/TagSystem.h/.cpp` |
+| ✅ 44.09 | Camera Shake System | Medium | Trauma/decay model, Perlin-noise offsets, presets, directional bias, distance scale | `Engine/Camera/CameraShake/CameraShakeSystem.h/.cpp` |
+| ✅ 44.10 | Pickup System | Low | Type registry, spawn/despawn, proximity collection, magnet, respawn timer, team lock | `Runtime/Gameplay/PickupSystem/PickupSystem.h/.cpp` |
