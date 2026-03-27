@@ -33,9 +33,8 @@ int main() {
     window.onMouseButton = [&](int btn, bool pressed) { renderer.OnMouseButton(btn, pressed); };
     window.onKey         = [&](int key, bool pressed) {
         renderer.OnKey(key, pressed);
-        // ESC closes the editor
-        if (key == GLFW_KEY_ESCAPE && pressed)
-            glfwSetWindowShouldClose(window.GetGLFWHandle(), GLFW_TRUE);
+        // ESC is fully handled inside OnKey (stops PIE, closes panels).
+        // It never closes the editor window — use File → Exit for that.
     };
     window.onChar   = [&](unsigned int cp) { renderer.OnChar(cp); };
     window.onScroll = [&](double dx, double dy) { renderer.OnScroll(dx, dy); };

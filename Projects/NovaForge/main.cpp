@@ -130,22 +130,90 @@ int main() {
     Runtime::FactionSystem factionSystem;
     factionSystem.Init();
 
-    // NF-01: Player entity (always first — camera follows this entity)
+    // NF-01b: Populate the star system — prefer editor_save.scene if it exists
+    // so changes made in AtlasEditor translate directly into the running game.
+    static constexpr char kEditorScene[] = "Projects/NovaForge/Scenes/editor_save.scene";
+    bool loadedFromEditor = false;
+    if (fs::exists(kEditorScene)) {
+        std::ifstream sf(kEditorScene);
+        std::string content((std::istreambuf_iterator<char>(sf)),
+                             std::istreambuf_iterator<char>());
+        int sceneCount = 0;
+        size_t pos = 0;
+        while ((pos = content.find("\"name\":", pos)) != std::string::npos) {
+            size_t s = content.find('"', pos + 7);
+            if (s == std::string::npos) break;
+            size_t e = content.find('"', s + 1);
+            if (e == std::string::npos) break;
+            std::string name = content.substr(s + 1, e - s - 1);
+
+            auto id = world.CreateEntity();
+            Runtime::Components::Tag tag;
+            tag.name = name;
+            // Parse tags array — search within a window before/around current pos
+            size_t tagSearchStart = (pos > 200) ? pos - 200 : 0;
+            size_t tp = content.find("\"tags\":[", tagSearchStart);
+            if (tp != std::string::npos && tp < pos + 600) {
+                size_t ts = tp + 8, te = content.find(']', ts);
+                if (te != std::string::npos) {
+                    size_t tp2 = ts;
+                    while ((tp2 = content.find('"', tp2)) != std::string::npos && tp2 < te) {
+                        size_t te2 = content.find('"', tp2 + 1);
+                        if (te2 == std::string::npos || te2 > te) break;
+                        tag.tags.push_back(content.substr(tp2 + 1, te2 - tp2 - 1));
+                        tp2 = te2 + 1;
+                    }
+                }
+            }
+            world.AddComponent(id, tag);
+            // Parse position
+            Runtime::Components::Transform tr;
+            size_t pp = content.find("\"pos\":[", pos);
+            if (pp != std::string::npos && pp < pos + 500) {
+                try {
+                    size_t pb = pp + 7;
+                    tr.position.x = std::stof(content.substr(pb));
+                    size_t comma1 = content.find(',', pb);
+                    if (comma1 != std::string::npos) {
+                        pb = comma1 + 1;
+                        tr.position.y = std::stof(content.substr(pb));
+                        size_t comma2 = content.find(',', pb);
+                        if (comma2 != std::string::npos) {
+                            pb = comma2 + 1;
+                            tr.position.z = std::stof(content.substr(pb));
+                        }
+                    }
+                } catch (...) {}
+            }
+            world.AddComponent(id, tr);
+            ++sceneCount;
+            pos = e + 1;
+        }
+        if (sceneCount > 0) {
+            loadedFromEditor = true;
+            Engine::Core::Logger::Info("NF-01: Loaded " + std::to_string(sceneCount)
+                + " entities from editor scene: " + std::string(kEditorScene));
+        }
+    }
+
+    if (!loadedFromEditor) {
+        // Fall back to built-in universe data
+        Runtime::Universe::UniverseRegistry universeReg = Runtime::Universe::BuiltinUniverse();
+        Runtime::Universe::UniverseLoader    universeLoader(universeReg);
+        universeLoader.SetStartSystem("thyrkstad");
+        universeLoader.PopulateECS(world, nullptr);
+        Engine::Core::Logger::Info("NF-01: Universe populated — Thyrkstad system (built-in)");
+    }
+
+    // NF-01: Player entity (always runtime-created, not from scene file)
     auto playerEntity = world.CreateEntity();
     world.AddComponent(playerEntity, Runtime::Components::Tag{"Player", {"Player","Controllable","Ship","Fighter"}});
     Runtime::Components::Transform playerTr;
     playerTr.position = {0.f, 0.f, 0.f};
     world.AddComponent(playerEntity, playerTr);
 
-    // NF-01b: Populate the star system from the universe registry
-    // Universe data: 4 factions (Solari, Veyren, Aurelian, Keldari), Thyrkstad is starter
-    Runtime::Universe::UniverseRegistry universeReg = Runtime::Universe::BuiltinUniverse();
-    Runtime::Universe::UniverseLoader    universeLoader(universeReg);
-    universeLoader.SetStartSystem("thyrkstad");
-    universeLoader.PopulateECS(world, nullptr); // pass &factionSystem once it's created
-
-    Engine::Core::Logger::Info("NF-01: Universe populated — Thyrkstad system ("
-        + std::to_string(world.EntityCount()) + " entities incl. player)");
+    Engine::Core::Logger::Info("NF-01: World ready — "
+        + std::to_string(world.EntityCount()) + " entities total");
 
     // Deposit entities for miners
     auto deposit1 = world.CreateEntity();
