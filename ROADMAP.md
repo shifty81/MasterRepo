@@ -1063,3 +1063,7 @@ All three paths converge for the final product.
 | 43 | Game Systems & Engine Tooling — InteractionSystem (Runtime/Gameplay), DamagePipeline (Runtime/Combat), AbilitySystem (Runtime/Combat), InventorySystem (Runtime/Inventory), StatusEffectSystem (Runtime/Combat), GameEventBus (Core/Events), TextureAtlasBuilder (Engine/Render), DebugDraw (Engine/Debug), ConstraintSolver (Engine/Physics), ScreenshotSystem (Engine/Render). |
 
 </details>
+
+### Phase Voxel-Chisel (Mar 2026)
+- [x] VoxelChiselSystem — 16×16×16 sub-voxel chisel blocks; VoxelCell, VoxelBlock, VoxelChunk, VoxelVolume; SetCell, FillBox, CarveBox, ChiselSphere ops; op history for undo (PCG/Voxel/VoxelChiselSystem/)
+- [x] VoxelPCGGen — PCG driver bridges noise/biome/cave/structure/planet systems into voxel volumes; GenerateTerrain, CarveCaves, StampStructure, GeneratePlanetSurface, GenerateAsteroid, GenerateShipHull (PCG/Voxel/VoxelPCGGen/)
