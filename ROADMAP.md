@@ -41,7 +41,8 @@
 | AI, Runtime & Engine Tooling (Phase 49) | 10/10 | 0 | 10 |
 | Physics, AI, Rendering & Platform (Phase 50) | 10/10 | 0 | 10 |
 | Audio, Editor, Network, Gameplay & Core (Phase 51) | 10/10 | 0 | 10 |
-| **TOTAL** | **341/341** | **0** | **341** |
+| Rendering, Gameplay, AI, Core & Physics (Phase 52) | 10/10 | 0 | 10 |
+| **TOTAL** | **351/351** | **0** | **351** |
 
 ---
 
@@ -1077,6 +1078,7 @@ All three paths converge for the final product.
 | 49 | AI, Runtime & Engine Tooling — VehicleSystem (Engine/Vehicle), CraftingSystem (Runtime/Crafting), GrappleSystem (Runtime/Gameplay/Grapple), GradientSky (Engine/Render/GradientSky), SubtitleSystem (Runtime/UI/Subtitle), CurveEditor (Engine/Curve), ReplaySystem (Runtime/Replay), SteamworksStub (Engine/Platform/Steamworks), HeatmapSystem (Runtime/Analytics/Heatmap), ModManager (Runtime/Mod). |
 | 50 | Physics, AI, Rendering & Platform — ClothSystem (Engine/Physics/Cloth), FactionSystem (Runtime/Faction), RagdollSystem (Engine/Physics/Ragdoll), PortalSystem (Engine/Render/Portal), SignalBus (Core/Signal), LensFlareSystem (Engine/Render/LensFlare), SteeringSystem (Engine/AI/Steering), VoxelTerrain (Engine/World/VoxelTerrain), LocalisationSystem (Core/Localisation), DynamicResolution (Engine/Render/DynamicResolution). |
 | 51 | Audio, Editor, Network, Gameplay & Core — AudioOcclusion (Engine/Audio/Occlusion), TransformGizmo (Editor/Gizmo), HttpClient (Core/Net/Http), BoidSystem (Engine/AI/Boid), ColorGrading (Engine/Render/ColorGrading), CoroutineScheduler (Core/Coroutine), AnimationRetargeter (Engine/Animation/Retarget), SoftBodySystem (Engine/Physics/SoftBody), TilemapSystem (Engine/World/Tilemap), ScriptHotReload (Engine/Scripting/HotReload). |
+| 52 | Rendering, Gameplay, AI, Core & Physics — AtmosphericScattering (Engine/Render/AtmosphericScattering), RopeSystem (Engine/Physics/Rope), PerkSystem (Runtime/Gameplay/Perks), GridPathfinder (Engine/AI/Grid), VisibilitySystem (Engine/Render/Visibility), BytecodeVM (Engine/Scripting/VM), ClimateSystem (PCG/Climate), TrailRenderer (Engine/Render/Trail), EconomySystem (Runtime/Economy), JobSystem (Core/Jobs). |
 
 </details>
 
@@ -1257,3 +1259,25 @@ All three paths converge for the final product.
 | ✅ 51.08 | Soft Body System | Medium | Mass-spring verlet, stretch spring solver, pressure volume, sphere/plane collision | `Engine/Physics/SoftBody/SoftBodySystem/SoftBodySystem.h/.cpp` |
 | ✅ 51.09 | Tilemap System | Low | Layered uint16 tile grid, tileset UV rect, collision mask, world↔tile query, dirty | `Engine/World/Tilemap/TilemapSystem/TilemapSystem.h/.cpp` |
 | ✅ 51.10 | Script Hot-Reload | Low | Poll-based file mod-time watch, force-reload, version counter, watch groups | `Engine/Scripting/HotReload/ScriptHotReload/ScriptHotReload.h/.cpp` |
+
+---
+
+## Phase 52 – Rendering, Gameplay, AI, Core & Physics ✅
+
+> Rayleigh+Mie atmospheric scattering, verlet rope physics, perk tree system,
+> 2D A* grid pathfinder, portal/sector visibility, stack-based bytecode VM,
+> biome/climate simulation, ribbon trail renderer, economy/trade system,
+> and work-stealing multi-threaded job system. All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 52.01 | Atmospheric Scattering | High | Rayleigh+Mie coefficients, sun direction, LUT precompute, CPU sky-colour evaluate | `Engine/Render/AtmosphericScattering/AtmosphericScattering/AtmosphericScattering.h/.cpp` |
+| ✅ 52.02 | Rope System | High | Verlet chain, distance constraints, pin endpoints, wind turbulence, sphere/plane collision | `Engine/Physics/Rope/RopeSystem/RopeSystem.h/.cpp` |
+| ✅ 52.03 | Perk System | Medium | Registry, tier tree, prerequisites, stack count, on-unlock callback, JSON save/load | `Runtime/Gameplay/Perks/PerkSystem/PerkSystem.h/.cpp` |
+| ✅ 52.04 | Grid Pathfinder | Medium | A* on bool+cost grid, diagonal option, async queue, world↔grid coords | `Engine/AI/Grid/GridPathfinder/GridPathfinder.h/.cpp` |
+| ✅ 52.05 | Visibility System | Medium | Portal/sector BFS flood-fill, IsVisible, frustum plane helper, FindSector | `Engine/Render/Visibility/VisibilitySystem/VisibilitySystem.h/.cpp` |
+| ✅ 52.06 | Bytecode VM | Medium | Stack VM: 26 opcodes, 8 registers, call/ret, JMP/JZ/JNZ, disassembler | `Engine/Scripting/VM/BytecodeVM/BytecodeVM.h/.cpp` |
+| ✅ 52.07 | Climate System | Medium | Biome map, temp/humidity grid, seasonal tick, per-cell weather state, world query | `PCG/Climate/ClimateSystem/ClimateSystem.h/.cpp` |
+| ✅ 52.08 | Trail Renderer | Low | Ribbon quads, UV scroll, fade over lifetime, width taper, head/tail colour | `Engine/Render/Trail/TrailRenderer/TrailRenderer.h/.cpp` |
+| ✅ 52.09 | Economy System | Low | Currency ledger, buy/sell, dynamic pricing, supply discount, tax, transaction log | `Runtime/Economy/EconomySystem/EconomySystem.h/.cpp` |
+| ✅ 52.10 | Job System | High | Work-stealing thread pool, ScheduleAfter, ParallelFor, Wait/WaitAll, priority queue | `Core/Jobs/JobSystem/JobSystem.h/.cpp` |
