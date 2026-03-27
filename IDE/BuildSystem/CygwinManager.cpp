@@ -83,11 +83,11 @@ CygwinManager::Status CygwinManager::Detect() {
         }
     }
 
-    // 2. Well-known system install paths
+    // 2. Well-known system install paths (C: and D: cover most desktop/laptop configs)
     static const char* kSystemPaths[] = {
         "C:/cygwin64/bin/bash.exe",
         "C:/cygwin/bin/bash.exe",
-        "D:/cygwin64/bin/bash.exe",
+        "D:/cygwin64/bin/bash.exe", // common secondary/work drive
         "D:/cygwin/bin/bash.exe",
         nullptr
     };
@@ -162,11 +162,11 @@ bool CygwinManager::SetupEmbedded(const std::function<void(const std::string&)>&
     progress("Cygwin setup is only applicable on Windows.");
     return false;
 #else
-    // Already present?
+    // Already present? Nothing to set up.
     fs::path bashExe = fs::path(EmbeddedDir()) / "bin" / "bash.exe";
     if (fs::exists(bashExe)) {
         progress("Embedded Cygwin already present at: " + EmbeddedDir());
-        return true;
+        return false; // no action taken; not an error
     }
 
     progress("Preparing embedded Cygwin64 at: " + EmbeddedDir());
@@ -197,6 +197,12 @@ bool CygwinManager::SetupEmbedded(const std::function<void(const std::string&)>&
          ":: can run bash build scripts without a system-wide Cygwin installation.\r\n"
          "::\r\n"
          ":: Packages: bash make gcc-core gcc-g++ binutils coreutils grep sed gawk findutils\r\n"
+         "::\r\n"
+         ":: Mirror alternatives (edit MIRROR below if this one is slow for your region):\r\n"
+         "::   https://mirrors.kernel.org/sourceware/cygwin  (default, US)\r\n"
+         "::   https://ftp.acc.umu.se/mirror/cygwin          (EU - Sweden)\r\n"
+         "::   https://mirror.csclub.uwaterloo.ca/cygwin     (CA)\r\n"
+         "::   https://ftp.jaist.ac.jp/pub/cygwin            (JP)\r\n"
          "\r\n"
          "set CYGWIN_ROOT=%~dp0Cygwin64\r\n"
          "set SETUP_EXE=%~dp0cygwin-setup-x86_64.exe\r\n"

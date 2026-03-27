@@ -758,7 +758,7 @@ void EditorRenderer::TriggerBuild() {
     if (cygwin.Detect() != IDE::BuildSystem::CygwinManager::Status::NotFound) {
         std::string cmd = cygwin.MakeShellCommand(kBuildScript, kBuildLog);
         std::system(cmd.c_str());
-        AppendConsole("[Info]  Build complete — see " + std::string(kBuildLog));
+        AppendConsole("[Info]  Build started — see " + std::string(kBuildLog));
         return;
     }
 

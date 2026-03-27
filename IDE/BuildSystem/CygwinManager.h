@@ -78,8 +78,10 @@ public:
 
     /// Write a Windows batch script (Tools/setup_cygwin_portable.cmd) that
     /// downloads and installs a minimal Cygwin64 into EmbeddedDir().
-    /// progress() is called with status lines; returns true on success.
-    /// On non-Windows, or if Cygwin is already present, returns false.
+    /// progress() is called with status lines.
+    /// Returns true when the setup script is successfully written.
+    /// Returns false if: the platform is not Windows, the script could not be
+    /// written, or Cygwin is already installed (nothing to do).
     bool SetupEmbedded(const std::function<void(const std::string&)>& progress);
 
 private:
