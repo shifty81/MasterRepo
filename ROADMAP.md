@@ -49,7 +49,8 @@
 | Physics, Animation, AI, Rendering & Gameplay (Phase 57) | 10/10 | 0 | 10 |
 | Scripting, Network, Rendering, Audio & Gameplay (Phase 58) | 10/10 | 0 | 10 |
 | AI, Physics, Rendering, Audio & Core (Phase 59) | 10/10 | 0 | 10 |
-| **TOTAL** | **421/421** | **0** | **421** |
+| Animation, Rendering, Core, Gameplay & AI (Phase 60) | 10/10 | 0 | 10 |
+| **TOTAL** | **431/431** | **0** | **431** |
 
 ---
 
@@ -1436,3 +1437,25 @@ All three paths converge for the final product.
 | ✅ 59.08 | Timeline System | Medium | Tracks, keyframes, lerp, events, loop, end callback | `Engine/Timeline/TimelineSystem/TimelineSystem.h/.cpp` |
 | ✅ 59.09 | Weather System | Medium | Clear→storm blend, wind, fog, precip, lightning | `Engine/World/Weather/WeatherSystem/WeatherSystem.h/.cpp` |
 | ✅ 59.10 | Screen-Space AO | High | Hemisphere sampling, bilateral blur, composite | `Engine/Render/SSAO/ScreenSpaceAO/ScreenSpaceAO.h/.cpp` |
+
+## Phase 60 – Animation, Rendering, Core, Gameplay & AI ✅
+
+> Catmull-Rom/Bezier spline system, HDR tone-mapping (Reinhard/ACES/Uncharted2) with
+> auto-exposure, CSV data-table loader, spatial hash-grid for O(1) range queries,
+> status-effect stack/tick/resist system, CPU render-texture with blit/read/write,
+> animation blend graph with condition transitions and blend spaces, structured combat
+> event logger with CSV export, SH-based light probe interpolation, and full game-session
+> lifecycle manager with per-player key-value data. All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 60.01 | Spline System | Medium | Catmull-Rom/Bezier/Linear, arc-length, resample | `Engine/Spline/SplineSystem/SplineSystem.h/.cpp` |
+| ✅ 60.02 | Tone Mapping | High | Reinhard/ACES/Uncharted2/Hejl/Custom, exposure, auto-exp | `Engine/Render/ToneMapping/ToneMappingSystem/ToneMappingSystem.h/.cpp` |
+| ✅ 60.03 | Data Table | Medium | CSV parse, typed cell access, row query, mutation | `Core/DataTable/DataTableSystem/DataTableSystem.h/.cpp` |
+| ✅ 60.04 | Spatial Hash Grid | High | 3D hash cells, radius/AABB query, nearest, O(1) avg | `Engine/Spatial/SpatialHashGrid/SpatialHashGrid.h/.cpp` |
+| ✅ 60.05 | Status Effect System | High | Stack, tick, expire, resist, per-effect callbacks | `Runtime/Combat/StatusEffect/StatusEffectSystem/StatusEffectSystem.h/.cpp` |
+| ✅ 60.06 | Render Texture | Medium | CPU RT: create, blit, read/write pixels, mip, filter | `Engine/Render/RenderTexture/RenderTextureSystem/RenderTextureSystem.h/.cpp` |
+| ✅ 60.07 | Animation Graph | High | States, condition transitions, blend spaces, crossfade | `Engine/Animation/Graph/AnimationGraph/AnimationGraph.h/.cpp` |
+| ✅ 60.08 | Combat Logger | Medium | Damage/heal/kill/ability events, stats, CSV export | `Runtime/Combat/CombatLogger/CombatLogger/CombatLogger.h/.cpp` |
+| ✅ 60.09 | Light Probe System | Medium | SH projection, position-weighted interpolation | `Engine/Render/LightProbe/LightProbeSystem/LightProbeSystem.h/.cpp` |
+| ✅ 60.10 | Session Manager | High | Lobby/active/pause/end lifecycle, player roster, KV | `Runtime/Session/SessionManager/SessionManager.h/.cpp` |
