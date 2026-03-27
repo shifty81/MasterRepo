@@ -29,7 +29,7 @@
 namespace Runtime::Universe {
 
 /// Scale factor: 1 AU → world units.  Generous so nearby planets are visible.
-static constexpr float kAUtoWorld = 400.f;
+static constexpr float kAUtoWorld = 800.f;
 
 /// Returns planet colour (r,g,b) based on planet type.
 inline void PlanetColor(PlanetType t, float& r, float& g, float& b) {

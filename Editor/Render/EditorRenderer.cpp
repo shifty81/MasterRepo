@@ -72,7 +72,6 @@ static constexpr uint32_t kHighlight    = 0x007ACCFF;
 // ── Editor defaults ────────────────────────────────────────────────────────
 static constexpr float    kRotSnapDeg        = 15.f;  // rotation snap angle (degrees)
 static constexpr char     kDefaultScenePath[] = "Projects/NovaForge/Scenes/editor_save.scene";
-static constexpr float    kPIEOrbitSpeedFactor = 0.06f; // orbit speed divisor in PIE animation
 static constexpr float    kScrollToBottom      = 99999.f; // sentinel to auto-scroll to bottom
 static constexpr float    kFontScale            = 1.35f;  // global text scale — improves readability
 static constexpr float    kApproxCharWidth     = 9.5f;   // pixels per char for stb_easy_font at kFontScale
@@ -182,16 +181,16 @@ EditorRenderer::EditorRenderer()
                 "[AI] Still processing previous request — please wait.");
             return;
         }
-        m_aiChat->AppendMessage(IDE::ChatRole::Assistant, "⏳ Thinking…");
+        m_aiChat->AppendMessage(IDE::ChatRole::Assistant, "Thinking...");
         std::string sysPrompt = m_aiChat->SystemPrompt();
         m_aiFuture = std::async(std::launch::async, [userMsg, sysPrompt]() -> std::string {
             AI::OllamaClient client("localhost", 11434);
             if (!client.Ping())
-                return "⚠ Ollama not reachable at localhost:11434.\n"
-                       "Start it with:  ollama serve\n"
-                       "Then pull a model:  ollama pull codellama";
+                return "Ollama not running at localhost:11434\n"
+                       "To fix:  ollama serve\n"
+                       "Model:   ollama pull codellama";
             auto resp = client.Generate("codellama", userMsg, sysPrompt);
-            return resp.success ? resp.text : ("⚠ Error: " + resp.error);
+            return resp.success ? resp.text : ("Error: " + resp.error);
         });
     });
 
@@ -224,17 +223,15 @@ bool EditorRenderer::Init(int width, int height) {
     m_consoleLines.push_back("[Info]  AI agent system standby");
     m_consoleLines.push_back("[Info]  Ready.");
 
-    // ProjectAI: prime with a welcome context message on startup
+    // Prime the AI chat with a welcome message
     if (m_aiChat) {
         m_aiChat->AppendMessage(IDE::ChatRole::Assistant,
-            "Welcome to Atlas AI — your local project assistant.\n\n"
-            "I have access to the project folder. You can ask me to:\n"
-            "  • Explain any system or file  (\"explain Runtime/ECS/ECS.h\")\n"
-            "  • Help plan new features      (\"how should I add multiplayer?\")\n"
-            "  • Review code or architecture (\"review the PIE simulation\")\n"
-            "  • Generate code snippets\n\n"
-            "I run fully offline via Ollama at localhost:11434.\n"
-            "Run 'ollama serve' and 'ollama pull codellama' to get started.");
+            "Atlas AI ready.\n\n"
+            "Requires Ollama running locally:\n"
+            "  1. Install: https://ollama.com\n"
+            "  2. Run:     ollama serve\n"
+            "  3. Model:   ollama pull codellama\n\n"
+            "Ask anything about code, architecture, or features.");
     }
 
     return true;
@@ -249,6 +246,8 @@ void EditorRenderer::StopPIE() {
     if (!m_playing) return;
     m_playing = false;
     m_pieTime = 0.f;
+    m_pieKeyW = m_pieKeyA = m_pieKeyS = m_pieKeyD = false;
+    m_pieKeyUp = m_pieKeyDown = false;
     Engine::Core::Logger::Info("PIE: stopped");
     AppendConsole("[Info]  PIE stopped");
 }
@@ -269,24 +268,33 @@ void EditorRenderer::OnMouseMove(double x, double y) {
 
     // ── RMB: orbit camera (rotate yaw/pitch around target) ───────────────
     if (m_rmbDown) {
-        m_vpYaw   += (float)dx * 0.4f;
-        m_vpPitch += (float)dy * 0.3f;
-        m_vpPitch  = std::max(-88.f, std::min(88.f, m_vpPitch));
+        if (m_playing) {
+            // PIE mode: RMB controls FPS look
+            m_pieCamYaw   -= (float)dx * 0.3f;
+            m_pieCamPitch -= (float)dy * 0.3f;
+            m_pieCamPitch  = std::max(-88.f, std::min(88.f, m_pieCamPitch));
+        } else {
+            m_vpYaw   += (float)dx * 0.4f;
+            m_vpPitch += (float)dy * 0.3f;
+            m_vpPitch  = std::max(-88.f, std::min(88.f, m_vpPitch));
+        }
         m_mouseX   = x; m_mouseY   = y;
         m_dragLastX = x; m_dragLastY = y;
         return;
     }
 
-    // ── MMB: pan target (camera-relative) ────────────────────────────────
+    // ── MMB: pan target (camera-relative right + up vectors) ─────────────
     if (m_mmbDown) {
-        // Move target in the camera's right and up directions
         float yawR = m_vpYaw   * 3.14159265f / 180.f;
         float pitR = m_vpPitch * 3.14159265f / 180.f;
-        // right = (-cos(yaw), 0, sin(yaw)) in the orbit plane, scaled by dist
         float speed = m_vpDist * 0.002f;
-        m_vpTargX -= (float)dx * speed * std::cos(yawR);
+        // Camera right = (cos(yaw), 0, -sin(yaw))
+        // Camera up    = (-sin(pitch)*sin(yaw), cos(pitch), -sin(pitch)*cos(yaw))
+        m_vpTargX += (float)dx * speed * std::cos(yawR);
         m_vpTargZ -= (float)dx * speed * std::sin(yawR);
-        m_vpTargY += (float)dy * speed * std::cos(pitR);
+        m_vpTargX += (float)dy * speed * std::sin(pitR) * std::sin(yawR);
+        m_vpTargY -= (float)dy * speed * std::cos(pitR);
+        m_vpTargZ += (float)dy * speed * std::sin(pitR) * std::cos(yawR);
         m_mouseX   = x; m_mouseY   = y;
         m_dragLastX = x; m_dragLastY = y;
         return;
@@ -348,7 +356,30 @@ void EditorRenderer::OnMouseButton(int btn, bool pressed) {
             float W = (float)m_width;
             float mainY = kMenuH + kToolbarH;
 
-            // AI chat panel bounds
+            // AI dropdown bounds — close if click is outside it
+            if (m_aiDropOpen) {
+                constexpr float kDropW = 340.f, kDropH = 460.f;
+                float dropX = std::max(0.f, m_aiDropBtnX + 72.f - kDropW);
+                float dropY = m_aiDropBtnY2;
+                bool inDrop = (m_mouseX >= dropX && m_mouseX < dropX + kDropW &&
+                               m_mouseY >= dropY && m_mouseY < dropY + kDropH);
+                if (inDrop) {
+                    // focus input if clicked in the input box area
+                    float inputY = dropY + kDropH - 32.f;
+                    if (m_mouseX >= dropX + 4.f && m_mouseX < dropX + kDropW - 46.f &&
+                        m_mouseY >= inputY        && m_mouseY < inputY + 26.f) {
+                        m_aiDropFocused  = true;
+                        m_consoleFocused = false;
+                        m_aiInputFocused = false;
+                    }
+                    return; // consumed by dropdown
+                } else {
+                    m_aiDropOpen    = false;
+                    m_aiDropFocused = false;
+                }
+            }
+
+            // AI chat panel bounds (legacy floating panel)
             float acW = 300.f, acH = 400.f;
             float acX = W - kInspectorW - acW - 4.f;
             float acY = mainY + 10.f;
@@ -357,7 +388,6 @@ void EditorRenderer::OnMouseButton(int btn, bool pressed) {
                              m_mouseY >= acY && m_mouseY < acY + acH;
 
             if (inAIPanel) {
-                // Focus the AI input field if the click is on it
                 float inputH = 24.f;
                 float chatH  = acH - kPanelHdrH - inputH - 4.f;
                 float iy     = acY + kPanelHdrH + chatH + 2.f;
@@ -366,7 +396,7 @@ void EditorRenderer::OnMouseButton(int btn, bool pressed) {
                     m_aiInputFocused  = true;
                     m_consoleFocused  = false;
                 }
-                return; // consumed by AI panel – do not pick entities
+                return;
             }
 
             // Console input bar bounds
@@ -377,12 +407,13 @@ void EditorRenderer::OnMouseButton(int btn, bool pressed) {
                 m_mouseY >= inputBarY && m_mouseY < inputBarY + 18.f) {
                 m_consoleFocused = true;
                 m_aiInputFocused = false;
-                return; // consumed by console input
+                return;
             }
 
             // If click is outside all text inputs, clear focus
             m_consoleFocused = false;
             m_aiInputFocused = false;
+            m_aiDropFocused  = false;
 
             // Check if the click is inside the viewport area
             if (m_mouseX >= m_vpX && m_mouseX < m_vpX + m_vpW &&
@@ -458,6 +489,7 @@ void EditorRenderer::OnKey(int key, bool pressed) {
     static constexpr int K_Z          = 90;
     static constexpr int K_Y          = 89;
     static constexpr int K_W          = 87;
+    static constexpr int K_A          = 65;
     static constexpr int K_E          = 69;
     static constexpr int K_R          = 82;
     static constexpr int K_G          = 71;
@@ -470,6 +502,7 @@ void EditorRenderer::OnKey(int key, bool pressed) {
     static constexpr int K_S          = 83;
     static constexpr int K_O          = 79;
     static constexpr int K_B          = 66;
+    static constexpr int K_D          = 68;
     static constexpr int K_F5         = 294;
     static constexpr int K_BACKSPACE  = 259;
     static constexpr int K_ENTER      = 257;
@@ -477,24 +510,25 @@ void EditorRenderer::OnKey(int key, bool pressed) {
     static constexpr int K_F          = 70;
     static constexpr int K_C          = 67;
     static constexpr int K_V          = 86;
-    static constexpr int K_D          = 68;
     static constexpr int K_F1         = 290;
-    (void)K_LEFT_SHIFT;
 #else
     static constexpr int K_Z          = GLFW_KEY_Z;
     static constexpr int K_Y          = GLFW_KEY_Y;
     static constexpr int K_W          = GLFW_KEY_W;
+    static constexpr int K_A          = GLFW_KEY_A;
     static constexpr int K_E          = GLFW_KEY_E;
     static constexpr int K_R          = GLFW_KEY_R;
     static constexpr int K_G          = GLFW_KEY_G;
     static constexpr int K_DELETE     = GLFW_KEY_DELETE;
     static constexpr int K_LEFT_CTRL  = GLFW_KEY_LEFT_CONTROL;
     static constexpr int K_RIGHT_CTRL = GLFW_KEY_RIGHT_CONTROL;
+    static constexpr int K_LEFT_SHIFT = GLFW_KEY_LEFT_SHIFT;
     static constexpr int K_SPACE      = GLFW_KEY_SPACE;
     static constexpr int K_P          = GLFW_KEY_P;
     static constexpr int K_S          = GLFW_KEY_S;
     static constexpr int K_O          = GLFW_KEY_O;
     static constexpr int K_B          = GLFW_KEY_B;
+    static constexpr int K_D          = GLFW_KEY_D;
     static constexpr int K_F5         = GLFW_KEY_F5;
     static constexpr int K_BACKSPACE  = GLFW_KEY_BACKSPACE;
     static constexpr int K_ENTER      = GLFW_KEY_ENTER;
@@ -502,7 +536,6 @@ void EditorRenderer::OnKey(int key, bool pressed) {
     static constexpr int K_F          = GLFW_KEY_F;
     static constexpr int K_C          = GLFW_KEY_C;
     static constexpr int K_V          = GLFW_KEY_V;
-    static constexpr int K_D          = GLFW_KEY_D;
     static constexpr int K_F1         = GLFW_KEY_F1;
 #endif
 
@@ -512,22 +545,36 @@ void EditorRenderer::OnKey(int key, bool pressed) {
         return;
     }
 
-    if (!pressed) return;  // ignore key-up for non-modifier keys
-
-    // ESC: stop PIE first; if not playing, dismiss keybinds/project AI panels
-    if (key == K_ESCAPE) {
-        if (m_playing) { StopPIE(); return; }
-        if (m_keybindsVisible)    { m_keybindsVisible = false; return; }
-        if (m_projectAIVisible)   { m_projectAIVisible = false; return; }
-        m_consoleFocused   = false;
-        m_aiInputFocused   = false;
-        m_projectAIFocused = false;
+    // ── PIE mode: intercept movement keys (both press and release) ────────
+    if (m_playing) {
+        if (key == K_W)          { m_pieKeyW    = pressed; return; }
+        if (key == K_A)          { m_pieKeyA    = pressed; return; }
+        if (key == K_S)          { m_pieKeyS    = pressed; return; }
+        if (key == K_D)          { m_pieKeyD    = pressed; return; }
+        if (key == K_SPACE)      { m_pieKeyUp   = pressed; return; }
+        if (key == K_LEFT_SHIFT) { m_pieKeyDown = pressed; return; }
+        if (pressed && key == K_ESCAPE) { StopPIE(); return; }
+        // All other keys are consumed by PIE (don't modify editor state)
         return;
     }
 
-    // ── Text-input fields take priority (console or AI chat) ──────────────
-    if (m_consoleFocused || m_aiInputFocused || m_projectAIFocused) {
-        std::string& buf = m_consoleFocused ? m_consoleInput : (m_aiInputFocused ? m_aiInput : m_projectAIInput);
+    if (!pressed) return;  // ignore key-up for non-modifier keys (editor mode only)
+
+    // ESC: dismiss overlays
+    if (key == K_ESCAPE) {
+        if (m_keybindsVisible)   { m_keybindsVisible = false; return; }
+        if (m_aiDropOpen)        { m_aiDropOpen = false; m_aiDropFocused = false; return; }
+        m_consoleFocused  = false;
+        m_aiInputFocused  = false;
+        m_aiDropFocused   = false;
+        return;
+    }
+
+    // ── Text-input fields take priority (console or AI dropdown input) ────
+    if (m_consoleFocused || m_aiInputFocused || m_aiDropFocused) {
+        std::string& buf = m_consoleFocused ? m_consoleInput
+                         : m_aiInputFocused ? m_aiInput
+                                            : m_aiDropInput;
         if (key == K_BACKSPACE) {
             if (!buf.empty()) buf.pop_back();
             return;
@@ -538,8 +585,7 @@ void EditorRenderer::OnKey(int key, bool pressed) {
                     AppendConsole("> " + buf);
                     Engine::Core::Logger::Info(buf);
                 } else {
-                    // Both AI chat and ProjectAI use m_aiChat->SendMessage
-                    if (m_projectAIFocused) m_projectAIScrollY = kScrollToBottom;
+                    if (m_aiDropFocused) m_aiDropScrollY = kScrollToBottom;
                     m_aiChat->SendMessage(buf);
                 }
                 buf.clear();
@@ -547,14 +593,12 @@ void EditorRenderer::OnKey(int key, bool pressed) {
             return;
         }
         if (key == K_ESCAPE) {
-            if (m_playing) { StopPIE(); return; }
-            m_consoleFocused   = false;
-            m_aiInputFocused   = false;
-            m_projectAIFocused = false;
+            m_consoleFocused = false;
+            m_aiInputFocused = false;
+            m_aiDropFocused  = false;
             return;
         }
-        // Allow Ctrl shortcuts even when text field is focused
-        if (!m_ctrlHeld) return;
+        if (!m_ctrlHeld) return;  // allow Ctrl shortcuts even when text field focused
     }
 
     if (m_ctrlHeld) {
@@ -580,7 +624,6 @@ void EditorRenderer::OnKey(int key, bool pressed) {
         } else if (key == K_B) {
             TriggerBuild();
         } else if (key == K_C) {
-            // Copy selected entity
             if (m_world && m_selectedEntity != 0 && m_world->IsAlive(m_selectedEntity)) {
                 auto* tag = m_world->GetComponent<Runtime::Components::Tag>(m_selectedEntity);
                 auto* tr  = m_world->GetComponent<Runtime::Components::Transform>(m_selectedEntity);
@@ -590,7 +633,6 @@ void EditorRenderer::OnKey(int key, bool pressed) {
                 AppendConsole("[Info]  Copied: " + EntityName(m_selectedEntity));
             }
         } else if (key == K_V) {
-            // Paste clipboard entity
             if (m_clipboard.valid && m_world) {
                 auto t  = m_clipboard.tag;  t.name += "_paste";
                 auto tr = m_clipboard.transform; tr.position.x += 2.f;
@@ -599,7 +641,6 @@ void EditorRenderer::OnKey(int key, bool pressed) {
                 AppendConsole("[Info]  Pasted: " + t.name);
             }
         } else if (key == K_D) {
-            // Duplicate selected entity
             if (m_world && m_selectedEntity != 0 && m_world->IsAlive(m_selectedEntity)) {
                 auto* tag = m_world->GetComponent<Runtime::Components::Tag>(m_selectedEntity);
                 auto* tr  = m_world->GetComponent<Runtime::Components::Transform>(m_selectedEntity);
@@ -612,48 +653,69 @@ void EditorRenderer::OnKey(int key, bool pressed) {
                 AppendConsole("[Info]  Duplicated: " + newTag.name);
             }
         } else if (key == K_SPACE) {
-            // Ctrl+Space — toggle AI chat sidebar
-            m_projectAIVisible = !m_projectAIVisible;
-            AppendConsole(m_projectAIVisible
-                ? "[Info]  AI sidebar opened  (Ctrl+Space to close)"
-                : "[Info]  AI sidebar closed  (Ctrl+Space to reopen)");
+            m_aiDropOpen = !m_aiDropOpen;
+            if (!m_aiDropOpen) m_aiDropFocused = false;
+            AppendConsole(m_aiDropOpen ? "[Info]  AI Chat opened" : "[Info]  AI Chat closed");
         }
     } else {
         if (key == K_P) {
-            if (m_playing) { StopPIE(); }
-            else { m_playing = true; m_pieTime = 0.f; Engine::Core::Logger::Info("PIE: Play started"); AppendConsole("[Info]  PIE started  (P or ESC to stop)"); }
+            if (m_playing) {
+                StopPIE();
+            } else {
+                // Start PIE — initialise FPS camera from player entity or origin
+                m_playing  = true;
+                m_pieTime  = 0.f;
+                m_pieCamX  = 0.f; m_pieCamY = 1.7f; m_pieCamZ = 0.f;
+                m_pieCamYaw = 0.f; m_pieCamPitch = 0.f;
+                if (m_world) {
+                    for (auto id : m_world->GetEntities()) {
+                        auto* tag = m_world->GetComponent<Runtime::Components::Tag>(id);
+                        auto* tr  = m_world->GetComponent<Runtime::Components::Transform>(id);
+                        if (tag && tr) {
+                            bool isPlayer = (tag->name == "Player");
+                            if (!isPlayer)
+                                for (auto& t : tag->tags) if (t == "Player") { isPlayer = true; break; }
+                            if (isPlayer) {
+                                m_pieCamX = tr->position.x;
+                                m_pieCamY = tr->position.y + 1.7f;
+                                m_pieCamZ = tr->position.z;
+                                break;
+                            }
+                        }
+                    }
+                }
+                Engine::Core::Logger::Info("PIE: Play started");
+                AppendConsole("[Info]  PIE  WASD: move  RMB: look  Space/Shift: up/down  ESC: stop");
+            }
         } else if (key == K_F5) {
             TriggerBuild();
         }
-        // Gizmo mode shortcuts (like Unity/Unreal)
+        // Gizmo mode shortcuts — only in editor mode (not during PIE)
         else if (key == K_W) {
             m_gizmoMode = 0;
-            AppendConsole("[Info]  Gizmo mode: Move");
+            AppendConsole("[Info]  Gizmo: Move");
         } else if (key == K_E) {
             m_gizmoMode = 1;
-            AppendConsole("[Info]  Gizmo mode: Rotate");
+            AppendConsole("[Info]  Gizmo: Rotate");
         } else if (key == K_R) {
             m_gizmoMode = 2;
-            AppendConsole("[Info]  Gizmo mode: Scale");
-        }
-        // Grid snap toggle (G key like many editors)
-        else if (key == K_G) {
+            AppendConsole("[Info]  Gizmo: Scale");
+        } else if (key == K_G) {
             m_gridSnap = !m_gridSnap;
             AppendConsole(m_gridSnap
                 ? "[Info]  Grid snap ON  (size=" + std::to_string(m_gridSize) + ")"
                 : "[Info]  Grid snap OFF");
         }
-        // F key: reset 3D orbit camera to default view
+        // F key: reset 3D orbit camera to show full system
         else if (key == K_F) {
             m_vpYaw   =  35.f;
-            m_vpPitch =  30.f;
-            m_vpDist  = 200.f;
-            m_vpTargX =   8.f;
+            m_vpPitch =  25.f;
+            m_vpDist  = 2500.f;
+            m_vpTargX =   0.f;
             m_vpTargY =   0.f;
             m_vpTargZ =   0.f;
-            AppendConsole("[Info]  View reset (3D orbit)");
+            AppendConsole("[Info]  View reset to full system");
         }
-        // Delete selected entity
         else if (key == K_DELETE) {
             if (m_world && m_selectedEntity != 0 && m_world->IsAlive(m_selectedEntity)) {
                 std::string name = EntityName(m_selectedEntity);
@@ -665,7 +727,7 @@ void EditorRenderer::OnKey(int key, bool pressed) {
         }
         else if (key == K_F1) {
             m_keybindsVisible = !m_keybindsVisible;
-            if (m_keybindsVisible) AppendConsole("[Info]  Keybinds panel opened  (F1 to close)");
+            if (m_keybindsVisible) AppendConsole("[Info]  Keybinds panel  (F1 to close)");
         }
     }
 }
@@ -678,28 +740,26 @@ void EditorRenderer::AppendConsole(const std::string& line) {
 
 // ── Character input — feed focused text field ──────────────────────────────
 void EditorRenderer::OnChar(unsigned int codepoint) {
-    // Accept printable ASCII and common extended characters
     if (codepoint < 32 || codepoint > 126) return;
     char ch = static_cast<char>(codepoint);
     if (m_consoleFocused) {
         m_consoleInput += ch;
     } else if (m_aiInputFocused) {
         m_aiInput += ch;
-    } else if (m_projectAIFocused) {
-        m_projectAIInput += ch;
+    } else if (m_aiDropFocused) {
+        m_aiDropInput += ch;
     }
 }
 
 // ── Scroll wheel — zoom viewport (change orbit distance) ─────────────────
 void EditorRenderer::OnScroll(double /*dx*/, double dy) {
-    // Scroll ProjectAI chat history when mouse is over the right sidebar AI panel
-    if (m_projectAIVisible) {
-        float aiX = (float)m_width - kInspectorW;
-        float aiY = kMenuH + kToolbarH;
-        float aiH = (float)m_height - kStatusH - kConsoleH - aiY;
-        if (m_mouseX >= aiX && m_mouseX < (float)m_width &&
-            m_mouseY >= aiY && m_mouseY < aiY + aiH) {
-            m_projectAIScrollY = std::max(0.f, m_projectAIScrollY - (float)dy * 20.f);
+    if (m_aiDropOpen) {
+        constexpr float kDropW = 340.f, kDropH = 460.f;
+        float dropX = std::max(4.f, m_aiDropBtnX + 72.f - kDropW);
+        float dropY = m_aiDropBtnY2 + 1.f;
+        if (m_mouseX >= dropX && m_mouseX < dropX + kDropW &&
+            m_mouseY >= dropY && m_mouseY < dropY + kDropH) {
+            m_aiDropScrollY = std::max(0.f, m_aiDropScrollY - (float)dy * 20.f);
             return;
         }
     }
@@ -1041,6 +1101,19 @@ static void OrbitEye(float yaw, float pitch, float dist,
     ez = tZ + dist * std::cos(pR) * std::cos(yR);
 }
 
+// ── FPS view matrix helper ─────────────────────────────────────────────────
+static void EditorFPSView(float px, float py, float pz, float yawDeg, float pitchDeg) {
+    const float pi = 3.14159265f;
+    float yR = yawDeg * pi / 180.f, pR = pitchDeg * pi / 180.f;
+    float fx = std::cos(pR)*std::sin(yR), fy = std::sin(pR), fz = std::cos(pR)*std::cos(yR);
+    float rx = -fz, rz = fx;
+    float rl = std::sqrt(rx*rx + rz*rz); if (rl < 1e-6f) rl = 1.f; rx /= rl; rz /= rl;
+    float ux = 0.f*fz - rz*fy, uy = rz*fx - rx*fz, uz = rx*fy - 0.f*fx;
+    float m[16] = { rx, ux,-fx,0, 0.f,uy,-fy,0, rz,uz,-fz,0,
+        -(rx*px+0*py+rz*pz), -(ux*px+uy*py+uz*pz), fx*px+fy*py+fz*pz, 1.f };
+    glLoadMatrixf(m);
+}
+
 // ── Draw3DViewportScene ────────────────────────────────────────────────────
 void EditorRenderer::Draw3DViewportScene(float vx, float vy, float vw, float vh) {
     // Save current GL viewport
@@ -1064,14 +1137,19 @@ void EditorRenderer::Draw3DViewportScene(float vx, float vy, float vw, float vh)
 
     // ── Projection ──────────────────────────────────────────────────────
     glMatrixMode(GL_PROJECTION);
-    GL_LoadPerspective(kVpFOV, (glH > 0 ? (float)glW / glH : 1.f), 0.1f, 10000.f);
+    float fov = m_playing ? 70.f : kVpFOV;
+    GL_LoadPerspective(fov, (glH > 0 ? (float)glW / glH : 1.f), 0.1f, 50000.f);
 
-    // ── View (orbit camera) ─────────────────────────────────────────────
-    float ex, ey, ez;
-    OrbitEye(m_vpYaw, m_vpPitch, m_vpDist, m_vpTargX, m_vpTargY, m_vpTargZ,
-             ex, ey, ez);
+    // ── View ─────────────────────────────────────────────────────────────
     glMatrixMode(GL_MODELVIEW);
-    GL_LoadLookAt(ex, ey, ez, m_vpTargX, m_vpTargY, m_vpTargZ);
+    if (m_playing) {
+        EditorFPSView(m_pieCamX, m_pieCamY, m_pieCamZ, m_pieCamYaw, m_pieCamPitch);
+    } else {
+        float ex, ey, ez;
+        OrbitEye(m_vpYaw, m_vpPitch, m_vpDist, m_vpTargX, m_vpTargY, m_vpTargZ,
+                 ex, ey, ez);
+        GL_LoadLookAt(ex, ey, ez, m_vpTargX, m_vpTargY, m_vpTargZ);
+    }
 
     // ── Draw 3D scene ──────────────────────────────────────────────────
     DrawFloorGrid3D();
@@ -1215,16 +1293,7 @@ void EditorRenderer::DrawEntities3D() {
         auto* tag = m_world->GetComponent<Runtime::Components::Tag>(id);
         if (tr) { wx = tr->position.x; wy = tr->position.y; wz = tr->position.z; }
 
-        // PIE orbital animation: orbit non-star entities around Y=0 plane origin
-        if (m_playing) {
-            float r = std::sqrt(wx*wx + wz*wz);
-            if (r > 0.5f) {
-                float orbSpeed = kPIEOrbitSpeedFactor / std::max(r, 1.f);
-                float theta    = std::atan2(wz, wx) + orbSpeed * m_pieTime;
-                wx = r * std::cos(theta);
-                wz = r * std::sin(theta);
-            }
-        }
+        // PIE: entities stay at their actual ECS positions (no orbital animation)
 
         bool selected = (id == m_selectedEntity);
 
@@ -1800,12 +1869,19 @@ void EditorRenderer::DrawToolbar(float x, float y, float w, float h) {
 
     // ── Right side: AI chat toggle ────────────────────────────────────────
     float acx = x + w - 80.f;
+    m_aiDropBtnX  = acx;
+    m_aiDropBtnY2 = y + h;
     bool achov = (m_mouseX >= acx && m_mouseX < acx + 72.f &&
                   m_mouseY >= by  && m_mouseY < by + bh);
-    DrawRect(acx, by, 72.f, bh, m_projectAIVisible ? 0x094771FF : (achov ? 0x3E3E52FF : 0x252526FF));
+    DrawRect(acx, by, 72.f, bh, m_aiDropOpen ? 0x094771FF : (achov ? 0x3E3E52FF : 0x252526FF));
     DrawRectOutline(acx, by, 72.f, bh, kBorderColor);
+    // Label + status dot
     DrawText("AI Chat", acx + 6.f, by + 5.f, kTextAccent);
-    if (achov && m_leftMousePressed) m_projectAIVisible = !m_projectAIVisible;
+    DrawRect(acx + 55.f, by + 7.f, 5.f, 5.f, m_ollamaOk ? 0x44FF44FF : 0xFF4444FF);
+    if (achov && m_leftMousePressed) {
+        m_aiDropOpen = !m_aiDropOpen;
+        if (!m_aiDropOpen) m_aiDropFocused = false;
+    }
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -1841,8 +1917,10 @@ void EditorRenderer::DrawViewport(float x, float y, float w, float h) {
     glDisable(GL_SCISSOR_TEST);
 
     // Help text (bottom of panel)
-    DrawText("RMB: orbit  MMB: pan  Scroll: zoom  LMB: select  F: reset",
-             vx + 6.f, vy + vh - 18.f, kTextMuted);
+    const char* helpTxt = m_playing
+        ? "PIE: WASD move  RMB look  Space/Shift up/down  ESC stop"
+        : "RMB: orbit  MMB: pan  Scroll: zoom  LMB: select  F: reset view";
+    DrawText(helpTxt, vx + 6.f, vy + vh - 18.f, kTextMuted);
 
     // Camera info (top-right)
     {
@@ -2557,6 +2635,22 @@ void EditorRenderer::Render(double dt) {
         m_fpsFrames = 0;
     }
 
+    // Background Ollama ping (every 15 s)
+    m_ollamaPingAccum += (float)dt;
+    if (m_ollamaPingAccum >= 15.f) {
+        m_ollamaPingAccum = 0.f;
+        if (!m_ollamaPingFuture.valid() ||
+            m_ollamaPingFuture.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
+            m_ollamaPingFuture = std::async(std::launch::async, []() -> bool {
+                AI::OllamaClient c("localhost", 11434);
+                return c.Ping();
+            });
+        }
+    }
+    if (m_ollamaPingFuture.valid() &&
+        m_ollamaPingFuture.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready)
+        m_ollamaOk = m_ollamaPingFuture.get();
+
     // EI-13: tick ECS world when PIE is active
     if (m_playing && m_world) {
         m_world->Update((float)dt);
@@ -2565,11 +2659,28 @@ void EditorRenderer::Render(double dt) {
     // Accumulate PIE simulation time
     if (m_playing) m_pieTime += (float)dt;
 
+    // PIE FPS camera movement
+    if (m_playing) {
+        const float spd = 60.f * (float)dt;
+        const float pi  = 3.14159265f;
+        float yR   = m_pieCamYaw * pi / 180.f;
+        float sinY = std::sin(yR), cosY = std::cos(yR);
+        float fwdX = sinY, fwdZ = cosY;
+        float rgtX = cosY, rgtZ = -sinY;
+        if (m_pieKeyW) { m_pieCamX += fwdX*spd; m_pieCamZ += fwdZ*spd; }
+        if (m_pieKeyS) { m_pieCamX -= fwdX*spd; m_pieCamZ -= fwdZ*spd; }
+        if (m_pieKeyD) { m_pieCamX += rgtX*spd; m_pieCamZ += rgtZ*spd; }
+        if (m_pieKeyA) { m_pieCamX -= rgtX*spd; m_pieCamZ -= rgtZ*spd; }
+        if (m_pieKeyUp)   m_pieCamY += spd;
+        if (m_pieKeyDown) m_pieCamY -= spd;
+    }
+
     // Poll AI future and flush response to chat
     if (m_aiFuture.valid() &&
         m_aiFuture.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
         std::string reply = m_aiFuture.get();
         m_aiChat->AppendMessage(IDE::ChatRole::Assistant, reply);
+        m_aiDropScrollY = kScrollToBottom;
     }
 
     float W = (float)m_width;
@@ -2600,11 +2711,8 @@ void EditorRenderer::Render(double dt) {
     // ── Main panels ────────────────────────────────────────────────────────
     DrawOutliner (outlinerX,  mainY,  kOutlinerW,  mainH);
     DrawViewport (viewportX,  mainY,  viewportW,   mainH);
-    // Right sidebar: ProjectAI panel (AI Chat) when toggled, otherwise Inspector
-    if (m_projectAIVisible)
-        DrawProjectAIPanel(inspectorX, mainY, kInspectorW, mainH);
-    else
-        DrawInspector(inspectorX, mainY,  kInspectorW, mainH);
+    // Right sidebar: always show Inspector; AI Chat is the dropdown overlay
+    DrawInspector(inspectorX, mainY, kInspectorW, mainH);
     DrawConsole  (0.f,        consoleY, W, kConsoleH);
 
     // ── Borders between panels ─────────────────────────────────────────────
@@ -2649,6 +2757,10 @@ void EditorRenderer::Render(double dt) {
         DrawKeybindsPanel(kbX, kbY, kbW, kbH);
     }
 
+    // AI Chat dropdown overlay (drawn last — on top of everything)
+    if (m_aiDropOpen)
+        DrawAIDropdown(m_aiDropBtnX, m_aiDropBtnY2);
+
     // Reset single-frame click flag after all UI has had a chance to see it
     m_leftMousePressed = false;
 }
@@ -2677,6 +2789,10 @@ void EditorRenderer::DrawKeybindsPanel(float x, float y, float w, float h) {
         { "G",               "Toggle grid snap"           },
         { "P",               "Play (PIE)"                 },
         { "ESC  (in PIE)",   "Stop PIE"                   },
+        { "WASD  (PIE)",     "FPS move fwd/back/strafe"   },
+        { "RMB drag  (PIE)", "FPS look"                   },
+        { "Space  (PIE)",    "FPS move up"                },
+        { "Shift  (PIE)",    "FPS move down"              },
         { "Ctrl+Z",          "Undo"                       },
         { "Ctrl+Y",          "Redo"                       },
         { "Ctrl+C",          "Copy entity"                },
@@ -2719,118 +2835,140 @@ void EditorRenderer::DrawKeybindsPanel(float x, float y, float w, float h) {
     DrawText("Press F1 or ESC to close", x + w * 0.5f - 70.f, cy + 4.f, kTextMuted, 0.9f);
 }
 
-// ── ProjectAI — ChatGPT-style panel with project file access ───────────────
-void EditorRenderer::DrawProjectAIPanel(float x, float y, float w, float h) {
-    DrawRect(x, y, w, h, 0x0D0D1AFF);
-    DrawPanelHeader("  Atlas AI  (Ollama)", x, y, w, kPanelHdrH, 0x0A2040FF);
+// ── AI Chat dropdown — themed to match editor ─────────────────────────────
+void EditorRenderer::DrawAIDropdown(float btnX, float btnY2) {
+    constexpr float kDropW = 340.f;
+    constexpr float kDropH = 460.f;
+    constexpr float kInputH = 26.f;
+    constexpr float kStatusH2 = 18.f;
 
-    // Close button (top-right) — returns to Inspector
-    float cbx = x + w - 22.f, cby = y + 3.f;
-    bool  cbHov = (m_mouseX >= cbx && m_mouseX < cbx + 18.f &&
-                   m_mouseY >= cby && m_mouseY < cby + 14.f);
-    DrawRect(cbx, cby, 18.f, 14.f, cbHov ? 0x881111FF : 0x441111FF);
-    DrawText("X", cbx + 4.f, cby + 2.f, 0xFF6655FF);
-    if (cbHov && m_leftMousePressed) {
-        m_projectAIVisible = false;
-        return;
-    }
+    float x = std::max(4.f, btnX + 72.f - kDropW);
+    float y = btnY2 + 1.f;
 
-    float inputH     = 28.f;
-    float statusH    = 18.f;
-    float chatAreaH  = h - kPanelHdrH - inputH - statusH - 8.f;
-    float chatY      = y + kPanelHdrH + 2.f;
-    float inputY     = chatY + chatAreaH + 4.f;
-    float statusY    = inputY + inputH + 2.f;
+    // Clip to window
+    if (y + kDropH > (float)m_height - kStatusH)
+        y = btnY2 - kDropH - 1.f;
 
-    // ── Chat history area ────────────────────────────────────────────────
-    DrawRect(x + 2.f, chatY, w - 4.f, chatAreaH, 0x08080EFF);
-    glScissor((int)(x + 2), (int)(m_height - chatY - chatAreaH), (int)(w - 4), (int)chatAreaH);
+    // Shadow
+    DrawRect(x + 4.f, y + 4.f, kDropW, kDropH, 0x00000088);
+    // Background + border (matches editor panel style)
+    DrawRect(x, y, kDropW, kDropH, kBgPanel);
+    DrawRectOutline(x, y, kDropW, kDropH, kBorderColor, 1.5f);
+
+    // Header — same style as DrawPanelHeader
+    float hdrH = kPanelHdrH;
+    DrawRect(x, y, kDropW, hdrH, kBgHeader);
+    DrawRectOutline(x, y, kDropW, hdrH, kBorderColor);
+
+    // Ollama status dot
+    uint32_t dotCol = m_ollamaOk ? 0x44FF44FF : 0xFF4444FF;
+    DrawRect(x + 6.f, y + 6.f, 8.f, 8.f, dotCol);
+    const char* statusStr = m_ollamaOk ? "  Atlas AI  [Ollama: connected]"
+                                       : "  Atlas AI  [Ollama: offline]";
+    DrawText(statusStr, x + 18.f, y + 3.f, m_ollamaOk ? kTextSuccess : kTextError);
+
+    // Close button (X)
+    float cbx = x + kDropW - 22.f, cby = y + 3.f;
+    bool cbHov = m_mouseX >= cbx && m_mouseX < cbx+18.f &&
+                 m_mouseY >= cby && m_mouseY < cby+14.f;
+    DrawRect(cbx, cby, 18.f, 14.f, cbHov ? 0x882222FF : 0x441111FF);
+    DrawText("X", cbx + 5.f, cby + 2.f, 0xFFAAAAFF);
+    if (cbHov && m_leftMousePressed) { m_aiDropOpen = false; m_aiDropFocused = false; return; }
+
+    // ── Chat area ─────────────────────────────────────────────────────────
+    float chatY = y + hdrH + 2.f;
+    float chatH = kDropH - hdrH - kInputH - kStatusH2 - 8.f;
+    DrawRect(x + 2.f, chatY, kDropW - 4.f, chatH, kBgBase);
+
+    // scissor
+    glScissor((int)(x+2), (int)(m_height - chatY - chatH), (int)(kDropW-4), (int)chatH);
     glEnable(GL_SCISSOR_TEST);
 
     const auto& msgs = m_aiChat->Messages();
-    float lineH   = 15.f;
-    float totalH  = 0.f;
+    float lineH = 14.f;
+    int charsPerLine = std::max(1, (int)((kDropW - 20.f) / kApproxCharWidth));
+    float totalH = 0.f;
     for (auto& msg : msgs) {
-        int lines = std::max(1, (int)(msg.content.size() / 60) + 1);
-        totalH += lineH * lines + 4.f;
+        std::string full = (msg.role == IDE::ChatRole::User ? "You: " : "AI:  ") + msg.content;
+        int nLines = std::max(1, (int)(full.size() / charsPerLine) + 1);
+        totalH += lineH * nLines + 4.f;
     }
-    float maxScroll = std::max(0.f, totalH - chatAreaH + 8.f);
-    m_projectAIScrollY = std::min(m_projectAIScrollY, maxScroll);
+    float maxScroll = std::max(0.f, totalH - chatH + 8.f);
+    if (m_aiDropScrollY >= kScrollToBottom - 1.f) m_aiDropScrollY = maxScroll;
+    m_aiDropScrollY = std::min(m_aiDropScrollY, maxScroll);
 
-    float ty = chatY + 4.f - m_projectAIScrollY;
+    float ty = chatY + 4.f - m_aiDropScrollY;
     for (auto& msg : msgs) {
-        bool  isUser = (msg.role == IDE::ChatRole::User);
-        uint32_t col = isUser ? 0x88BBFFFF : (msg.role == IDE::ChatRole::System ? 0x888888FF : 0xCCDDCCFF);
+        bool isUser = (msg.role == IDE::ChatRole::User);
+        uint32_t col   = isUser ? kTextAccent : kTextNormal;
+        uint32_t bgCol = isUser ? 0x0A1828FF  : kBgPanel;
         const char* prefix = isUser ? "You: " : "AI:  ";
-        uint32_t bgCol = isUser ? 0x0A1828FF : 0x081208FF;
-
         std::string full = std::string(prefix) + msg.content;
-        int charsPerLine = std::max(1, (int)((w - 20.f) / kApproxCharWidth));
         for (size_t ci = 0; ci < full.size(); ci += charsPerLine) {
             std::string line = full.substr(ci, charsPerLine);
-            if (ty + lineH >= chatY && ty < chatY + chatAreaH) {
-                DrawRect(x + 4.f, ty, w - 8.f, lineH, bgCol);
-                DrawText(line, x + 8.f, ty + 2.f, col, 0.9f);
+            if (ty + lineH >= chatY && ty < chatY + chatH) {
+                DrawRect(x + 4.f, ty, kDropW - 8.f, lineH, bgCol);
+                DrawText(line, x + 8.f, ty + 1.f, col, 0.9f);
             }
             ty += lineH;
         }
         ty += 4.f;
     }
-
     glDisable(GL_SCISSOR_TEST);
 
-    // Scroll hint
+    // Scroll bar
     if (maxScroll > 0.f) {
-        float scrollFrac = m_projectAIScrollY / maxScroll;
-        float sbH = std::max(20.f, chatAreaH * chatAreaH / (totalH + 1.f));
-        float sbY = chatY + scrollFrac * (chatAreaH - sbH);
-        DrawRect(x + w - 6.f, chatY, 4.f, chatAreaH, 0x1A1A2EFF);
-        DrawRect(x + w - 6.f, sbY,   4.f, sbH,       0x336699FF);
+        float frac = m_aiDropScrollY / maxScroll;
+        float sbH  = std::max(18.f, chatH * chatH / (totalH + 1.f));
+        float sbY  = chatY + frac * (chatH - sbH);
+        DrawRect(x + kDropW - 6.f, chatY, 4.f, chatH, kBgHeader);
+        DrawRect(x + kDropW - 6.f, sbY,   4.f, sbH,   kHighlight);
     }
 
-    // ── Input box ────────────────────────────────────────────────────────
-    bool inputHov = (m_mouseX >= x + 4 && m_mouseX < x + w - 44.f &&
-                     m_mouseY >= inputY && m_mouseY < inputY + inputH - 2.f);
-    if (inputHov && m_leftMousePressed) {
-        m_projectAIFocused = true;
-        m_consoleFocused   = false;
-        m_aiInputFocused   = false;
+    // ── Input box ─────────────────────────────────────────────────────────
+    float inputY = chatY + chatH + 4.f;
+    float inputW = kDropW - 54.f;
+    bool  inpHov = m_mouseX >= x+4.f && m_mouseX < x+4.f+inputW &&
+                   m_mouseY >= inputY  && m_mouseY < inputY + kInputH - 2.f;
+    if (inpHov && m_leftMousePressed) {
+        m_aiDropFocused  = true;
+        m_consoleFocused = false;
+        m_aiInputFocused = false;
     }
-    DrawRect(x + 4.f, inputY, w - 48.f, inputH - 2.f,
-             m_projectAIFocused ? 0x0A1828FF : 0x080810FF);
-    DrawRectOutline(x + 4.f, inputY, w - 48.f, inputH - 2.f,
-                    m_projectAIFocused ? kHighlight : kBorderColor);
-    std::string display = m_projectAIInput;
-    if (m_projectAIFocused && ((int)(m_fps * 1.5) % 2 == 0)) display += "|";
-    DrawText(display.empty() ? "Ask about the project, code, or planning…"
-                             : display,
-             x + 8.f, inputY + 7.f,
-             display.empty() ? kTextMuted : kTextNormal, 0.95f);
+    DrawRect(x + 4.f, inputY, inputW, kInputH - 2.f,
+             m_aiDropFocused ? 0x0A1828FF : kBgBase);
+    DrawRectOutline(x + 4.f, inputY, inputW, kInputH - 2.f,
+                    m_aiDropFocused ? kHighlight : kBorderColor);
+    std::string disp = m_aiDropInput;
+    if (m_aiDropFocused && ((int)(m_fps * 1.5) % 2 == 0)) disp += "|";
+    DrawText(disp.empty() ? "Ask anything..." : disp,
+             x + 8.f, inputY + 6.f,
+             disp.empty() ? kTextMuted : kTextNormal, 0.9f);
 
     // Send button
-    float sbx = x + w - 42.f;
-    bool  sbHov = (m_mouseX >= sbx && m_mouseX < sbx + 38.f &&
-                   m_mouseY >= inputY && m_mouseY < inputY + inputH - 2.f);
-    DrawRect(sbx, inputY, 38.f, inputH - 2.f, sbHov ? 0x1155BBFF : 0x0A3377FF);
-    DrawRectOutline(sbx, inputY, 38.f, inputH - 2.f, 0x336699FF);
-    DrawText("Send", sbx + 4.f, inputY + 7.f, 0xAADDFFFF);
-
-    bool sendNow = (sbHov && m_leftMousePressed && !m_projectAIInput.empty());
-
-    if (sendNow) {
-        std::string msg = m_projectAIInput;
-        m_projectAIInput.clear();
-        m_aiChat->SendMessage(msg);
-        m_projectAIScrollY = kScrollToBottom;
+    float sbx2 = x + 4.f + inputW + 4.f;
+    bool  sbHov = m_mouseX >= sbx2 && m_mouseX < sbx2+42.f &&
+                  m_mouseY >= inputY && m_mouseY < inputY + kInputH - 2.f;
+    DrawRect(sbx2, inputY, 42.f, kInputH-2.f, sbHov ? 0x1155BBFF : 0x004488FF);
+    DrawRectOutline(sbx2, inputY, 42.f, kInputH-2.f, kHighlight);
+    DrawText("Send", sbx2 + 6.f, inputY + 6.f, 0xAADDFFFF);
+    if (sbHov && m_leftMousePressed && !m_aiDropInput.empty()) {
+        m_aiChat->SendMessage(m_aiDropInput);
+        m_aiDropInput.clear();
+        m_aiDropScrollY = kScrollToBottom;
     }
 
-    // ── Status bar ───────────────────────────────────────────────────────
-    DrawRect(x + 2.f, statusY, w - 4.f, statusH - 2.f, 0x050510FF);
+    // ── Status bar ────────────────────────────────────────────────────────
+    float stY = inputY + kInputH;
+    DrawRect(x + 2.f, stY, kDropW - 4.f, kStatusH2 - 2.f, kBgBase);
+    DrawLine(x + 2.f, stY, x + kDropW - 2.f, stY, kBorderColor);
     bool pending = m_aiFuture.valid() &&
                    m_aiFuture.wait_for(std::chrono::milliseconds(0)) != std::future_status::ready;
-    DrawText(pending ? "  ⏳ Waiting for Ollama…"
-                     : "  codellama | localhost:11434 | Ctrl+Space",
-             x + 6.f, statusY + 3.f, pending ? kTextWarn : kTextMuted, 0.9f);
+    DrawText(pending ? "  Waiting for Ollama..."
+                     : (m_ollamaOk ? "  codellama @ localhost:11434  |  Ctrl+Space"
+                                   : "  Run: ollama serve  +  ollama pull codellama"),
+             x + 6.f, stY + 2.f,
+             pending ? kTextWarn : (m_ollamaOk ? kTextMuted : kTextError), 0.85f);
 }
 
 } // namespace Editor

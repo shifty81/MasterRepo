@@ -212,6 +212,52 @@ int main() {
     playerTr.position = {0.f, 0.f, 0.f};
     world.AddComponent(playerEntity, playerTr);
 
+    // Spawn player on Earth (or first habitable planet) with creative flight
+    {
+        float spawnX = 0.f, spawnY = 5.f, spawnZ = 20.f;
+        bool  found  = false;
+        auto  ents   = world.GetEntities();
+        // Pass 1: look for entity named "Earth"
+        for (auto id : ents) {
+            auto* tag = world.GetComponent<Runtime::Components::Tag>(id);
+            auto* tr  = world.GetComponent<Runtime::Components::Transform>(id);
+            if (tag && tr && tag->name == "Earth") {
+                spawnX = tr->position.x;
+                spawnY = tr->position.y + 5.f;
+                spawnZ = tr->position.z + 20.f;
+                found  = true;
+                break;
+            }
+        }
+        // Pass 2: first habitable planet
+        if (!found) {
+            for (auto id : ents) {
+                auto* tag = world.GetComponent<Runtime::Components::Tag>(id);
+                auto* tr  = world.GetComponent<Runtime::Components::Transform>(id);
+                if (tag && tr) {
+                    bool hab = false;
+                    for (auto& t : tag->tags)
+                        if (t == "Habitable") { hab = true; break; }
+                    if (hab && tag->name != "Player") {
+                        spawnX = tr->position.x;
+                        spawnY = tr->position.y + 5.f;
+                        spawnZ = tr->position.z + 20.f;
+                        found  = true;
+                        break;
+                    }
+                }
+            }
+        }
+        auto* ptr = world.GetComponent<Runtime::Components::Transform>(playerEntity);
+        if (ptr) { ptr->position.x = spawnX; ptr->position.y = spawnY; ptr->position.z = spawnZ; }
+        playerTr.position = {spawnX, spawnY, spawnZ};
+        Engine::Core::Logger::Info("NF-02: Player spawned near "
+            + std::string(found ? "planet" : "origin")
+            + " at (" + std::to_string((int)spawnX) + ","
+            + std::to_string((int)spawnY) + ","
+            + std::to_string((int)spawnZ) + ")");
+    }
+
     Engine::Core::Logger::Info("NF-01: World ready — "
         + std::to_string(world.EntityCount()) + " entities total");
 
@@ -402,7 +448,7 @@ int main() {
     // Switch active session back to the first ship for player ship building
     if (shipsLoaded > 0) builderIntegration.SetActive(1);
 
-    bool builderActive = false;
+    bool builderActive = true;
     Engine::Core::Logger::Info("NF-05: Builder ready — F2 toggles build mode");
 
     // ── NF-06: PCG space station ─────────────────────────────────────────

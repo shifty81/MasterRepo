@@ -63,6 +63,10 @@ set(PCG_SOURCES
     Noise/FractalNoise/FractalNoise.cpp
     # Phase 37.09 — procedural narrative engine: dynamic dialogue, events, story arcs
     Narrative/NarrativeEngine.cpp
+    # Voxel chisel system — 16×16×16 sub-voxel chisel blocks
+    Voxel/VoxelChiselSystem/VoxelChiselSystem.cpp
+    # Voxel PCG driver — bridges noise/biome/cave/structure/planet into voxel volumes
+    Voxel/VoxelPCGGen/VoxelPCGGen.cpp
 )
 
 add_library(PCGLib STATIC ${PCG_SOURCES})
