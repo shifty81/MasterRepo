@@ -35,7 +35,8 @@
 | Game Systems & Engine Tooling (Phase 43) | 10/10 | 0 | 10 |
 | Advanced Gameplay & Engine Utilities (Phase 44) | 10/10 | 0 | 10 |
 | Rendering, AI, Core & Gameplay Plumbing (Phase 45) | 10/10 | 0 | 10 |
-| **TOTAL** | **281/281** | **0** | **281** |
+| Input, Audio, UI, Animation & Core Utilities (Phase 46) | 10/10 | 0 | 10 |
+| **TOTAL** | **291/291** | **0** | **291** |
 
 ---
 
@@ -1065,6 +1066,7 @@ All three paths converge for the final product.
 | 43 | Game Systems & Engine Tooling — InteractionSystem (Runtime/Gameplay), DamagePipeline (Runtime/Combat), AbilitySystem (Runtime/Combat), InventorySystem (Runtime/Inventory), StatusEffectSystem (Runtime/Combat), GameEventBus (Core/Events), TextureAtlasBuilder (Engine/Render), DebugDraw (Engine/Debug), ConstraintSolver (Engine/Physics), ScreenshotSystem (Engine/Render). |
 | 44 | Advanced Gameplay & Engine Utilities — WaterSystem (Engine/Water), FootstepSystem (Runtime/Audio), ComboSystem (Runtime/Combat), PrefabSystem (Engine/Scene), GameModeManager (Runtime/Gameplay), SurfaceAnalyzer (Engine/Physics), AnimNotifySystem (Engine/Animation), TagSystem (Core/Tags), CameraShakeSystem (Engine/Camera), PickupSystem (Runtime/Gameplay). |
 | 45 | Rendering, AI, Core & Gameplay Plumbing — TweenSystem (Engine/Tween), WeaponSystem (Runtime/Combat), MaterialSystem (Engine/Render/Material), TimeManager (Core/Time), AsyncTaskQueue (Core/AsyncTask), StateMachine (Core/StateMachine), EnvironmentQuery (Engine/AI/EQS), RewardSystem (Runtime/Gameplay), PostProcessVolume (Engine/PostProcess), TriggerVolume (Engine/Physics). |
+| 46 | Input, Audio, UI, Animation & Core Utilities — InputSystem (Engine/Input/InputSystem), SoundSystem (Engine/Audio/SoundSystem), UISystem (Runtime/UI/UISystem), ObjectPool (Core/Pool/ObjectPool), DialogueManager (Runtime/Dialogue/DialogueManager), MeshBuilder (Engine/Render/MeshBuilder), SceneTransitionSystem (Runtime/Scene/SceneTransitionSystem), SkeletonSystem (Engine/Animation/Skeleton), EventQueue (Core/EventQueue/EventQueue), FontSystem (Engine/Font/FontSystem). |
 
 </details>
 
@@ -1113,3 +1115,25 @@ All three paths converge for the final product.
 | ✅ 45.08 | Reward System | Medium | XP rules, loot tables, rarity tiers + luck, level-up callbacks, item drop dispatch | `Runtime/Gameplay/RewardSystem/RewardSystem.h/.cpp` |
 | ✅ 45.09 | Post-Process Volume | Medium | AABB/sphere volumes blend PP settings (bloom, DOF, fog, LUT) by proximity | `Engine/PostProcess/PostProcessVolume/PostProcessVolume.h/.cpp` |
 | ✅ 45.10 | Trigger Volume | Medium | AABB/sphere/capsule overlap detection, enter/stay/exit callbacks, one-shot, cooldown | `Engine/Physics/TriggerVolume/TriggerVolume.h/.cpp` |
+
+---
+
+## Phase 46 – Input, Audio, UI, Animation & Core Utilities ✅
+
+> Adds a unified input system, sound playback, retained-mode UI, generic object pooling,
+> dialogue flow management, procedural mesh building, scene transitions, skeleton FK/skinning,
+> typed deferred events, and font atlas management.
+> All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 46.01 | Input System | High | Keyboard/mouse/gamepad action + axis bindings, context stack, callbacks | `Engine/Input/InputSystem/InputSystem.h/.cpp` |
+| ✅ 46.02 | Sound System | High | 2D/3D sound instances, pooling, fade in/out, groups, listener transform | `Engine/Audio/SoundSystem/SoundSystem.h/.cpp` |
+| ✅ 46.03 | UI System | High | Retained-mode widgets: Panel/Label/Button/Slider/Checkbox/TextInput, layout, render hooks | `Runtime/UI/UISystem/UISystem.h/.cpp` |
+| ✅ 46.04 | Object Pool | High | Generic typed pre-allocated pool with RAII guard, grow-slab, thread-safe variant | `Core/Pool/ObjectPool/ObjectPool.h/.cpp` |
+| ✅ 46.05 | Dialogue Manager | Medium | Conversation graph, flag-gated choices, variable substitution, auto-advance | `Runtime/Dialogue/DialogueManager/DialogueManager.h/.cpp` |
+| ✅ 46.06 | Mesh Builder | Medium | Procedural mesh: box/sphere/plane/cylinder/capsule/cone, normals/tangents, flat export | `Engine/Render/MeshBuilder/MeshBuilder/MeshBuilder.h/.cpp` |
+| ✅ 46.07 | Scene Transition | Medium | Fade-out/load/fade-in, replace/additive modes, scene stack, progress callbacks | `Runtime/Scene/SceneTransitionSystem/SceneTransitionSystem.h/.cpp` |
+| ✅ 46.08 | Skeleton System | Medium | Joint hierarchy, bind pose, FK world matrices, skinning matrices, JSON load | `Engine/Animation/Skeleton/SkeletonSystem/SkeletonSystem.h/.cpp` |
+| ✅ 46.09 | Event Queue | Medium | Typed deferred events, per-type listeners, priorities, RAII unsubscribe token | `Core/EventQueue/EventQueue/EventQueue.h/.cpp` |
+| ✅ 46.10 | Font System | Low | Font face registry, glyph atlas, UTF-8, text metrics, wrap/truncate helpers | `Engine/Font/FontSystem/FontSystem.h/.cpp` |
