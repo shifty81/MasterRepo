@@ -1484,3 +1484,25 @@ All three paths converge for the final product.
 | ✅ 61.08 | UI Animator | Medium | Keyframe tracks, loop/ping-pong, sequence play | `Runtime/UI/UIAnimator/UIAnimator/UIAnimator.h/.cpp` |
 | ✅ 61.09 | Item System | High | Def registry, stack/split/merge, equip, durability | `Runtime/Inventory/Item/ItemSystem/ItemSystem.h/.cpp` |
 | ✅ 61.10 | Memory Profiler | Medium | Category stats, snapshots, diffs, threshold alerts | `Core/Profiler/MemoryProfiler/MemoryProfiler.h/.cpp` |
+
+---
+
+## Phase 62 — Core Rendering, AI, Physics, Audio & Gameplay (Mar 2026)
+
+> Deferred command buffer, 2-D physics world, waypoint graph + A*, screen-effect
+> pipeline, damage zones, sound cue variation, typed ECS query cache,
+> objective markers, texture atlas packing, and additive animation layers.
+> All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 62.01 | Command Buffer | High | Deferred GPU commands, sort by key, execute, reset | `Core/Render/Command/CommandBuffer/CommandBuffer.h/.cpp` |
+| ✅ 62.02 | Physics World 2D | High | AABB/circle bodies, integrate, collide, resolve, raycast | `Engine/Physics/World2D/PhysicsWorld2D/PhysicsWorld2D.h/.cpp` |
+| ✅ 62.03 | Waypoint Graph | High | 3-D waypoints, Dijkstra + A*, edge costs, enable/disable | `Engine/AI/Waypoint/WaypointGraph/WaypointGraph.h/.cpp` |
+| ✅ 62.04 | Screen Effect System | Medium | Fullscreen effect pipeline, priority ordering, float/vec4 params | `Engine/Render/ScreenEffect/ScreenEffectSystem/ScreenEffectSystem.h/.cpp` |
+| ✅ 62.05 | Damage Zone | High | Persistent hazard zones, DPS, enter/exit/damage callbacks | `Runtime/Gameplay/DamageZone/DamageZone/DamageZone.h/.cpp` |
+| ✅ 62.06 | Sound Cue | Medium | Multi-sample cue, Random/Sequential/Shuffle, pitch/vol range | `Engine/Audio/Cue/SoundCue/SoundCue.h/.cpp` |
+| ✅ 62.07 | Entity Query | High | Typed ECS query cache, incremental rebuild, ForEach | `Core/ECS/Query/EntityQuery/EntityQuery.h/.cpp` |
+| ✅ 62.08 | Objective Marker | Medium | World-space UI markers, viewport projection, fade/distance | `Runtime/UI/Marker/ObjectiveMarker/ObjectiveMarker.h/.cpp` |
+| ✅ 62.09 | Texture Atlas | High | Shelf-packing, UV/pixel lookup, batch pack, used-area query | `Engine/Render/Atlas/TextureAtlas/TextureAtlas.h/.cpp` |
+| ✅ 62.10 | Animation Layer | High | Override/additive layers, bone mask, blend-in/out, loop | `Engine/Animation/Layer/AnimationLayer/AnimationLayer.h/.cpp` |
