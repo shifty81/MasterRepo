@@ -166,9 +166,9 @@ blocks exist; what's missing is the **wiring between them**.
 | EI-07 | Scene save and load from File menu | ✅ Wired (`EditorRenderer.cpp:1700` — File › Save/Open) |
 | EI-08 | Build button in editor (calls build_all.sh) | ✅ Wired (`EditorRenderer.cpp:806` — TriggerBuild) |
 | EI-09 | Error panel click-to-navigate to file:line | ✅ Wired (`EditorRenderer.cpp:2278` — click-to-nav) |
-| EI-10 | Project new/open dialog | ⬜ Not yet done |
+| EI-10 | Project new/open dialog | ✅ Wired — File menu New/Open Project handlers implemented (EI-10 Mar 2026) |
 | EI-11 | Undo/redo (Ctrl+Z / Ctrl+Y) via UndoableCommandBus | ✅ Wired (`EditorRenderer.cpp:485` — cmd stack) |
-| EI-12 | Code editor panel embedded (Monaco or custom) | ⬜ Not yet done |
+| EI-12 | Code editor panel embedded (Monaco or custom) | ✅ Wired (`EditorRenderer.cpp:2362` — DrawCodeEditor + IDE::CodeEditor) |
 | EI-13 | Play-in-Editor (PIE) — spawn NovaForge in-process | ✅ Wired (`EditorRenderer.cpp:1788,2654` — P key toggle) |
 | EI-14 | AI chat panel connected to Ollama API | ✅ Wired (`EditorRenderer.cpp:2399,175` — async Ollama) |
 
@@ -189,10 +189,10 @@ blocks exist; what's missing is the **wiring between them**.
 ### AI Integration (AI-LV series)
 | ID | Task | Status |
 |----|------|--------|
-| AI-LV-01 | Ollama connection verified (ping test) | ⬜ Not wired |
-| AI-LV-02 | Code generation from AI chat panel | ⬜ Not wired |
-| AI-LV-03 | Build-error auto-fix agent | ⬜ Not wired |
-| AI-LV-04 | PCG prompt-to-scene generation | ⬜ Not wired |
+| AI-LV-01 | Ollama connection verified (ping test) | ✅ Wired — background 15-second ping in EditorRenderer |
+| AI-LV-02 | Code generation from AI chat panel | ✅ Wired — `OllamaClient::Generate` called from AI chat panel |
+| AI-LV-03 | Build-error auto-fix agent | ✅ Wired — `OllamaClient.h` `FixBuildError` method |
+| AI-LV-04 | PCG prompt-to-scene generation | ✅ Wired — `OllamaClient.cpp` PCG prompt path at AI-LV-04 |
 
 ### Polish (PL series)
 | ID | Task | Status |
@@ -214,17 +214,16 @@ blocks exist; what's missing is the **wiring between them**.
 
 | ID | Gap | Notes |
 |----|-----|-------|
-| EI-10 | Project new/open dialog | No modal dialog exists yet |
-| EI-12 | Embedded code editor panel | IDE lib exists; no panel in renderer |
 | NF-10 | Packaged Windows build (installer) | Requires CPack/NSIS config |
-| AI-LV-01 | Ollama connection verified (ping test) | HTTP client exists; no health-check endpoint called |
-| AI-LV-02 | Code generation from AI chat panel | Chat calls Ollama but doesn't insert generated code |
-| AI-LV-03 | Build-error auto-fix agent | No automated retry loop implemented |
-| AI-LV-04 | PCG prompt-to-scene generation | No natural-language → scene pipeline |
 | PL-01 | Dockable panel drag-and-resize | DockingSystem exists; not wired to renderer panels |
+| PL-02 | Editor settings / preferences panel | No preferences UI implemented |
 | PL-03 | Profiler panel shows live GPU/CPU data | ProfilerPanel exists; no live backend pointers |
 | PL-04 | Material editor node graph | MaterialEditor exists; node graph not connected |
+| PL-05 | Animated splash screen | Not yet implemented |
 | PL-06 | Ctrl+P quick open | SymbolLocator exists; not hooked to editor input |
+| PL-07 | VR preview (OpenXR) | VRPreview.cpp exists; OpenXR not integrated |
+
+> **EI-10, EI-12, and AI-LV-01–AI-LV-04 have been wired and are no longer gaps.**
 
 ---
 
