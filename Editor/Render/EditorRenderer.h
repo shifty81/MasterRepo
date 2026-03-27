@@ -127,11 +127,35 @@ private:
     bool m_aiChatVisible     = false;
     std::string m_aiInput;          // current input line being typed
 
+    // ── AI Chat dropdown (grows from toolbar button) ─────────────────────
+    bool        m_aiDropOpen     = false;  // dropdown visible
+    float       m_aiDropBtnX     = 0.f;   // toolbar button left edge (anchor)
+    float       m_aiDropBtnY2    = 0.f;   // toolbar button bottom edge (anchor)
+    bool        m_aiDropFocused  = false; // input box has focus
+    std::string m_aiDropInput;            // input buffer
+    float       m_aiDropScrollY  = 0.f;  // chat history scroll offset
+    std::future<std::string> m_aiFuture; // async Ollama response
+    // Ollama connectivity status (background ping)
+    std::future<bool> m_ollamaPingFuture;
+    float       m_ollamaPingAccum = 15.f; // start at threshold → immediate first ping
+    bool        m_ollamaOk        = false;
+
     // ── EI-13: PIE (play-in-editor) ─────────────────────────────────────
     bool m_playing = false;
 
     // ── PIE simulation time ───────────────────────────────────────────────
     float m_pieTime = 0.f;   // accumulates dt when m_playing is true
+
+    // ── PIE FPS camera ────────────────────────────────────────────────────
+    float m_pieCamX     = 0.f;
+    float m_pieCamY     = 1.7f;
+    float m_pieCamZ     = 0.f;
+    float m_pieCamYaw   = 0.f;
+    float m_pieCamPitch = 0.f;
+    // PIE movement key state (held keys)
+    bool  m_pieKeyW = false, m_pieKeyA = false;
+    bool  m_pieKeyS = false, m_pieKeyD = false;
+    bool  m_pieKeyUp = false, m_pieKeyDown = false;
 
     // ── Gizmo drag undo snapshot ──────────────────────────────────────────
     Runtime::Components::Transform m_gizmoDragStartTransform{};
@@ -146,14 +170,6 @@ private:
 
     // ── Keybinds reference panel ──────────────────────────────────────────
     bool m_keybindsVisible = false;
-
-    // ── ProjectAI (ChatGPT-style panel) ───────────────────────────────────
-    bool   m_projectAIVisible    = true;  // shown at startup
-    bool   m_projectAIFirstOpen  = true;  // send welcome context on first open
-    std::future<std::string> m_aiFuture;  // async Ollama response
-    std::string m_projectAIInput;         // input box buffer
-    bool        m_projectAIFocused = false;
-    float       m_projectAIScrollY = 0.f; // scroll offset for chat history
 
     // ── Panel visibility toggles (View menu) ────────────────────────────
     bool m_outlinerVisible   = true;
@@ -248,7 +264,7 @@ private:
     // Helper: get entity display name (Tag.name or "Entity #N")
     std::string EntityName(uint32_t id) const;
 
-    void DrawProjectAIPanel (float x, float y, float w, float h);
+    void DrawAIDropdown     (float btnX, float btnY2);          // AI chat dropdown overlay
     void DrawKeybindsPanel  (float x, float y, float w, float h);
     void StopPIE();   // stop PIE mode cleanly
 };

@@ -2664,9 +2664,10 @@ void EditorRenderer::Render(double dt) {
     if (m_playing) {
         const float spd = 60.f * (float)dt;
         const float pi  = 3.14159265f;
-        float yR  = m_pieCamYaw * pi / 180.f;
-        float fwdX = std::sin(yR), fwdZ = std::cos(yR);
-        float rgtX = std::cos(yR), rgtZ = -std::sin(yR);
+        float yR   = m_pieCamYaw * pi / 180.f;
+        float sinY = std::sin(yR), cosY = std::cos(yR);
+        float fwdX = sinY, fwdZ = cosY;
+        float rgtX = cosY, rgtZ = -sinY;
         if (m_pieKeyW) { m_pieCamX += fwdX*spd; m_pieCamZ += fwdZ*spd; }
         if (m_pieKeyS) { m_pieCamX -= fwdX*spd; m_pieCamZ -= fwdZ*spd; }
         if (m_pieKeyD) { m_pieCamX += rgtX*spd; m_pieCamZ += rgtZ*spd; }

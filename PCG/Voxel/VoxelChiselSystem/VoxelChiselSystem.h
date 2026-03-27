@@ -268,11 +268,14 @@ public:
     VoxelCell* GetCell(int32_t wx, int32_t wy, int32_t wz) {
         // wx,wy,wz are in sub-voxel space (world_block * 16 + sub)
         int32_t chunkSide = VoxelChunk::CHUNK_BLOCKS * VoxelBlock::SIZE;  // 64
+        // Standard C++ division rounds toward zero; chunk indexing requires floor division
+        // so that negative sub-voxel coords map into the correct negative chunk.
         auto FloorDiv = [](int32_t a, int32_t b) -> int32_t {
             return (a / b) - (a % b != 0 && (a ^ b) < 0);
         };
         ChunkKey3D key{FloorDiv(wx, chunkSide), FloorDiv(wy, chunkSide), FloorDiv(wz, chunkSide)};
         auto* chunk = GetChunk(key);
+        if (!chunk) return nullptr;
         if (!chunk) return nullptr;
         int32_t lx = wx - key.cx * chunkSide;
         int32_t ly = wy - key.cy * chunkSide;

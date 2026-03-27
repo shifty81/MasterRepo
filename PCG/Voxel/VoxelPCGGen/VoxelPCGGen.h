@@ -48,7 +48,9 @@ namespace detail {
             float fx = wx*freq - ix, fy = wy*freq - iy, fz = wz*freq - iz;
             // Tri-linear interpolation of 8 corners
             float c[8];
-            for (int k=0;k<2;++k) for(int j=0;j<2;++j) for(int i=0;i<2;++i)
+            for (int k = 0; k < 2; ++k)
+            for (int j = 0; j < 2; ++j)
+            for (int i = 0; i < 2; ++i)
                 c[k*4+j*2+i] = Hash(ix+i, iy+j, iz+k, seed + o*997ull);
             auto lerp = [](float a, float b, float t){ return a + t*(b-a); };
             float v = lerp(lerp(lerp(c[0],c[1],fx),lerp(c[2],c[3],fx),fy),
