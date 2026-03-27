@@ -71,3 +71,4 @@ Makefile
 Scripts/Tools/New Rich Text Document.rtf
 *.pdf
 /MasterRepo
+*.gch
