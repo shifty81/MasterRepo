@@ -47,7 +47,8 @@
 | Rendering, AI, Simulation, Audio & Core (Phase 55) | 10/10 | 0 | 10 |
 | Rendering, Gameplay, AI, Input & Core (Phase 56) | 10/10 | 0 | 10 |
 | Physics, Animation, AI, Rendering & Gameplay (Phase 57) | 10/10 | 0 | 10 |
-| **TOTAL** | **401/401** | **0** | **401** |
+| Scripting, Network, Rendering, Audio & Gameplay (Phase 58) | 10/10 | 0 | 10 |
+| **TOTAL** | **411/411** | **0** | **411** |
 
 ---
 
@@ -1391,3 +1392,24 @@ All three paths converge for the final product.
 | ✅ 57.08 | Rope Renderer | Medium | Verlet sim, catenary sag, cross-section mesh, twist, UV tile, caps | `Engine/Render/RopeRenderer/RopeRenderer/RopeRenderer.h/.cpp` |
 | ✅ 57.09 | Leaderboard System | Low | Score submit/rank, pagination, tie-breaking, JSON persistence, top-N CB | `Runtime/Leaderboard/LeaderboardSystem/LeaderboardSystem.h/.cpp` |
 | ✅ 57.10 | Debug Overlay | Medium | Text/line/rect/circle/bar prims, duration TTL, watches, rolling graphs | `Engine/Debug/Overlay/DebugOverlay/DebugOverlay.h/.cpp` |
+
+## Phase 58 – Scripting, Network, Rendering, Audio & Gameplay ✅
+
+> Stub Lua scripting engine with coroutines and C++ bindings, P2P session manager,
+> cascaded shadow map frustum splitter, streaming PCM audio player, priority ability queue
+> with cast times, GPU-instanced grass system, layer-based animation state machine,
+> geometric AoE enter/exit/tick system, FABRIK procedural animation with foot placement,
+> and floating damage number UI. All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 58.01 | Lua Script Engine | High | Exec/file, globals, C++ bindings, coroutines, sandbox, memory limit | `Engine/Scripting/Lua/LuaScriptEngine/LuaScriptEngine.h/.cpp` |
+| ✅ 58.02 | P2P Session | High | Host/connect, reliable/unreliable send, broadcast, RTT, peer state | `Engine/Net/P2P/P2PSession/P2PSession.h/.cpp` |
+| ✅ 58.03 | Cascaded Shadow Map | High | PSSM/uniform splits, per-cascade light view+ortho, depth bias, PCF | `Engine/Render/CSM/CascadedShadowMap/CascadedShadowMap.h/.cpp` |
+| ✅ 58.04 | Audio Stream | Medium | PCM/WAV streaming, seek, loop, volume, pitch, feed callback | `Engine/Audio/Stream/AudioStream/AudioStream.h/.cpp` |
+| ✅ 58.05 | Ability Queue | High | Priority sort, cast time, cooldown gating, interrupt, force-activate | `Runtime/Combat/AbilityQueue/AbilityQueue/AbilityQueue.h/.cpp` |
+| ✅ 58.06 | Grass System | Medium | Density-map instancing, wind bend, LOD cull, interaction, seasonal tint | `Engine/World/Grass/GrassSystem/GrassSystem.h/.cpp` |
+| ✅ 58.07 | Animation State Machine | High | States, transitions, parameters, blend, layers, enter/exit callbacks | `Engine/Animation/StateMachine/AnimationStateMachine/AnimationStateMachine.h/.cpp` |
+| ✅ 58.08 | Area of Effect System | Medium | Sphere/cylinder/cone/ring shapes, enter/exit/tick callbacks | `Runtime/Gameplay/AoE/AreaOfEffectSystem/AreaOfEffectSystem.h/.cpp` |
+| ✅ 58.09 | Procedural Animation | Medium | FABRIK IK, look-at, foot placement, secondary spring bones | `Engine/Animation/Procedural/ProceduralAnimation/ProceduralAnimation.h/.cpp` |
+| ✅ 58.10 | Damage Numbers | Low | Float/fade/scale animation, colour rules, crit scale, pool, TTL | `Runtime/UI/DamageNumbers/DamageNumbers/DamageNumbers.h/.cpp` |
