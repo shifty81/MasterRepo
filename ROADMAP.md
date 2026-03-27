@@ -33,7 +33,16 @@
 | Developer Experience & World Simulation (Phase 41) | 10/10 | 0 | 10 |
 | Immersive Technologies & Live Infrastructure (Phase 42) | 10/10 | 0 | 10 |
 | Game Systems & Engine Tooling (Phase 43) | 10/10 | 0 | 10 |
-| **TOTAL** | **261/261** | **0** | **261** |
+| Advanced Gameplay & Engine Utilities (Phase 44) | 10/10 | 0 | 10 |
+| Rendering, AI, Core & Gameplay Plumbing (Phase 45) | 10/10 | 0 | 10 |
+| Input, Audio, UI, Animation & Core Utilities (Phase 46) | 10/10 | 0 | 10 |
+| Networking, Physics, AI & Platform Utilities (Phase 47) | 10/10 | 0 | 10 |
+| Rendering, Editor Tools & Runtime Services (Phase 48) | 10/10 | 0 | 10 |
+| AI, Runtime & Engine Tooling (Phase 49) | 10/10 | 0 | 10 |
+| Physics, AI, Rendering & Platform (Phase 50) | 10/10 | 0 | 10 |
+| Audio, Editor, Network, Gameplay & Core (Phase 51) | 10/10 | 0 | 10 |
+| Rendering, Gameplay, AI, Core & Physics (Phase 52) | 10/10 | 0 | 10 |
+| **TOTAL** | **351/351** | **0** | **351** |
 
 ---
 
@@ -1061,9 +1070,234 @@ All three paths converge for the final product.
 | 41 | Developer Experience & World Simulation — ShaderGraph (Engine/Shader), BehaviorTreeEditorPanel (Editor/Panels), FluidSimulation (Engine/Sim), EventReplaySystem (Core), CrowdSimulation (Runtime), DataTableSystem (Core), ProceduralAnimation (Engine/Animation), BlueprintCompiler (Builder), MinimapSystem (Runtime), GPUParticleSystem (Engine/Particles). |
 | 42 | Immersive Technologies & Live Infrastructure — SplineSystem (Engine/Spline), WeatherSystem (PCG/Weather), ConversationGraph (Runtime/Dialogue), InputRemapper (Engine/Input/Remapping), LODManager (Engine/Lod), RPCSystem (Engine/Net/RPC), LightBaker (Engine/Lighting), ObjectiveSystem (Runtime/Gameplay), VoiceManager (Runtime/Audio), SceneStreamingSystem (Runtime/Streaming). |
 | 43 | Game Systems & Engine Tooling — InteractionSystem (Runtime/Gameplay), DamagePipeline (Runtime/Combat), AbilitySystem (Runtime/Combat), InventorySystem (Runtime/Inventory), StatusEffectSystem (Runtime/Combat), GameEventBus (Core/Events), TextureAtlasBuilder (Engine/Render), DebugDraw (Engine/Debug), ConstraintSolver (Engine/Physics), ScreenshotSystem (Engine/Render). |
+| 44 | Advanced Gameplay & Engine Utilities — WaterSystem (Engine/Water), FootstepSystem (Runtime/Audio), ComboSystem (Runtime/Combat), PrefabSystem (Engine/Scene), GameModeManager (Runtime/Gameplay), SurfaceAnalyzer (Engine/Physics), AnimNotifySystem (Engine/Animation), TagSystem (Core/Tags), CameraShakeSystem (Engine/Camera), PickupSystem (Runtime/Gameplay). |
+| 45 | Rendering, AI, Core & Gameplay Plumbing — TweenSystem (Engine/Tween), WeaponSystem (Runtime/Combat), MaterialSystem (Engine/Render/Material), TimeManager (Core/Time), AsyncTaskQueue (Core/AsyncTask), StateMachine (Core/StateMachine), EnvironmentQuery (Engine/AI/EQS), RewardSystem (Runtime/Gameplay), PostProcessVolume (Engine/PostProcess), TriggerVolume (Engine/Physics). |
+| 46 | Input, Audio, UI, Animation & Core Utilities — InputSystem (Engine/Input/InputSystem), SoundSystem (Engine/Audio/SoundSystem), UISystem (Runtime/UI/UISystem), ObjectPool (Core/Pool/ObjectPool), DialogueManager (Runtime/Dialogue/DialogueManager), MeshBuilder (Engine/Render/MeshBuilder), SceneTransitionSystem (Runtime/Scene/SceneTransitionSystem), SkeletonSystem (Engine/Animation/Skeleton), EventQueue (Core/EventQueue/EventQueue), FontSystem (Engine/Font/FontSystem). |
+| 47 | Networking, Physics, AI & Platform Utilities — NetworkManager (Runtime/Network/NetworkManager), RigidBodySystem (Engine/Physics/RigidBody), BehaviorTree (Engine/AI/BehaviorTree), AchievementSystem (Runtime/Achievement/AchievementSystem), AssetImporter (Engine/Asset/AssetImporter), ParticleSystem (Engine/Particles/ParticleSystem), ChunkSystem (Engine/World/ChunkSystem), ConfigSystem (Core/Config/ConfigSystem), AnimationBlendTree (Engine/Animation/BlendTree), ScriptingBridge (Engine/Scripting/ScriptingBridge). |
+| 48 | Rendering, Editor Tools & Runtime Services — ShadowSystem (Engine/Render/Shadow), DecalSystem (Engine/Render/Decal), IKSystem (Engine/Animation/IK), MapGenerator (PCG/MapGenerator), TrapSystem (Runtime/Gameplay/TrapSystem), QuestSystem (Runtime/Quest/QuestSystem), DebugConsole (Engine/Debug/DebugConsole), AudioMixer (Engine/Audio/Mixer), InputRecorder (Engine/Input/Recorder), WorldGenerator (PCG/WorldGenerator). |
+| 49 | AI, Runtime & Engine Tooling — VehicleSystem (Engine/Vehicle), CraftingSystem (Runtime/Crafting), GrappleSystem (Runtime/Gameplay/Grapple), GradientSky (Engine/Render/GradientSky), SubtitleSystem (Runtime/UI/Subtitle), CurveEditor (Engine/Curve), ReplaySystem (Runtime/Replay), SteamworksStub (Engine/Platform/Steamworks), HeatmapSystem (Runtime/Analytics/Heatmap), ModManager (Runtime/Mod). |
+| 50 | Physics, AI, Rendering & Platform — ClothSystem (Engine/Physics/Cloth), FactionSystem (Runtime/Faction), RagdollSystem (Engine/Physics/Ragdoll), PortalSystem (Engine/Render/Portal), SignalBus (Core/Signal), LensFlareSystem (Engine/Render/LensFlare), SteeringSystem (Engine/AI/Steering), VoxelTerrain (Engine/World/VoxelTerrain), LocalisationSystem (Core/Localisation), DynamicResolution (Engine/Render/DynamicResolution). |
+| 51 | Audio, Editor, Network, Gameplay & Core — AudioOcclusion (Engine/Audio/Occlusion), TransformGizmo (Editor/Gizmo), HttpClient (Core/Net/Http), BoidSystem (Engine/AI/Boid), ColorGrading (Engine/Render/ColorGrading), CoroutineScheduler (Core/Coroutine), AnimationRetargeter (Engine/Animation/Retarget), SoftBodySystem (Engine/Physics/SoftBody), TilemapSystem (Engine/World/Tilemap), ScriptHotReload (Engine/Scripting/HotReload). |
+| 52 | Rendering, Gameplay, AI, Core & Physics — AtmosphericScattering (Engine/Render/AtmosphericScattering), RopeSystem (Engine/Physics/Rope), PerkSystem (Runtime/Gameplay/Perks), GridPathfinder (Engine/AI/Grid), VisibilitySystem (Engine/Render/Visibility), BytecodeVM (Engine/Scripting/VM), ClimateSystem (PCG/Climate), TrailRenderer (Engine/Render/Trail), EconomySystem (Runtime/Economy), JobSystem (Core/Jobs). |
 
 </details>
 
 ### Phase Voxel-Chisel (Mar 2026)
 - [x] VoxelChiselSystem — 16×16×16 sub-voxel chisel blocks; VoxelCell, VoxelBlock, VoxelChunk, VoxelVolume; SetCell, FillBox, CarveBox, ChiselSphere ops; op history for undo (PCG/Voxel/VoxelChiselSystem/)
 - [x] VoxelPCGGen — PCG driver bridges noise/biome/cave/structure/planet systems into voxel volumes; GenerateTerrain, CarveCaves, StampStructure, GeneratePlanetSurface, GenerateAsteroid, GenerateShipHull (PCG/Voxel/VoxelPCGGen/)
+
+---
+
+## Phase 44 – Advanced Gameplay & Engine Utilities ✅
+
+> Fills in water simulation, footsteps, combo chains, prefabs, game-mode rules, surface
+> detection, animation notifies, entity tags, camera shake, and item pickups.
+> All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 44.01 | Water System | High | Gerstner waves, buoyancy impulse, swim-state machine, wetness, JSON save/load | `Engine/Water/WaterSystem/WaterSystem.h/.cpp` |
+| ✅ 44.02 | Footstep System | High | Surface-aware footstep audio/VFX, stride-length steps, landing/jump events, blended surfaces | `Runtime/Audio/FootstepSystem/FootstepSystem.h/.cpp` |
+| ✅ 44.03 | Combo System | High | Attack combo chains, timing link windows (early/perfect/late), branching, finishers | `Runtime/Combat/ComboSystem/ComboSystem.h/.cpp` |
+| ✅ 44.04 | Prefab System | High | Prefab templates, nested prefabs, per-instance overrides, live propagation, JSON | `Engine/Scene/PrefabSystem/PrefabSystem.h/.cpp` |
+| ✅ 44.05 | Game Mode Manager | High | Match phases (Countdown→Running→PostGame), score/kill tracking, win conditions, respawn | `Runtime/Gameplay/GameModeManager/GameModeManager.h/.cpp` |
+| ✅ 44.06 | Surface Analyzer | Medium | Surface material registry, raycast+contact-point resolution, blend weights, batch query | `Engine/Physics/SurfaceAnalyzer/SurfaceAnalyzer.h/.cpp` |
+| ✅ 44.07 | Anim Notify System | Medium | Keyframe-timed animation events, state notifies (enter/tick/exit), per-instance playback | `Engine/Animation/AnimNotify/AnimNotifySystem.h/.cpp` |
+| ✅ 44.08 | Tag System | Medium | Hierarchical dot-notation tags, exclusive groups, batch ops, thread-safe query | `Core/Tags/TagSystem/TagSystem.h/.cpp` |
+| ✅ 44.09 | Camera Shake System | Medium | Trauma/decay model, Perlin-noise offsets, presets, directional bias, distance scale | `Engine/Camera/CameraShake/CameraShakeSystem.h/.cpp` |
+| ✅ 44.10 | Pickup System | Low | Type registry, spawn/despawn, proximity collection, magnet, respawn timer, team lock | `Runtime/Gameplay/PickupSystem/PickupSystem.h/.cpp` |
+
+---
+
+## Phase 45 – Rendering, AI, Core & Gameplay Plumbing ✅
+
+> Adds tweening, weapons, material instances, time management, async tasks,
+> hierarchical FSMs, AI environment queries, XP/loot rewards, post-process volumes,
+> and trigger volumes. All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 45.01 | Tween System | High | Value interpolation with 26 easing modes, sequences, loops, yoyo, callbacks | `Engine/Tween/TweenSystem/TweenSystem.h/.cpp` |
+| ✅ 45.02 | Weapon System | High | Weapon registry, fire modes (semi/burst/full-auto/charge), ammo/reload lifecycle | `Runtime/Combat/WeaponSystem/WeaponSystem.h/.cpp` |
+| ✅ 45.03 | Material System | High | Material instance registry, parameter overrides, layers, change callbacks | `Engine/Render/Material/MaterialSystem/MaterialSystem.h/.cpp` |
+| ✅ 45.04 | Time Manager | High | Game-time scale (tween), pause/unpause, fixed-timestep accumulator, per-actor scale, timers | `Core/Time/TimeManager/TimeManager.h/.cpp` |
+| ✅ 45.05 | Async Task Queue | High | Thread-pool task queue, priorities, progress, cancellation, batch completion | `Core/AsyncTask/AsyncTaskQueue/AsyncTaskQueue.h/.cpp` |
+| ✅ 45.06 | State Machine | Medium | Typed template FSM: states, guarded transitions, enter/tick/exit, hierarchy | `Core/StateMachine/StateMachine/StateMachine.h/.cpp` |
+| ✅ 45.07 | Environment Query | Medium | EQS: grid/ring/random generators, LOS/distance/direction/custom scoring, async queries | `Engine/AI/EQS/EnvironmentQuery/EnvironmentQuery.h/.cpp` |
+| ✅ 45.08 | Reward System | Medium | XP rules, loot tables, rarity tiers + luck, level-up callbacks, item drop dispatch | `Runtime/Gameplay/RewardSystem/RewardSystem.h/.cpp` |
+| ✅ 45.09 | Post-Process Volume | Medium | AABB/sphere volumes blend PP settings (bloom, DOF, fog, LUT) by proximity | `Engine/PostProcess/PostProcessVolume/PostProcessVolume.h/.cpp` |
+| ✅ 45.10 | Trigger Volume | Medium | AABB/sphere/capsule overlap detection, enter/stay/exit callbacks, one-shot, cooldown | `Engine/Physics/TriggerVolume/TriggerVolume.h/.cpp` |
+
+---
+
+## Phase 46 – Input, Audio, UI, Animation & Core Utilities ✅
+
+> Adds a unified input system, sound playback, retained-mode UI, generic object pooling,
+> dialogue flow management, procedural mesh building, scene transitions, skeleton FK/skinning,
+> typed deferred events, and font atlas management.
+> All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 46.01 | Input System | High | Keyboard/mouse/gamepad action + axis bindings, context stack, callbacks | `Engine/Input/InputSystem/InputSystem.h/.cpp` |
+| ✅ 46.02 | Sound System | High | 2D/3D sound instances, pooling, fade in/out, groups, listener transform | `Engine/Audio/SoundSystem/SoundSystem.h/.cpp` |
+| ✅ 46.03 | UI System | High | Retained-mode widgets: Panel/Label/Button/Slider/Checkbox/TextInput, layout, render hooks | `Runtime/UI/UISystem/UISystem.h/.cpp` |
+| ✅ 46.04 | Object Pool | High | Generic typed pre-allocated pool with RAII guard, grow-slab, thread-safe variant | `Core/Pool/ObjectPool/ObjectPool.h/.cpp` |
+| ✅ 46.05 | Dialogue Manager | Medium | Conversation graph, flag-gated choices, variable substitution, auto-advance | `Runtime/Dialogue/DialogueManager/DialogueManager.h/.cpp` |
+| ✅ 46.06 | Mesh Builder | Medium | Procedural mesh: box/sphere/plane/cylinder/capsule/cone, normals/tangents, flat export | `Engine/Render/MeshBuilder/MeshBuilder/MeshBuilder.h/.cpp` |
+| ✅ 46.07 | Scene Transition | Medium | Fade-out/load/fade-in, replace/additive modes, scene stack, progress callbacks | `Runtime/Scene/SceneTransitionSystem/SceneTransitionSystem.h/.cpp` |
+| ✅ 46.08 | Skeleton System | Medium | Joint hierarchy, bind pose, FK world matrices, skinning matrices, JSON load | `Engine/Animation/Skeleton/SkeletonSystem/SkeletonSystem.h/.cpp` |
+| ✅ 46.09 | Event Queue | Medium | Typed deferred events, per-type listeners, priorities, RAII unsubscribe token | `Core/EventQueue/EventQueue/EventQueue.h/.cpp` |
+| ✅ 46.10 | Font System | Low | Font face registry, glyph atlas, UTF-8, text metrics, wrap/truncate helpers | `Engine/Font/FontSystem/FontSystem.h/.cpp` |
+
+---
+
+## Phase 47 – Networking, Physics, AI & Platform Utilities ✅
+
+> Adds network session management, discrete rigid body physics, behavior trees, achievement
+> tracking, asset import pipeline, CPU particle emitters, world chunk streaming,
+> typed config, animation blend trees, and a scripting bridge.
+> All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 47.01 | Network Manager | High | Client/server sessions, reliable/unreliable channels, message handlers, stats | `Runtime/Network/NetworkManager/NetworkManager.h/.cpp` |
+| ✅ 47.02 | Rigid Body System | High | AABB/Sphere bodies, force/impulse/torque, sub-step integration, collision response | `Engine/Physics/RigidBody/RigidBodySystem/RigidBodySystem.h/.cpp` |
+| ✅ 47.03 | Behavior Tree | High | Sequence/Selector/Parallel composites, Inverter/Repeater decorators, Blackboard, Builder | `Engine/AI/BehaviorTree/BehaviorTree/BehaviorTree.h/.cpp` |
+| ✅ 47.04 | Achievement System | Medium | Achievement registry, progress/unlock, stat bindings, persistence, platform dispatch | `Runtime/Achievement/AchievementSystem/AchievementSystem.h/.cpp` |
+| ✅ 47.05 | Asset Importer | Medium | Import pipeline: type detection, hash cache, dependency graph, async queue, manifest | `Engine/Asset/AssetImporter/AssetImporter/AssetImporter.h/.cpp` |
+| ✅ 47.06 | Particle System | Medium | CPU particle emitters: shapes, spawn rates, forces, colour/size curves, ground collision | `Engine/Particles/ParticleSystem/ParticleSystem/ParticleSystem.h/.cpp` |
+| ✅ 47.07 | Chunk System | Medium | World chunk load/unload, LOD tiers, streaming budget, observer focus, callbacks | `Engine/World/ChunkSystem/ChunkSystem/ChunkSystem.h/.cpp` |
+| ✅ 47.08 | Config System | Medium | Typed .ini/.json config, section/key store, change callbacks, CLI overrides | `Core/Config/ConfigSystem/ConfigSystem/ConfigSystem.h/.cpp` |
+| ✅ 47.09 | Animation Blend Tree | Medium | 1D/2D blend spaces, additive layers, per-bone masks, parameter-driven evaluation | `Engine/Animation/BlendTree/AnimationBlendTree/AnimationBlendTree.h/.cpp` |
+| ✅ 47.10 | Scripting Bridge | Low | C++↔script function registry, ScriptValue marshal, event dispatch, hot-reload, stub backend | `Engine/Scripting/ScriptingBridge/ScriptingBridge/ScriptingBridge.h/.cpp` |
+
+---
+
+## Phase 48 – Rendering, Editor Tools & Runtime Services ✅
+
+> Adds a shadow map system, projected decals, IK chain solvers, procedural map generator,
+> trap mechanics, quest/objective tracking, in-game debug console, multi-bus audio mixer,
+> input recording/playback, and a top-level world generator.
+> All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 48.01 | Shadow System | High | Directional/Spot/Point shadow maps, CSM cascades, PCF filtering, bias | `Engine/Render/Shadow/ShadowSystem/ShadowSystem.h/.cpp` |
+| ✅ 48.02 | Decal System | High | Projected decals onto world geometry, lifetime, fade in/out, blend modes | `Engine/Render/Decal/DecalSystem/DecalSystem.h/.cpp` |
+| ✅ 48.03 | IK System | High | 2-bone analytical + FABRIK chain IK, end-effector goals, pole vector, blend weight | `Engine/Animation/IK/IKSystem/IKSystem.h/.cpp` |
+| ✅ 48.04 | Map Generator | Medium | BSP rooms/corridors, cellular automata caves, random walk; room list + doors | `PCG/MapGenerator/MapGenerator/MapGenerator.h/.cpp` |
+| ✅ 48.05 | Trap System | Medium | Trap placement, AABB/sphere trigger zones, cooldown, one-shot/repeatable | `Runtime/Gameplay/TrapSystem/TrapSystem/TrapSystem.h/.cpp` |
+| ✅ 48.06 | Quest System | Medium | Quest/objective tree, prerequisites, progress tracking, time limit, JSON save/load | `Runtime/Quest/QuestSystem/QuestSystem.h/.cpp` |
+| ✅ 48.07 | Debug Console | Medium | Command registry, tokeniser, history, autocomplete, CVars, thread-safe queue | `Engine/Debug/DebugConsole/DebugConsole/DebugConsole.h/.cpp` |
+| ✅ 48.08 | Audio Mixer | Medium | Multi-bus mixing, per-bus volume/pitch/pan, limiter, LPF, sends, snapshots | `Engine/Audio/Mixer/AudioMixer/AudioMixer.h/.cpp` |
+| ✅ 48.09 | Input Recorder | Low | Record & replay input streams, JSON/binary serialise, seek, playback speed | `Engine/Input/Recorder/InputRecorder/InputRecorder.h/.cpp` |
+| ✅ 48.10 | World Generator | Low | Height map, biomes, features (dungeons/towns/resources), rivers, seed-based | `PCG/WorldGenerator/WorldGenerator/WorldGenerator.h/.cpp` |
+
+---
+
+## Phase 49 – AI, Runtime & Engine Tooling ✅
+
+> Adds wheeled vehicle physics, crafting pipeline, grapple hook locomotion, sky gradient
+> renderer, subtitle/caption system, runtime curve editor, game-state replay, Steamworks stub,
+> 2D/3D heatmap analytics, and a mod manager.
+> All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 49.01 | Vehicle System | High | Wheeled chassis, suspension, drivetrain (FWD/RWD/AWD), torque curve, steering | `Engine/Vehicle/VehicleSystem/VehicleSystem.h/.cpp` |
+| ✅ 49.02 | Crafting System | High | Recipe registry, ingredient matching, async crafting queue, on-complete dispatch | `Runtime/Crafting/CraftingSystem/CraftingSystem.h/.cpp` |
+| ✅ 49.03 | Grapple System | Medium | Hook projectile, spring-damper rope, swing/zip-line/retract modes, hit-test fn | `Runtime/Gameplay/Grapple/GrappleSystem/GrappleSystem.h/.cpp` |
+| ✅ 49.04 | Gradient Sky | Medium | Three-colour gradient, sun/moon disc, Rayleigh/Mie params, time-of-day keyframes | `Engine/Render/GradientSky/GradientSky/GradientSky.h/.cpp` |
+| ✅ 49.05 | Subtitle System | Medium | Timed captions queue, line-wrap, speaker colours, fade α, SRT import | `Runtime/UI/Subtitle/SubtitleSystem/SubtitleSystem.h/.cpp` |
+| ✅ 49.06 | Curve Editor | Medium | Hermite cubic keys, tangent modes, wrap modes, bake, multi-channel, JSON | `Engine/Curve/CurveEditor/CurveEditor.h/.cpp` |
+| ✅ 49.07 | Replay System | Medium | Per-frame entity snapshot buffer, playback speed, seek, loop, JSON export | `Runtime/Replay/ReplaySystem/ReplaySystem.h/.cpp` |
+| ✅ 49.08 | Steamworks Stub | Low | Achievement/stat/leaderboard stub, safe no-op when Steamworks not linked | `Engine/Platform/Steamworks/SteamworksStub/SteamworksStub.h/.cpp` |
+| ✅ 49.09 | Heatmap System | Low | 2D Gaussian splat accumulation, decay, normalise, PPM/CSV export, 3D projection | `Runtime/Analytics/Heatmap/HeatmapSystem/HeatmapSystem.h/.cpp` |
+| ✅ 49.10 | Mod Manager | Low | Manifest registry, topological load-order, conflict detection, enable/disable, JSON | `Runtime/Mod/ModManager/ModManager.h/.cpp` |
+
+---
+
+## Phase 50 – Physics, AI, Rendering & Platform ✅
+
+> Adds PBD cloth simulation, faction relations system, ragdoll physics, portal pairs,
+> typed signal bus, screen-space lens flare, Reynolds steering AI, sparse voxel terrain,
+> localisation/i18n system, and dynamic render resolution scaling.
+> All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 50.01 | Cloth System | High | PBD cloth: verlet integration, stretch/shear/bend constraints, wind, pins, sphere/plane collision, tear | `Engine/Physics/Cloth/ClothSystem/ClothSystem.h/.cpp` |
+| ✅ 50.02 | Faction System | High | Faction registry, signed reputation matrix, standing thresholds, war/peace declaration, entity membership | `Runtime/Faction/FactionSystem/FactionSystem.h/.cpp` |
+| ✅ 50.03 | Ragdoll System | High | Per-bone rigid bodies, joint limits, anim/physics blend weight, death trigger, per-bone impulse, sleep | `Engine/Physics/Ragdoll/RagdollSystem/RagdollSystem.h/.cpp` |
+| ✅ 50.04 | Portal System | Medium | Portal pairs, cross detection, position/dir remap, virtual camera, one-way, recursion depth | `Engine/Render/Portal/PortalSystem/PortalSystem.h/.cpp` |
+| ✅ 50.05 | Signal Bus | Medium | Typed pub/sub: subscribe/unsubscribe, fire, enqueue+dispatch, priority, wildcard, one-shot, thread-safe | `Core/Signal/SignalBus/SignalBus.h/.cpp` |
+| ✅ 50.06 | Lens Flare System | Medium | Screen-space flares: ghost/streak/halo/glow elements, occlusion fade, configurable templates | `Engine/Render/LensFlare/LensFlareSystem/LensFlareSystem.h/.cpp` |
+| ✅ 50.07 | Steering System | Medium | Reynolds steering: seek/flee/arrive/pursue/evade/wander/flocking, per-agent behaviour sets | `Engine/AI/Steering/SteeringSystem/SteeringSystem.h/.cpp` |
+| ✅ 50.08 | Voxel Terrain | Medium | Sparse voxel grid, naive face-culled mesh gen, FillBox/FillSphere, DDA raycast, chunk dirty tracking | `Engine/World/VoxelTerrain/VoxelTerrain/VoxelTerrain.h/.cpp` |
+| ✅ 50.09 | Localisation System | Low | Key→value table, CSV/JSON load, locale switch, fallback, plural forms, token format | `Core/Localisation/LocalisationSystem/LocalisationSystem.h/.cpp` |
+| ✅ 50.10 | Dynamic Resolution | Low | Frame-time history, scale up/down rules, min/max clamp, step, on-change callback | `Engine/Render/DynamicResolution/DynamicResolution/DynamicResolution.h/.cpp` |
+
+---
+
+## Phase 51 – Audio, Editor, Network, Gameplay & Core ✅
+
+> Ray-cast audio occlusion, 3-axis transform gizmo, stub HTTP client,
+> 3D boid flocking, CPU color grading with LUT, stackless coroutine scheduler,
+> animation retargeter, mass-spring soft body, 2D tilemap system,
+> and poll-based script hot-reload. All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 51.01 | Audio Occlusion | High | Ray-based obstruction, material lpf/dB table, smooth occlusion factor, reverb send | `Engine/Audio/Occlusion/AudioOcclusion/AudioOcclusion.h/.cpp` |
+| ✅ 51.02 | Transform Gizmo | High | 3-axis translate/rotate/scale handles, snap, delta output, coloured line draw data | `Editor/Gizmo/TransformGizmo/TransformGizmo.h/.cpp` |
+| ✅ 51.03 | HTTP Client | Medium | Stub GET/POST sync+async, default headers, proxy, cancel, poll-based Tick() | `Core/Net/Http/HttpClient/HttpClient.h/.cpp` |
+| ✅ 51.04 | Boid System | Medium | 3D cohesion/separation/alignment, goal attractor, boundary repulsion, spawn/despawn | `Engine/AI/Boid/BoidSystem/BoidSystem.h/.cpp` |
+| ✅ 51.05 | Color Grading | Medium | Exposure/contrast/saturation/hue-shift, lift-gamma-gain, identity LUT, CPU apply | `Engine/Render/ColorGrading/ColorGrading/ColorGrading.h/.cpp` |
+| ✅ 51.06 | Coroutine Scheduler | Medium | Stackless coroutine: WaitForSeconds/Frames/Until, priority, one-complete callback | `Core/Coroutine/CoroutineScheduler/CoroutineScheduler.h/.cpp` |
+| ✅ 51.07 | Animation Retargeter | Medium | Bone name mapping, length-scaled pose copy, root motion scale, lerp between poses | `Engine/Animation/Retarget/AnimationRetargeter/AnimationRetargeter.h/.cpp` |
+| ✅ 51.08 | Soft Body System | Medium | Mass-spring verlet, stretch spring solver, pressure volume, sphere/plane collision | `Engine/Physics/SoftBody/SoftBodySystem/SoftBodySystem.h/.cpp` |
+| ✅ 51.09 | Tilemap System | Low | Layered uint16 tile grid, tileset UV rect, collision mask, world↔tile query, dirty | `Engine/World/Tilemap/TilemapSystem/TilemapSystem.h/.cpp` |
+| ✅ 51.10 | Script Hot-Reload | Low | Poll-based file mod-time watch, force-reload, version counter, watch groups | `Engine/Scripting/HotReload/ScriptHotReload/ScriptHotReload.h/.cpp` |
+
+---
+
+## Phase 52 – Rendering, Gameplay, AI, Core & Physics ✅
+
+> Rayleigh+Mie atmospheric scattering, verlet rope physics, perk tree system,
+> 2D A* grid pathfinder, portal/sector visibility, stack-based bytecode VM,
+> biome/climate simulation, ribbon trail renderer, economy/trade system,
+> and work-stealing multi-threaded job system. All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 52.01 | Atmospheric Scattering | High | Rayleigh+Mie coefficients, sun direction, LUT precompute, CPU sky-colour evaluate | `Engine/Render/AtmosphericScattering/AtmosphericScattering/AtmosphericScattering.h/.cpp` |
+| ✅ 52.02 | Rope System | High | Verlet chain, distance constraints, pin endpoints, wind turbulence, sphere/plane collision | `Engine/Physics/Rope/RopeSystem/RopeSystem.h/.cpp` |
+| ✅ 52.03 | Perk System | Medium | Registry, tier tree, prerequisites, stack count, on-unlock callback, JSON save/load | `Runtime/Gameplay/Perks/PerkSystem/PerkSystem.h/.cpp` |
+| ✅ 52.04 | Grid Pathfinder | Medium | A* on bool+cost grid, diagonal option, async queue, world↔grid coords | `Engine/AI/Grid/GridPathfinder/GridPathfinder.h/.cpp` |
+| ✅ 52.05 | Visibility System | Medium | Portal/sector BFS flood-fill, IsVisible, frustum plane helper, FindSector | `Engine/Render/Visibility/VisibilitySystem/VisibilitySystem.h/.cpp` |
+| ✅ 52.06 | Bytecode VM | Medium | Stack VM: 26 opcodes, 8 registers, call/ret, JMP/JZ/JNZ, disassembler | `Engine/Scripting/VM/BytecodeVM/BytecodeVM.h/.cpp` |
+| ✅ 52.07 | Climate System | Medium | Biome map, temp/humidity grid, seasonal tick, per-cell weather state, world query | `PCG/Climate/ClimateSystem/ClimateSystem.h/.cpp` |
+| ✅ 52.08 | Trail Renderer | Low | Ribbon quads, UV scroll, fade over lifetime, width taper, head/tail colour | `Engine/Render/Trail/TrailRenderer/TrailRenderer.h/.cpp` |
+| ✅ 52.09 | Economy System | Low | Currency ledger, buy/sell, dynamic pricing, supply discount, tax, transaction log | `Runtime/Economy/EconomySystem/EconomySystem.h/.cpp` |
+| ✅ 52.10 | Job System | High | Work-stealing thread pool, ScheduleAfter, ParallelFor, Wait/WaitAll, priority queue | `Core/Jobs/JobSystem/JobSystem.h/.cpp` |
+
+## Phase 53 – Audio, Runtime, Engine & Core ✅
+
+> FFT audio analysis with beat detection, magnet force fields, branching talent tree,
+> quadric-error LOD generation, BSP procedural dungeon, patrol AI with FOV alerting,
+> CPU wireframe overlay renderer, ref-counted async resource manager,
+> weighted loot-table roller, and multi-touch gesture recogniser. All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 53.01 | Audio Analyzer | Medium | FFT spectrum (Hann window), beat detection, RMS/peak, frequency bands | `Engine/Audio/Analyzer/AudioAnalyzer/AudioAnalyzer.h/.cpp` |
+| ✅ 53.02 | Magnet System | Medium | Attract/repel fields, radius, falloff, per-body scale, multi-pole | `Engine/Physics/Magnet/MagnetSystem/MagnetSystem.h/.cpp` |
+| ✅ 53.03 | Talent Tree | Medium | Branching graph, prerequisites, multi-rank, respec, JSON save/load | `Runtime/Gameplay/Talent/TalentTree/TalentTree.h/.cpp` |
+| ✅ 53.04 | Mesh LOD Generator | High | Edge-collapse simplification, LOD chain, UV seam preservation, weld | `Engine/Render/MeshLOD/MeshLODGenerator/MeshLODGenerator.h/.cpp` |
+| ✅ 53.05 | Procedural Dungeon | Medium | BSP rooms, corridors, door tiles, spawn points, adjacency graph | `PCG/Dungeon/ProceduralDungeon/ProceduralDungeon.h/.cpp` |
+| ✅ 53.06 | Patrol System | Medium | Waypoint patrol AI, loop/ping-pong/random, FOV alert, callbacks | `Engine/AI/Patrol/PatrolSystem/PatrolSystem.h/.cpp` |
+| ✅ 53.07 | Wireframe Renderer | Low | Edge extraction, world-space bake, depth-bias, colour, thickness | `Engine/Render/Wireframe/WireframeRenderer/WireframeRenderer.h/.cpp` |
+| ✅ 53.08 | Resource Manager | High | Ref-counted cache, async load, hot-swap, memory budget, LRU eviction | `Core/Resource/ResourceManager/ResourceManager.h/.cpp` |
+| ✅ 53.09 | Loot Table | Medium | Weighted random roll, rarity tiers, guaranteed drops, luck multiplier | `Runtime/Gameplay/Loot/LootTable/LootTable.h/.cpp` |
+| ✅ 53.10 | Input Gesture | Medium | Tap, double-tap, swipe, long-press, pinch-zoom, rotate, pan — multi-touch | `Engine/Input/Gesture/InputGesture/InputGesture.h/.cpp` |
