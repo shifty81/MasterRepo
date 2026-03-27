@@ -6,6 +6,7 @@
 #include "Editor/UndoableCommandBus.h"
 #include "IDE/CodeEditor/CodeEditor.h"
 #include "IDE/AIChat/AIChat.h"
+#include "IDE/BuildSystem/CygwinManager.h"
 #include "Engine/Core/Logger.h"
 #ifdef _WIN32
 #  define WIN32_LEAN_AND_MEAN
@@ -73,7 +74,8 @@ static constexpr float    kRotSnapDeg        = 15.f;  // rotation snap angle (de
 static constexpr char     kDefaultScenePath[] = "Projects/NovaForge/Scenes/editor_save.scene";
 static constexpr float    kPIEOrbitSpeedFactor = 0.06f; // orbit speed divisor in PIE animation
 static constexpr float    kScrollToBottom      = 99999.f; // sentinel to auto-scroll to bottom
-static constexpr float    kApproxCharWidth     = 7.f;    // pixels per char for stb_easy_font at scale 1
+static constexpr float    kFontScale            = 1.35f;  // global text scale — improves readability
+static constexpr float    kApproxCharWidth     = 9.5f;   // pixels per char for stb_easy_font at kFontScale
 
 // ── Layout constants ───────────────────────────────────────────────────────
 static constexpr float kTitleH    = 26.f;
@@ -463,6 +465,7 @@ void EditorRenderer::OnKey(int key, bool pressed) {
     static constexpr int K_LEFT_CTRL  = 341;
     static constexpr int K_RIGHT_CTRL = 345;
     static constexpr int K_LEFT_SHIFT = 340;
+    static constexpr int K_SPACE      = 32;
     static constexpr int K_P          = 80;
     static constexpr int K_S          = 83;
     static constexpr int K_O          = 79;
@@ -487,6 +490,7 @@ void EditorRenderer::OnKey(int key, bool pressed) {
     static constexpr int K_DELETE     = GLFW_KEY_DELETE;
     static constexpr int K_LEFT_CTRL  = GLFW_KEY_LEFT_CONTROL;
     static constexpr int K_RIGHT_CTRL = GLFW_KEY_RIGHT_CONTROL;
+    static constexpr int K_SPACE      = GLFW_KEY_SPACE;
     static constexpr int K_P          = GLFW_KEY_P;
     static constexpr int K_S          = GLFW_KEY_S;
     static constexpr int K_O          = GLFW_KEY_O;
@@ -607,6 +611,12 @@ void EditorRenderer::OnKey(int key, bool pressed) {
                     std::make_unique<CreateEntityCmd>(m_world, m_selectedEntity, newTag, newTr));
                 AppendConsole("[Info]  Duplicated: " + newTag.name);
             }
+        } else if (key == K_SPACE) {
+            // Ctrl+Space — toggle AI chat sidebar
+            m_projectAIVisible = !m_projectAIVisible;
+            AppendConsole(m_projectAIVisible
+                ? "[Info]  AI sidebar opened  (Ctrl+Space to close)"
+                : "[Info]  AI sidebar closed  (Ctrl+Space to reopen)");
         }
     } else {
         if (key == K_P) {
@@ -682,14 +692,13 @@ void EditorRenderer::OnChar(unsigned int codepoint) {
 
 // ── Scroll wheel — zoom viewport (change orbit distance) ─────────────────
 void EditorRenderer::OnScroll(double /*dx*/, double dy) {
-    // Scroll ProjectAI chat history
+    // Scroll ProjectAI chat history when mouse is over the right sidebar AI panel
     if (m_projectAIVisible) {
-        float paiW = std::min(680.f, (float)m_width  - 60.f);
-        float paiH = std::min(520.f, (float)m_height - 80.f);
-        float paiX = ((float)m_width  - paiW) * 0.5f;
-        float paiY = ((float)m_height - paiH) * 0.5f;
-        if (m_mouseX >= paiX && m_mouseX < paiX + paiW &&
-            m_mouseY >= paiY && m_mouseY < paiY + paiH) {
+        float aiX = (float)m_width - kInspectorW;
+        float aiY = kMenuH + kToolbarH;
+        float aiH = (float)m_height - kStatusH - kConsoleH - aiY;
+        if (m_mouseX >= aiX && m_mouseX < (float)m_width &&
+            m_mouseY >= aiY && m_mouseY < aiY + aiH) {
             m_projectAIScrollY = std::max(0.f, m_projectAIScrollY - (float)dy * 20.f);
             return;
         }
@@ -736,12 +745,36 @@ uint32_t EditorRenderer::PickEntityAt(float sx, float sy) {
 
 // ── EI-08: trigger build ──────────────────────────────────────────────────
 void EditorRenderer::TriggerBuild() {
-    AppendConsole("[Info]  Build triggered — running Scripts/Tools/build_all.sh --debug-only");
+    static constexpr char kBuildScript[] = "Scripts/Tools/build_all.sh --debug-only";
+    static constexpr char kBuildLog[]    = "Logs/Build/editor_build.log";
+
+    AppendConsole("[Info]  Build triggered — " + std::string(kBuildScript));
     Engine::Core::Logger::Info("Build started via editor");
-    // Launch build script in background; output is captured by logger sink
-    std::string cmd = "Scripts/Tools/build_all.sh --debug-only >> Logs/Build/editor_build.log 2>&1 &";
+
+#ifdef _WIN32
+    // On Windows route through Cygwin (embedded portable or system install)
+    // so that the bash build scripts can execute correctly.
+    auto& cygwin = IDE::BuildSystem::CygwinManager::Instance();
+    if (cygwin.Detect() != IDE::BuildSystem::CygwinManager::Status::NotFound) {
+        std::string cmd = cygwin.MakeShellCommand(kBuildScript, kBuildLog);
+        std::system(cmd.c_str());
+        AppendConsole("[Info]  Build started — see " + std::string(kBuildLog));
+        return;
+    }
+
+    // Cygwin not found — offer to set it up
+    AppendConsole("[Warn]  Cygwin not found.  Setting up embedded installer...");
+    cygwin.SetupEmbedded([this](const std::string& msg) {
+        AppendConsole("[Info]  " + msg);
+    });
+    AppendConsole("[Warn]  Run Tools\\setup_cygwin_portable.cmd then restart AtlasEditor.");
+#else
+    // Linux / macOS — run script directly through system bash in background
+    std::string cmd = std::string("bash -c '") + kBuildScript + "' >> "
+                      + kBuildLog + " 2>&1 &";
     std::system(cmd.c_str());
-    AppendConsole("[Info]  Build running in background — see Logs/Build/editor_build.log");
+    AppendConsole("[Info]  Build running in background — see " + std::string(kBuildLog));
+#endif
 }
 
 // ── GizmoAxisHit — returns true if mouse is within ~8px of the axis arrow ─
@@ -1461,6 +1494,9 @@ void EditorRenderer::DrawText(const std::string& text, float x, float y,
                                uint32_t col, float scale) {
     if (text.empty()) return;
 
+    // Apply global scale multiplier for improved readability across all panels
+    float s = scale * kFontScale;
+
     static char vbuf[65536];
     unsigned char c[4] = { R(col), G(col), B(col), A(col) };
     int quads = stb_easy_font_print(0.f, 0.f,
@@ -1469,7 +1505,7 @@ void EditorRenderer::DrawText(const std::string& text, float x, float y,
 
     glPushMatrix();
     glTranslatef(x, y, 0.f);
-    glScalef(scale, scale, 1.f);
+    glScalef(s, s, 1.f);
 
     SetColor(col);
     glEnableClientState(GL_VERTEX_ARRAY);
@@ -1481,7 +1517,7 @@ void EditorRenderer::DrawText(const std::string& text, float x, float y,
 }
 
 int EditorRenderer::TextWidth(const std::string& text, float scale) {
-    return static_cast<int>(stb_easy_font_width(const_cast<char*>(text.c_str())) * scale);
+    return static_cast<int>(stb_easy_font_width(const_cast<char*>(text.c_str())) * scale * kFontScale);
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -1766,7 +1802,7 @@ void EditorRenderer::DrawToolbar(float x, float y, float w, float h) {
     float acx = x + w - 80.f;
     bool achov = (m_mouseX >= acx && m_mouseX < acx + 72.f &&
                   m_mouseY >= by  && m_mouseY < by + bh);
-    DrawRect(acx, by, 72.f, bh, m_aiChatVisible ? 0x094771FF : (achov ? 0x3E3E52FF : 0x252526FF));
+    DrawRect(acx, by, 72.f, bh, m_projectAIVisible ? 0x094771FF : (achov ? 0x3E3E52FF : 0x252526FF));
     DrawRectOutline(acx, by, 72.f, bh, kBorderColor);
     DrawText("AI Chat", acx + 6.f, by + 5.f, kTextAccent);
     if (achov && m_leftMousePressed) m_projectAIVisible = !m_projectAIVisible;
@@ -2564,7 +2600,11 @@ void EditorRenderer::Render(double dt) {
     // ── Main panels ────────────────────────────────────────────────────────
     DrawOutliner (outlinerX,  mainY,  kOutlinerW,  mainH);
     DrawViewport (viewportX,  mainY,  viewportW,   mainH);
-    DrawInspector(inspectorX, mainY,  kInspectorW, mainH);
+    // Right sidebar: ProjectAI panel (AI Chat) when toggled, otherwise Inspector
+    if (m_projectAIVisible)
+        DrawProjectAIPanel(inspectorX, mainY, kInspectorW, mainH);
+    else
+        DrawInspector(inspectorX, mainY,  kInspectorW, mainH);
     DrawConsole  (0.f,        consoleY, W, kConsoleH);
 
     // ── Borders between panels ─────────────────────────────────────────────
@@ -2598,15 +2638,6 @@ void EditorRenderer::Render(double dt) {
         float acX = W - kInspectorW - acW - 4.f;
         float acY = mainY + 10.f;
         DrawAIChat(acX, acY, acW, acH);
-    }
-
-    // ProjectAI panel — ChatGPT-style, shown at startup and via Ctrl+Space
-    if (m_projectAIVisible) {
-        float paiW = std::min(680.f, W - 60.f);
-        float paiH = std::min(520.f, H - 80.f);
-        float paiX = (W - paiW) * 0.5f;
-        float paiY = (H - paiH) * 0.5f;
-        DrawProjectAIPanel(paiX, paiY, paiW, paiH);
     }
 
     // Keybinds reference panel — F1
@@ -2657,8 +2688,8 @@ void EditorRenderer::DrawKeybindsPanel(float x, float y, float w, float h) {
         { "Ctrl+B",          "Build project"              },
         { "F5",              "Build project"              },
         { "F1",              "Keybinds panel"             },
-        { "Ctrl+Space",      "AI Chat panel"              },
-        { "ESC  (panels)",   "Close keybinds / AI"        },
+        { "Ctrl+Space",      "Toggle AI Chat sidebar"     },
+        { "ESC  (panels)",   "Close keybinds / hide AI sidebar"},
         { nullptr, nullptr }
     };
 
@@ -2690,12 +2721,10 @@ void EditorRenderer::DrawKeybindsPanel(float x, float y, float w, float h) {
 
 // ── ProjectAI — ChatGPT-style panel with project file access ───────────────
 void EditorRenderer::DrawProjectAIPanel(float x, float y, float w, float h) {
-    DrawRect(x, y, w, h, 0x0D0D1AEE);
-    DrawRectOutline(x, y, w, h, 0x336699FF, 2.f);
-    DrawPanelHeader("  Atlas AI  —  Project Assistant  (Ollama / local)",
-                    x, y, w, kPanelHdrH, 0x0A2040FF);
+    DrawRect(x, y, w, h, 0x0D0D1AFF);
+    DrawPanelHeader("  Atlas AI  (Ollama)", x, y, w, kPanelHdrH, 0x0A2040FF);
 
-    // Close button (top-right)
+    // Close button (top-right) — returns to Inspector
     float cbx = x + w - 22.f, cby = y + 3.f;
     bool  cbHov = (m_mouseX >= cbx && m_mouseX < cbx + 18.f &&
                    m_mouseY >= cby && m_mouseY < cby + 14.f);
@@ -2800,7 +2829,7 @@ void EditorRenderer::DrawProjectAIPanel(float x, float y, float w, float h) {
     bool pending = m_aiFuture.valid() &&
                    m_aiFuture.wait_for(std::chrono::milliseconds(0)) != std::future_status::ready;
     DrawText(pending ? "  ⏳ Waiting for Ollama…"
-                     : "  Model: codellama  |  localhost:11434  |  Ctrl+Space to hide",
+                     : "  codellama | localhost:11434 | Ctrl+Space",
              x + 6.f, statusY + 3.f, pending ? kTextWarn : kTextMuted, 0.9f);
 }
 
