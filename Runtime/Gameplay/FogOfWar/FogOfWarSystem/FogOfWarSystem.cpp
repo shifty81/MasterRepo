@@ -16,7 +16,7 @@ struct FogOfWarSystem::Impl {
     std::vector<float> explored;
     std::unordered_map<uint32_t, Observer> observers;
 
-    int WorldToCell(float w) const { return (int)(w/cellSize); }
+    int WorldToCell(float w) const { return (int)std::floor(w/cellSize); }
 
     void CircleFill(float cx, float cy, float radius, float value){
         int rx=(int)std::ceil(radius/cellSize);

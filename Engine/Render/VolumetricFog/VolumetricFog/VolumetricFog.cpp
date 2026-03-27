@@ -36,7 +36,7 @@ struct VolumetricFog::Impl {
     float Phase(float cosTheta) const {
         float g=phaseG, g2=g*g;
         float denom=1.f+g2-2.f*g*cosTheta;
-        return (1.f-g2)/(4.f*3.14159265f*denom*std::sqrt(denom)+1e-6f);
+        return (1.f-g2)/(4.f*3.14159265f*denom*std::sqrt(std::max(0.f,denom))+1e-6f);
     }
 };
 

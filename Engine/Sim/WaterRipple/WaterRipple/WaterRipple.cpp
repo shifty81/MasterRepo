@@ -28,7 +28,7 @@ struct WaterRipple::Impl {
         return buf[Idx(x,y)];
     }
 
-    int WorldToCell(float w) const { return (int)(w/cellSize); }
+    int WorldToCell(float w) const { return (int)std::floor(w/cellSize); }
 };
 
 WaterRipple::WaterRipple(): m_impl(new Impl){}
