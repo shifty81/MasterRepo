@@ -38,7 +38,8 @@
 | Input, Audio, UI, Animation & Core Utilities (Phase 46) | 10/10 | 0 | 10 |
 | Networking, Physics, AI & Platform Utilities (Phase 47) | 10/10 | 0 | 10 |
 | Rendering, Editor Tools & Runtime Services (Phase 48) | 10/10 | 0 | 10 |
-| **TOTAL** | **311/311** | **0** | **311** |
+| AI, Runtime & Engine Tooling (Phase 49) | 10/10 | 0 | 10 |
+| **TOTAL** | **321/321** | **0** | **321** |
 
 ---
 
@@ -1071,6 +1072,7 @@ All three paths converge for the final product.
 | 46 | Input, Audio, UI, Animation & Core Utilities — InputSystem (Engine/Input/InputSystem), SoundSystem (Engine/Audio/SoundSystem), UISystem (Runtime/UI/UISystem), ObjectPool (Core/Pool/ObjectPool), DialogueManager (Runtime/Dialogue/DialogueManager), MeshBuilder (Engine/Render/MeshBuilder), SceneTransitionSystem (Runtime/Scene/SceneTransitionSystem), SkeletonSystem (Engine/Animation/Skeleton), EventQueue (Core/EventQueue/EventQueue), FontSystem (Engine/Font/FontSystem). |
 | 47 | Networking, Physics, AI & Platform Utilities — NetworkManager (Runtime/Network/NetworkManager), RigidBodySystem (Engine/Physics/RigidBody), BehaviorTree (Engine/AI/BehaviorTree), AchievementSystem (Runtime/Achievement/AchievementSystem), AssetImporter (Engine/Asset/AssetImporter), ParticleSystem (Engine/Particles/ParticleSystem), ChunkSystem (Engine/World/ChunkSystem), ConfigSystem (Core/Config/ConfigSystem), AnimationBlendTree (Engine/Animation/BlendTree), ScriptingBridge (Engine/Scripting/ScriptingBridge). |
 | 48 | Rendering, Editor Tools & Runtime Services — ShadowSystem (Engine/Render/Shadow), DecalSystem (Engine/Render/Decal), IKSystem (Engine/Animation/IK), MapGenerator (PCG/MapGenerator), TrapSystem (Runtime/Gameplay/TrapSystem), QuestSystem (Runtime/Quest/QuestSystem), DebugConsole (Engine/Debug/DebugConsole), AudioMixer (Engine/Audio/Mixer), InputRecorder (Engine/Input/Recorder), WorldGenerator (PCG/WorldGenerator). |
+| 49 | AI, Runtime & Engine Tooling — VehicleSystem (Engine/Vehicle), CraftingSystem (Runtime/Crafting), GrappleSystem (Runtime/Gameplay/Grapple), GradientSky (Engine/Render/GradientSky), SubtitleSystem (Runtime/UI/Subtitle), CurveEditor (Engine/Curve), ReplaySystem (Runtime/Replay), SteamworksStub (Engine/Platform/Steamworks), HeatmapSystem (Runtime/Analytics/Heatmap), ModManager (Runtime/Mod). |
 
 </details>
 
@@ -1185,3 +1187,25 @@ All three paths converge for the final product.
 | ✅ 48.08 | Audio Mixer | Medium | Multi-bus mixing, per-bus volume/pitch/pan, limiter, LPF, sends, snapshots | `Engine/Audio/Mixer/AudioMixer/AudioMixer.h/.cpp` |
 | ✅ 48.09 | Input Recorder | Low | Record & replay input streams, JSON/binary serialise, seek, playback speed | `Engine/Input/Recorder/InputRecorder/InputRecorder.h/.cpp` |
 | ✅ 48.10 | World Generator | Low | Height map, biomes, features (dungeons/towns/resources), rivers, seed-based | `PCG/WorldGenerator/WorldGenerator/WorldGenerator.h/.cpp` |
+
+---
+
+## Phase 49 – AI, Runtime & Engine Tooling ✅
+
+> Adds wheeled vehicle physics, crafting pipeline, grapple hook locomotion, sky gradient
+> renderer, subtitle/caption system, runtime curve editor, game-state replay, Steamworks stub,
+> 2D/3D heatmap analytics, and a mod manager.
+> All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 49.01 | Vehicle System | High | Wheeled chassis, suspension, drivetrain (FWD/RWD/AWD), torque curve, steering | `Engine/Vehicle/VehicleSystem/VehicleSystem.h/.cpp` |
+| ✅ 49.02 | Crafting System | High | Recipe registry, ingredient matching, async crafting queue, on-complete dispatch | `Runtime/Crafting/CraftingSystem/CraftingSystem.h/.cpp` |
+| ✅ 49.03 | Grapple System | Medium | Hook projectile, spring-damper rope, swing/zip-line/retract modes, hit-test fn | `Runtime/Gameplay/Grapple/GrappleSystem/GrappleSystem.h/.cpp` |
+| ✅ 49.04 | Gradient Sky | Medium | Three-colour gradient, sun/moon disc, Rayleigh/Mie params, time-of-day keyframes | `Engine/Render/GradientSky/GradientSky/GradientSky.h/.cpp` |
+| ✅ 49.05 | Subtitle System | Medium | Timed captions queue, line-wrap, speaker colours, fade α, SRT import | `Runtime/UI/Subtitle/SubtitleSystem/SubtitleSystem.h/.cpp` |
+| ✅ 49.06 | Curve Editor | Medium | Hermite cubic keys, tangent modes, wrap modes, bake, multi-channel, JSON | `Engine/Curve/CurveEditor/CurveEditor.h/.cpp` |
+| ✅ 49.07 | Replay System | Medium | Per-frame entity snapshot buffer, playback speed, seek, loop, JSON export | `Runtime/Replay/ReplaySystem/ReplaySystem.h/.cpp` |
+| ✅ 49.08 | Steamworks Stub | Low | Achievement/stat/leaderboard stub, safe no-op when Steamworks not linked | `Engine/Platform/Steamworks/SteamworksStub/SteamworksStub.h/.cpp` |
+| ✅ 49.09 | Heatmap System | Low | 2D Gaussian splat accumulation, decay, normalise, PPM/CSV export, 3D projection | `Runtime/Analytics/Heatmap/HeatmapSystem/HeatmapSystem.h/.cpp` |
+| ✅ 49.10 | Mod Manager | Low | Manifest registry, topological load-order, conflict detection, enable/disable, JSON | `Runtime/Mod/ModManager/ModManager.h/.cpp` |
