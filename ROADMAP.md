@@ -40,7 +40,8 @@
 | Rendering, Editor Tools & Runtime Services (Phase 48) | 10/10 | 0 | 10 |
 | AI, Runtime & Engine Tooling (Phase 49) | 10/10 | 0 | 10 |
 | Physics, AI, Rendering & Platform (Phase 50) | 10/10 | 0 | 10 |
-| **TOTAL** | **331/331** | **0** | **331** |
+| Audio, Editor, Network, Gameplay & Core (Phase 51) | 10/10 | 0 | 10 |
+| **TOTAL** | **341/341** | **0** | **341** |
 
 ---
 
@@ -1075,6 +1076,7 @@ All three paths converge for the final product.
 | 48 | Rendering, Editor Tools & Runtime Services — ShadowSystem (Engine/Render/Shadow), DecalSystem (Engine/Render/Decal), IKSystem (Engine/Animation/IK), MapGenerator (PCG/MapGenerator), TrapSystem (Runtime/Gameplay/TrapSystem), QuestSystem (Runtime/Quest/QuestSystem), DebugConsole (Engine/Debug/DebugConsole), AudioMixer (Engine/Audio/Mixer), InputRecorder (Engine/Input/Recorder), WorldGenerator (PCG/WorldGenerator). |
 | 49 | AI, Runtime & Engine Tooling — VehicleSystem (Engine/Vehicle), CraftingSystem (Runtime/Crafting), GrappleSystem (Runtime/Gameplay/Grapple), GradientSky (Engine/Render/GradientSky), SubtitleSystem (Runtime/UI/Subtitle), CurveEditor (Engine/Curve), ReplaySystem (Runtime/Replay), SteamworksStub (Engine/Platform/Steamworks), HeatmapSystem (Runtime/Analytics/Heatmap), ModManager (Runtime/Mod). |
 | 50 | Physics, AI, Rendering & Platform — ClothSystem (Engine/Physics/Cloth), FactionSystem (Runtime/Faction), RagdollSystem (Engine/Physics/Ragdoll), PortalSystem (Engine/Render/Portal), SignalBus (Core/Signal), LensFlareSystem (Engine/Render/LensFlare), SteeringSystem (Engine/AI/Steering), VoxelTerrain (Engine/World/VoxelTerrain), LocalisationSystem (Core/Localisation), DynamicResolution (Engine/Render/DynamicResolution). |
+| 51 | Audio, Editor, Network, Gameplay & Core — AudioOcclusion (Engine/Audio/Occlusion), TransformGizmo (Editor/Gizmo), HttpClient (Core/Net/Http), BoidSystem (Engine/AI/Boid), ColorGrading (Engine/Render/ColorGrading), CoroutineScheduler (Core/Coroutine), AnimationRetargeter (Engine/Animation/Retarget), SoftBodySystem (Engine/Physics/SoftBody), TilemapSystem (Engine/World/Tilemap), ScriptHotReload (Engine/Scripting/HotReload). |
 
 </details>
 
@@ -1233,3 +1235,25 @@ All three paths converge for the final product.
 | ✅ 50.08 | Voxel Terrain | Medium | Sparse voxel grid, naive face-culled mesh gen, FillBox/FillSphere, DDA raycast, chunk dirty tracking | `Engine/World/VoxelTerrain/VoxelTerrain/VoxelTerrain.h/.cpp` |
 | ✅ 50.09 | Localisation System | Low | Key→value table, CSV/JSON load, locale switch, fallback, plural forms, token format | `Core/Localisation/LocalisationSystem/LocalisationSystem.h/.cpp` |
 | ✅ 50.10 | Dynamic Resolution | Low | Frame-time history, scale up/down rules, min/max clamp, step, on-change callback | `Engine/Render/DynamicResolution/DynamicResolution/DynamicResolution.h/.cpp` |
+
+---
+
+## Phase 51 – Audio, Editor, Network, Gameplay & Core ✅
+
+> Ray-cast audio occlusion, 3-axis transform gizmo, stub HTTP client,
+> 3D boid flocking, CPU color grading with LUT, stackless coroutine scheduler,
+> animation retargeter, mass-spring soft body, 2D tilemap system,
+> and poll-based script hot-reload. All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 51.01 | Audio Occlusion | High | Ray-based obstruction, material lpf/dB table, smooth occlusion factor, reverb send | `Engine/Audio/Occlusion/AudioOcclusion/AudioOcclusion.h/.cpp` |
+| ✅ 51.02 | Transform Gizmo | High | 3-axis translate/rotate/scale handles, snap, delta output, coloured line draw data | `Editor/Gizmo/TransformGizmo/TransformGizmo.h/.cpp` |
+| ✅ 51.03 | HTTP Client | Medium | Stub GET/POST sync+async, default headers, proxy, cancel, poll-based Tick() | `Core/Net/Http/HttpClient/HttpClient.h/.cpp` |
+| ✅ 51.04 | Boid System | Medium | 3D cohesion/separation/alignment, goal attractor, boundary repulsion, spawn/despawn | `Engine/AI/Boid/BoidSystem/BoidSystem.h/.cpp` |
+| ✅ 51.05 | Color Grading | Medium | Exposure/contrast/saturation/hue-shift, lift-gamma-gain, identity LUT, CPU apply | `Engine/Render/ColorGrading/ColorGrading/ColorGrading.h/.cpp` |
+| ✅ 51.06 | Coroutine Scheduler | Medium | Stackless coroutine: WaitForSeconds/Frames/Until, priority, one-complete callback | `Core/Coroutine/CoroutineScheduler/CoroutineScheduler.h/.cpp` |
+| ✅ 51.07 | Animation Retargeter | Medium | Bone name mapping, length-scaled pose copy, root motion scale, lerp between poses | `Engine/Animation/Retarget/AnimationRetargeter/AnimationRetargeter.h/.cpp` |
+| ✅ 51.08 | Soft Body System | Medium | Mass-spring verlet, stretch spring solver, pressure volume, sphere/plane collision | `Engine/Physics/SoftBody/SoftBodySystem/SoftBodySystem.h/.cpp` |
+| ✅ 51.09 | Tilemap System | Low | Layered uint16 tile grid, tileset UV rect, collision mask, world↔tile query, dirty | `Engine/World/Tilemap/TilemapSystem/TilemapSystem.h/.cpp` |
+| ✅ 51.10 | Script Hot-Reload | Low | Poll-based file mod-time watch, force-reload, version counter, watch groups | `Engine/Scripting/HotReload/ScriptHotReload/ScriptHotReload.h/.cpp` |
