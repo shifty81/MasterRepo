@@ -44,7 +44,8 @@
 | Rendering, Gameplay, AI, Core & Physics (Phase 52) | 10/10 | 0 | 10 |
 | Audio, Runtime, Engine & Core (Phase 53) | 10/10 | 0 | 10 |
 | Rendering, Gameplay, AI, Core & Platform (Phase 54) | 10/10 | 0 | 10 |
-| **TOTAL** | **371/371** | **0** | **371** |
+| Rendering, AI, Simulation, Audio & Core (Phase 55) | 10/10 | 0 | 10 |
+| **TOTAL** | **381/381** | **0** | **381** |
 
 ---
 
@@ -1324,3 +1325,25 @@ All three paths converge for the final product.
 | ✅ 54.08 | Instanced Renderer | Low | Per-instance transform+colour, LOD by distance, frustum cull, draw-call batching | `Engine/Render/Instancing/InstancedRenderer/InstancedRenderer.h/.cpp` |
 | ✅ 54.09 | Volumetric Fog | High | 3D density voxels, beer-law raymarching, HG phase, wind advection, light shafts | `Engine/Render/VolumetricFog/VolumetricFog/VolumetricFog.h/.cpp` |
 | ✅ 54.10 | Async Scene Loader | Low | Background load with progress, cancel, swap-in, prefetch, on-complete callback | `Runtime/Scene/AsyncScene/AsyncSceneLoader/AsyncSceneLoader.h/.cpp` |
+
+## Phase 55 – Rendering, AI, Simulation, Audio & Core ✅
+
+> Irradiance probe GI with SH encoding, AI formation shapes with slot assignment,
+> entity scene-graph hierarchy with dirty propagation, biquad DSP effect chain,
+> mip-level texture streamer with LRU budget, per-frame profiler HUD with JSON export,
+> world-space particle attractors (point/ring/vortex/plane), radial dialogue wheel,
+> spline-driven cinematic camera with cuts and DoF, and utility-theory AI decision maker.
+> All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 55.01 | Global Illumination | High | L2 SH irradiance probes, auto-placement, bake, trilinear blend, JSON | `Engine/Render/GI/GlobalIllumination/GlobalIllumination.h/.cpp` |
+| ✅ 55.02 | Formation System | High | 6 AI formation shapes, slot assignment, auto-assign, per-frame update | `Engine/AI/Formation/FormationSystem/FormationSystem.h/.cpp` |
+| ✅ 55.03 | Scene Graph | High | TRS hierarchy, dirty propagation, depth-first update, component attachment | `Engine/Scene/SceneGraph/SceneGraph/SceneGraph.h/.cpp` |
+| ✅ 55.04 | Audio DSP Chain | Medium | Biquad LPF/HPF/BPF, reverb, chorus, delay, compressor, gain, in-place | `Engine/Audio/DSP/AudioDSP/AudioDSP.h/.cpp` |
+| ✅ 55.05 | Texture Streamer | Medium | Mip streaming, budget eviction, urgency priority, async tick, callbacks | `Engine/Render/TextureStream/TextureStreamer/TextureStreamer.h/.cpp` |
+| ✅ 55.06 | Profiler HUD | Medium | Named scopes, frame budget bars, rolling history, FPS, JSON export | `Engine/Debug/ProfilerHUD/ProfilerHUD/ProfilerHUD.h/.cpp` |
+| ✅ 55.07 | Particle Attractor | Medium | Point/ring/vortex/plane force fields applied to SoA particle batches | `Engine/Particles/Attractor/ParticleAttractor/ParticleAttractor.h/.cpp` |
+| ✅ 55.08 | Dialogue Wheel | Low | Radial choice sectors, hover/select callbacks, dead-zone, icon+text | `Runtime/UI/DialogueWheel/DialogueWheel/DialogueWheel.h/.cpp` |
+| ✅ 55.09 | Cinematic Camera | Medium | Catmull-Rom spline path, cuts, DoF/aperture, play/pause/seek/loop | `Engine/Camera/Cinematic/CinematicCamera/CinematicCamera.h/.cpp` |
+| ✅ 55.10 | AI Decision Maker | High | Utility-theory scorer, goal priorities, blackboard, greedy planner, cooldowns | `Engine/AI/Decision/AIDecisionMaker/AIDecisionMaker.h/.cpp` |
