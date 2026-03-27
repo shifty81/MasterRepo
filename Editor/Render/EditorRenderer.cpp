@@ -2652,7 +2652,7 @@ void EditorRenderer::DrawKeybindsPanel(float x, float y, float w, float h) {
         { "F5",              "Build project"              },
         { "F1",              "Keybinds panel"             },
         { "Ctrl+Space",      "Toggle AI Chat sidebar"     },
-        { "ESC  (panels)",   "Close keybinds / AI sidebar"},
+        { "ESC  (panels)",   "Close keybinds / hide AI sidebar"},
         { nullptr, nullptr }
     };
 
