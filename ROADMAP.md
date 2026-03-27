@@ -42,7 +42,9 @@
 | Physics, AI, Rendering & Platform (Phase 50) | 10/10 | 0 | 10 |
 | Audio, Editor, Network, Gameplay & Core (Phase 51) | 10/10 | 0 | 10 |
 | Rendering, Gameplay, AI, Core & Physics (Phase 52) | 10/10 | 0 | 10 |
-| **TOTAL** | **351/351** | **0** | **351** |
+| Audio, Runtime, Engine & Core (Phase 53) | 10/10 | 0 | 10 |
+| Rendering, Gameplay, AI, Core & Platform (Phase 54) | 10/10 | 0 | 10 |
+| **TOTAL** | **371/371** | **0** | **371** |
 
 ---
 
@@ -1301,3 +1303,24 @@ All three paths converge for the final product.
 | ✅ 53.08 | Resource Manager | High | Ref-counted cache, async load, hot-swap, memory budget, LRU eviction | `Core/Resource/ResourceManager/ResourceManager.h/.cpp` |
 | ✅ 53.09 | Loot Table | Medium | Weighted random roll, rarity tiers, guaranteed drops, luck multiplier | `Runtime/Gameplay/Loot/LootTable/LootTable.h/.cpp` |
 | ✅ 53.10 | Input Gesture | Medium | Tap, double-tap, swipe, long-press, pinch-zoom, rotate, pan — multi-touch | `Engine/Input/Gesture/InputGesture/InputGesture.h/.cpp` |
+
+## Phase 54 – Rendering, Gameplay, AI, Core & Platform ✅
+
+> Screen-space reflections with roughness fade, branching narrative manager,
+> 2D fog-of-war with decay, tetris-style inventory grid, LRU shader binary cache,
+> height-field water ripple simulation, controller aim-assist with sticky aim,
+> frustum-culled instanced renderer, CPU volumetric fog with Henyey-Greenstein scattering,
+> and background async scene loader with swap-in. All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 54.01 | Screen Space Reflections | High | Ray-march depth buffer, roughness fade, edge fade, cubemap fallback, TAA confidence | `Engine/Render/SSR/ScreenSpaceReflections/ScreenSpaceReflections.h/.cpp` |
+| ✅ 54.02 | Narrative Manager | High | Beat graph, choices, flag conditions, journal, save/load JSON | `Runtime/Narrative/NarrativeManager/NarrativeManager.h/.cpp` |
+| ✅ 54.03 | Fog of War System | Medium | Per-observer reveal circle, decay, explored shroud, world↔grid query, renderer grid | `Runtime/Gameplay/FogOfWar/FogOfWarSystem/FogOfWarSystem.h/.cpp` |
+| ✅ 54.04 | Inventory Grid | Medium | Tetris-style 2D grid, item rotation, overlap check, stacking, auto-place, JSON | `Runtime/Inventory/InventoryGrid/InventoryGrid/InventoryGrid.h/.cpp` |
+| ✅ 54.05 | Shader Cache | Medium | FNV-1a source hash, LRU eviction, binary blob, disk persist, on-evict callback | `Engine/Shader/Cache/ShaderCache/ShaderCache.h/.cpp` |
+| ✅ 54.06 | Water Ripple | Medium | Finite-difference wave eq, ping-pong buffers, splash impulse, damping, normal gen | `Engine/Sim/WaterRipple/WaterRipple/WaterRipple.h/.cpp` |
+| ✅ 54.07 | Aim Assist | Medium | Target magnetism, sticky-aim input attenuation, FoV cone, distance cull | `Engine/Input/AimAssist/AimAssist/AimAssist.h/.cpp` |
+| ✅ 54.08 | Instanced Renderer | Low | Per-instance transform+colour, LOD by distance, frustum cull, draw-call batching | `Engine/Render/Instancing/InstancedRenderer/InstancedRenderer.h/.cpp` |
+| ✅ 54.09 | Volumetric Fog | High | 3D density voxels, beer-law raymarching, HG phase, wind advection, light shafts | `Engine/Render/VolumetricFog/VolumetricFog/VolumetricFog.h/.cpp` |
+| ✅ 54.10 | Async Scene Loader | Low | Background load with progress, cancel, swap-in, prefetch, on-complete callback | `Runtime/Scene/AsyncScene/AsyncSceneLoader/AsyncSceneLoader.h/.cpp` |
