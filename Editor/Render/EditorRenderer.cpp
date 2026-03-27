@@ -190,7 +190,11 @@ EditorRenderer::EditorRenderer()
                        "To fix:  ollama serve\n"
                        "Model:   ollama pull codellama";
             auto resp = client.Generate("codellama", userMsg, sysPrompt);
-            return resp.success ? resp.text : ("Error: " + resp.error);
+            if (resp.success) return resp.text;
+            std::string errMsg = resp.error;
+            if (errMsg.find("not found") != std::string::npos)
+                errMsg += "\nRun:  ollama pull codellama";
+            return "Error: " + errMsg;
         });
     });
 
@@ -399,11 +403,12 @@ void EditorRenderer::OnMouseButton(int btn, bool pressed) {
                 return;
             }
 
-            // Console input bar bounds
+            // Console input bar bounds (only active when Console tab is selected)
             float consoleY = (float)m_height - kStatusH - kConsoleH;
             float consW    = (float)m_width * 0.65f;
             float inputBarY = consoleY + kConsoleH - 19.f;
-            if (m_mouseX >= 2.f && m_mouseX < 2.f + consW - 4.f &&
+            if (m_bottomTab == 0 &&
+                m_mouseX >= 2.f && m_mouseX < 2.f + consW - 4.f &&
                 m_mouseY >= inputBarY && m_mouseY < inputBarY + 18.f) {
                 m_consoleFocused = true;
                 m_aiInputFocused = false;
@@ -1724,12 +1729,12 @@ void EditorRenderer::DrawMenuBar(float x, float y, float w, float h) {
                 } else if (label.find("Toggle Console") != std::string::npos) {
                     m_consoleVisible = !m_consoleVisible;
                 } else if (label.find("Toggle Content Browser") != std::string::npos) {
-                    m_contentBrowserVisible = !m_contentBrowserVisible;
+                    m_bottomTab = (m_bottomTab == 2) ? 0 : 2;
                 } else if (label.find("Toggle Code Editor") != std::string::npos
                         || label.find("Code Editor") != std::string::npos) {
                     m_codeEditorVisible = !m_codeEditorVisible;
                 } else if (label.find("Content Browser") != std::string::npos) {
-                    m_contentBrowserVisible = !m_contentBrowserVisible;
+                    m_bottomTab = (m_bottomTab == 2) ? 0 : 2;
                 } else if (label.find("Error Panel") != std::string::npos) {
                     // error panel is always shown in console area; toggle console
                     m_consoleVisible = !m_consoleVisible;
@@ -2235,50 +2240,97 @@ void EditorRenderer::DrawAddCompMenu(float x, float y, float w, float h) {
 }
 
 // ──────────────────────────────────────────────────────────────────────────
-// Console
+// Console / Output / Assets — tabbed bottom panel
 // ──────────────────────────────────────────────────────────────────────────
 void EditorRenderer::DrawConsole(float x, float y, float w, float h) {
-    // Split bottom half: left = console, right = error panel (EI-09)
+    // Split bottom half: left = tabbed panel, right = error panel (EI-09)
     float consW = w * 0.65f;
     float errX  = x + consW + 1.f;
     float errW  = w - consW - 1.f;
 
     DrawRect(x, y, consW, h, kBgConsole);
-    DrawPanelHeader("  Console  Output", x, y, consW, kPanelHdrH, kBgHeader);
 
-    glScissor((int)x, (int)(m_height - y - h), (int)consW,
-              (int)(h - kPanelHdrH - 20.f));
-    glEnable(GL_SCISSOR_TEST);
-
-    float lineH = 14.f;
-    float fy = y + h - 22.f - lineH;
-    int visLines = (int)((h - kPanelHdrH - 22.f) / lineH);
-    int start = std::max(0, (int)m_consoleLines.size() - visLines);
-    for (int i = (int)m_consoleLines.size() - 1; i >= start && fy > y + kPanelHdrH; i--) {
-        const std::string& line = m_consoleLines[i];
-        uint32_t col = kTextNormal;
-        if      (line.find("[Error]") != std::string::npos) col = kTextError;
-        else if (line.find("[Warn]")  != std::string::npos) col = kTextWarn;
-        else if (line.find("[Info]")  != std::string::npos) col = kTextAccent;
-        else if (line.find("[Debug]") != std::string::npos) col = kTextMuted;
-        DrawText(line, x + 4.f, fy, col);
-        fy -= lineH;
+    // ── Tab bar ────────────────────────────────────────────────────────────
+    DrawRect(x, y, consW, kPanelHdrH, kBgHeader);
+    static const char* kTabLabels[] = { "Console", "Output", "Assets" };
+    static constexpr int   kTabCount = (int)(sizeof(kTabLabels) / sizeof(kTabLabels[0]));
+    static constexpr float kTabW     = 72.f;
+    float tabX = x + 4.f;
+    for (int i = 0; i < kTabCount; ++i) {
+        bool active   = (m_bottomTab == i);
+        bool tabHov   = (m_mouseX >= tabX && m_mouseX < tabX + kTabW &&
+                         m_mouseY >= y    && m_mouseY < y + kPanelHdrH);
+        uint32_t tabBg = active ? kBgConsole : (tabHov ? 0x3E3E52FF : kBgHeader);
+        DrawRect(tabX, y, kTabW, kPanelHdrH, tabBg);
+        if (active)
+            DrawLine(tabX, y + kPanelHdrH - 1.f, tabX + kTabW,
+                     y + kPanelHdrH - 1.f, kHighlight);
+        DrawText(kTabLabels[i], tabX + 6.f, y + 3.f,
+                 active ? 0xFFFFFFFF : kTextMuted);
+        if (tabHov && m_leftMousePressed) m_bottomTab = i;
+        tabX += kTabW + 2.f;
     }
-    glDisable(GL_SCISSOR_TEST);
 
-    DrawLine(x, y + h - 20.f, x + consW, y + h - 20.f, kBorderColor);
-    // Input bar — highlight border when focused
-    uint32_t inputBg = m_consoleFocused ? 0x1E2030FF : 0x141414FF;
-    uint32_t inputBorder = m_consoleFocused ? kHighlight : kBorderColor;
-    DrawRect(x + 2.f, y + h - 19.f, consW - 4.f, 18.f, inputBg);
-    DrawRectOutline(x + 2.f, y + h - 19.f, consW - 4.f, 18.f, inputBorder);
-    std::string displayText = "> " + m_consoleInput + (m_consoleFocused ? "_" : "");
-    DrawText(displayText, x + 6.f, y + h - 16.f, kTextAccent);
+    // ── Tab content ────────────────────────────────────────────────────────
+    if (m_bottomTab == 2) {
+        // Assets tab — show content browser below the tab bar
+        DrawContentBrowser(x, y + kPanelHdrH, consW, h - kPanelHdrH);
+    } else {
+        // Console (0) or Output (1)
+        float lineH  = 14.f;
+        float fy     = y + h - 22.f - lineH;
+        int visLines = (int)((h - kPanelHdrH - 22.f) / lineH);
 
-    // Separator
+        // Output tab shows only build / error / warning lines
+        std::vector<std::string> filtered;
+        const std::vector<std::string>* src = &m_consoleLines;
+        if (m_bottomTab == 1) {
+            for (const auto& l : m_consoleLines) {
+                if (l.find("Build")   != std::string::npos ||
+                    l.find("build")   != std::string::npos ||
+                    l.find("compile") != std::string::npos ||
+                    l.find("Compile") != std::string::npos ||
+                    l.find("[Error]") != std::string::npos ||
+                    l.find("[Warn]")  != std::string::npos)
+                    filtered.push_back(l);
+            }
+            src = &filtered;
+        }
+
+        glScissor((int)x, (int)(m_height - y - h), (int)consW,
+                  (int)(h - kPanelHdrH - 20.f));
+        glEnable(GL_SCISSOR_TEST);
+
+        int start = std::max(0, (int)src->size() - visLines);
+        for (int i = (int)src->size() - 1; i >= start && fy > y + kPanelHdrH; i--) {
+            const std::string& line = (*src)[i];
+            uint32_t col = kTextNormal;
+            if      (line.find("[Error]") != std::string::npos) col = kTextError;
+            else if (line.find("[Warn]")  != std::string::npos) col = kTextWarn;
+            else if (line.find("[Info]")  != std::string::npos) col = kTextAccent;
+            else if (line.find("[Debug]") != std::string::npos) col = kTextMuted;
+            DrawText(line, x + 4.f, fy, col);
+            fy -= lineH;
+        }
+        glDisable(GL_SCISSOR_TEST);
+
+        DrawLine(x, y + h - 20.f, x + consW, y + h - 20.f, kBorderColor);
+
+        // Input bar — Console tab only
+        if (m_bottomTab == 0) {
+            uint32_t inputBg     = m_consoleFocused ? 0x1E2030FF : 0x141414FF;
+            uint32_t inputBorder = m_consoleFocused ? kHighlight  : kBorderColor;
+            DrawRect(x + 2.f, y + h - 19.f, consW - 4.f, 18.f, inputBg);
+            DrawRectOutline(x + 2.f, y + h - 19.f, consW - 4.f, 18.f, inputBorder);
+            std::string displayText = "> " + m_consoleInput + (m_consoleFocused ? "_" : "");
+            DrawText(displayText, x + 6.f, y + h - 16.f, kTextAccent);
+        }
+    }
+
+    // Separator between left panel and error panel
     DrawLine(errX - 1.f, y, errX - 1.f, y + h, kBorderColor);
 
-    // EI-09: Error panel
+    // EI-09: Error panel (always visible on the right)
     DrawErrorPanel(errX, y, errW, h);
 }
 

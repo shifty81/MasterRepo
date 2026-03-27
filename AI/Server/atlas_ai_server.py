@@ -111,7 +111,22 @@ def _ollama_generate(prompt: str, system: str = "", model: str = "") -> str:
         with urllib.request.urlopen(req, timeout=120) as resp:
             raw = resp.read().decode()
         data = json.loads(raw)
+        if "error" in data:
+            err = data["error"]
+            if "not found" in err:
+                return f"⚠ Model not found: {err}\nRun:  ollama pull {mdl}"
+            return f"⚠ Ollama error: {err}"
         return data.get("response", "")
+    except urllib.error.HTTPError as e:
+        try:
+            error_body = e.read()
+            err_data = json.loads(error_body.decode())
+            err = err_data.get("error", str(e))
+            if "not found" in err:
+                return f"⚠ Model not found: {err}\nRun:  ollama pull {mdl}"
+            return f"⚠ Ollama error: {err}"
+        except Exception:
+            return f"⚠ Ollama error: {e}"
     except urllib.error.URLError:
         return "⚠ Ollama not reachable. Start it with:  ollama serve"
     except Exception as e:

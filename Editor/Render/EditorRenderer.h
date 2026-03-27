@@ -176,7 +176,9 @@ private:
     bool m_inspectorVisible  = true;
     bool m_consoleVisible    = true;
     bool m_viewportVisible   = true;
-    bool m_contentBrowserVisible = false;
+
+    // ── Bottom panel tab (0=Console, 1=Output, 2=Assets) ─────────────────
+    int  m_bottomTab = 0;
 
     // ── Gizmo drag (from ideas123gui.md) ─────────────────────────────────
     // Gizmo mode: 0=Move, 1=Rotate, 2=Scale
