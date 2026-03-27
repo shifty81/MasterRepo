@@ -36,7 +36,8 @@
 | Advanced Gameplay & Engine Utilities (Phase 44) | 10/10 | 0 | 10 |
 | Rendering, AI, Core & Gameplay Plumbing (Phase 45) | 10/10 | 0 | 10 |
 | Input, Audio, UI, Animation & Core Utilities (Phase 46) | 10/10 | 0 | 10 |
-| **TOTAL** | **291/291** | **0** | **291** |
+| Networking, Physics, AI & Platform Utilities (Phase 47) | 10/10 | 0 | 10 |
+| **TOTAL** | **301/301** | **0** | **301** |
 
 ---
 
@@ -1067,6 +1068,7 @@ All three paths converge for the final product.
 | 44 | Advanced Gameplay & Engine Utilities — WaterSystem (Engine/Water), FootstepSystem (Runtime/Audio), ComboSystem (Runtime/Combat), PrefabSystem (Engine/Scene), GameModeManager (Runtime/Gameplay), SurfaceAnalyzer (Engine/Physics), AnimNotifySystem (Engine/Animation), TagSystem (Core/Tags), CameraShakeSystem (Engine/Camera), PickupSystem (Runtime/Gameplay). |
 | 45 | Rendering, AI, Core & Gameplay Plumbing — TweenSystem (Engine/Tween), WeaponSystem (Runtime/Combat), MaterialSystem (Engine/Render/Material), TimeManager (Core/Time), AsyncTaskQueue (Core/AsyncTask), StateMachine (Core/StateMachine), EnvironmentQuery (Engine/AI/EQS), RewardSystem (Runtime/Gameplay), PostProcessVolume (Engine/PostProcess), TriggerVolume (Engine/Physics). |
 | 46 | Input, Audio, UI, Animation & Core Utilities — InputSystem (Engine/Input/InputSystem), SoundSystem (Engine/Audio/SoundSystem), UISystem (Runtime/UI/UISystem), ObjectPool (Core/Pool/ObjectPool), DialogueManager (Runtime/Dialogue/DialogueManager), MeshBuilder (Engine/Render/MeshBuilder), SceneTransitionSystem (Runtime/Scene/SceneTransitionSystem), SkeletonSystem (Engine/Animation/Skeleton), EventQueue (Core/EventQueue/EventQueue), FontSystem (Engine/Font/FontSystem). |
+| 47 | Networking, Physics, AI & Platform Utilities — NetworkManager (Runtime/Network/NetworkManager), RigidBodySystem (Engine/Physics/RigidBody), BehaviorTree (Engine/AI/BehaviorTree), AchievementSystem (Runtime/Achievement/AchievementSystem), AssetImporter (Engine/Asset/AssetImporter), ParticleSystem (Engine/Particles/ParticleSystem), ChunkSystem (Engine/World/ChunkSystem), ConfigSystem (Core/Config/ConfigSystem), AnimationBlendTree (Engine/Animation/BlendTree), ScriptingBridge (Engine/Scripting/ScriptingBridge). |
 
 </details>
 
@@ -1137,3 +1139,25 @@ All three paths converge for the final product.
 | ✅ 46.08 | Skeleton System | Medium | Joint hierarchy, bind pose, FK world matrices, skinning matrices, JSON load | `Engine/Animation/Skeleton/SkeletonSystem/SkeletonSystem.h/.cpp` |
 | ✅ 46.09 | Event Queue | Medium | Typed deferred events, per-type listeners, priorities, RAII unsubscribe token | `Core/EventQueue/EventQueue/EventQueue.h/.cpp` |
 | ✅ 46.10 | Font System | Low | Font face registry, glyph atlas, UTF-8, text metrics, wrap/truncate helpers | `Engine/Font/FontSystem/FontSystem.h/.cpp` |
+
+---
+
+## Phase 47 – Networking, Physics, AI & Platform Utilities ✅
+
+> Adds network session management, discrete rigid body physics, behavior trees, achievement
+> tracking, asset import pipeline, CPU particle emitters, world chunk streaming,
+> typed config, animation blend trees, and a scripting bridge.
+> All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 47.01 | Network Manager | High | Client/server sessions, reliable/unreliable channels, message handlers, stats | `Runtime/Network/NetworkManager/NetworkManager.h/.cpp` |
+| ✅ 47.02 | Rigid Body System | High | AABB/Sphere bodies, force/impulse/torque, sub-step integration, collision response | `Engine/Physics/RigidBody/RigidBodySystem/RigidBodySystem.h/.cpp` |
+| ✅ 47.03 | Behavior Tree | High | Sequence/Selector/Parallel composites, Inverter/Repeater decorators, Blackboard, Builder | `Engine/AI/BehaviorTree/BehaviorTree/BehaviorTree.h/.cpp` |
+| ✅ 47.04 | Achievement System | Medium | Achievement registry, progress/unlock, stat bindings, persistence, platform dispatch | `Runtime/Achievement/AchievementSystem/AchievementSystem.h/.cpp` |
+| ✅ 47.05 | Asset Importer | Medium | Import pipeline: type detection, hash cache, dependency graph, async queue, manifest | `Engine/Asset/AssetImporter/AssetImporter/AssetImporter.h/.cpp` |
+| ✅ 47.06 | Particle System | Medium | CPU particle emitters: shapes, spawn rates, forces, colour/size curves, ground collision | `Engine/Particles/ParticleSystem/ParticleSystem/ParticleSystem.h/.cpp` |
+| ✅ 47.07 | Chunk System | Medium | World chunk load/unload, LOD tiers, streaming budget, observer focus, callbacks | `Engine/World/ChunkSystem/ChunkSystem/ChunkSystem.h/.cpp` |
+| ✅ 47.08 | Config System | Medium | Typed .ini/.json config, section/key store, change callbacks, CLI overrides | `Core/Config/ConfigSystem/ConfigSystem/ConfigSystem.h/.cpp` |
+| ✅ 47.09 | Animation Blend Tree | Medium | 1D/2D blend spaces, additive layers, per-bone masks, parameter-driven evaluation | `Engine/Animation/BlendTree/AnimationBlendTree/AnimationBlendTree.h/.cpp` |
+| ✅ 47.10 | Scripting Bridge | Low | C++↔script function registry, ScriptValue marshal, event dispatch, hot-reload, stub backend | `Engine/Scripting/ScriptingBridge/ScriptingBridge/ScriptingBridge.h/.cpp` |
