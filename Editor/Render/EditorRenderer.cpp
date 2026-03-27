@@ -1759,6 +1759,38 @@ void EditorRenderer::DrawMenuBar(float x, float y, float w, float h) {
                 } else if (label.find("Clear Scene") != std::string::npos) {
                     // keep just logging a warning - destructive action
                     Engine::Core::Logger::Warn("Scene: Clear Scene — not implemented (would destroy all entities)");
+                } else if (label.find("New Project") != std::string::npos) {
+                    // EI-10: create a minimal new project directory under Projects/
+                    static int newProjectIdx = 1;
+                    std::string name = "NewProject_" + std::to_string(newProjectIdx++);
+                    auto projDir   = std::filesystem::current_path() / "Projects" / name;
+                    auto scenesDir = projDir / "Scenes";
+                    auto assetsDir = projDir / "Assets";
+                    std::filesystem::create_directories(scenesDir);
+                    std::filesystem::create_directories(assetsDir);
+                    std::string sceneJson = "{\"name\":\"" + name + "\",\"entities\":[]}\n";
+                    { std::ofstream f(scenesDir / "default.scene"); f << sceneJson; }
+                    m_contentBrowser->SetRootPath(assetsDir.string());
+                    AppendConsole("[EI-10] New project created: " + projDir.string());
+                    Engine::Core::Logger::Info("EI-10: New project — " + projDir.string());
+                } else if (label.find("Open Project") != std::string::npos) {
+                    // EI-10: open the first directory found under Projects/ (NovaForge fallback)
+                    auto projectsRoot = std::filesystem::current_path() / "Projects";
+                    std::string chosen;
+                    if (std::filesystem::exists(projectsRoot)) {
+                        for (auto& entry : std::filesystem::directory_iterator(projectsRoot)) {
+                            if (entry.is_directory()) { chosen = entry.path().string(); break; }
+                        }
+                    }
+                    if (chosen.empty())
+                        chosen = (std::filesystem::current_path() / "Projects" / "NovaForge").string();
+                    auto assetsDir = std::filesystem::path(chosen) / "Assets";
+                    if (!std::filesystem::exists(assetsDir)) assetsDir = std::filesystem::path(chosen);
+                    m_contentBrowser->SetRootPath(assetsDir.string());
+                    auto scene = std::filesystem::path(chosen) / "Scenes" / "default.scene";
+                    if (std::filesystem::exists(scene)) LoadScene(scene.string());
+                    AppendConsole("[EI-10] Opened project: " + chosen);
+                    Engine::Core::Logger::Info("EI-10: Opened project — " + chosen);
                 }
                 m_activeMenu = -1;
             }

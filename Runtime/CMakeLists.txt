@@ -69,6 +69,16 @@ add_library(RuntimeLib STATIC
     AI/FleetController.cpp
     # NovaForge — universe data (systems, factions, gas types)
     Universe/UniverseData.cpp
+    # Phase 61 — Full ability system (grant/activate/cooldown/cost/charges)
+    Combat/Ability/AbilitySystem/AbilitySystem.cpp
+    # Phase 61 — Keyframe-driven UI property animator with sequences
+    UI/UIAnimator/UIAnimator/UIAnimator.cpp
+    # Phase 61 — Item definition registry with stacking, equip, durability
+    Inventory/Item/ItemSystem/ItemSystem.cpp
+    # Phase 62 — Persistent hazard zones that damage overlapping entities per tick
+    Gameplay/DamageZone/DamageZone/DamageZone.cpp
+    # Phase 62 — World-space UI objective markers with viewport projection
+    UI/Marker/ObjectiveMarker/ObjectiveMarker.cpp
 )
 
 target_include_directories(RuntimeLib PUBLIC ${CMAKE_SOURCE_DIR})

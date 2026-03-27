@@ -102,6 +102,30 @@ add_library(AtlasEngine STATIC
     Raycast/RaycastSystem/RaycastSystem.cpp
     # Phase 37.01 — GGPO-style rollback netcode for deterministic multiplayer
     Net/Rollback/RollbackNetcode.cpp
+    # Phase 61 — Decal projector with atlas UV and fade
+    Render/DecalProjector/DecalProjector/DecalProjector.cpp
+    # Phase 61 — Typed packet serialization, ACK, fragmentation/reassembly
+    Net/Packet/NetworkPacketSystem/NetworkPacketSystem.cpp
+    # Phase 61 — Zone-based environment sound system
+    Audio/Environment/EnvironmentSoundSystem/EnvironmentSoundSystem.cpp
+    # Phase 61 — Procedural mesh builder (primitives, extrude, normals)
+    Render/ProceduralMesh/ProceduralMeshSystem/ProceduralMeshSystem.cpp
+    # Phase 61 — Heightmap terrain (deform, erosion, splat)
+    World/Terrain/TerrainSystem/TerrainSystem.cpp
+    # Phase 61 — Pooled particle emitter system with LOD
+    Particles/EmitterPool/ParticleEmitterPool/ParticleEmitterPool.cpp
+    # Phase 62 — 2-D AABB/Circle physics world with impulse resolution
+    Physics/World2D/PhysicsWorld2D/PhysicsWorld2D.cpp
+    # Phase 62 — Waypoint graph with Dijkstra + A* pathfinding
+    AI/Waypoint/WaypointGraph/WaypointGraph.cpp
+    # Phase 62 — Fullscreen post-process effect pipeline with priority ordering
+    Render/ScreenEffect/ScreenEffectSystem/ScreenEffectSystem.cpp
+    # Phase 62 — Multi-sample sound cue with variation (Random/Sequential/Shuffle)
+    Audio/Cue/SoundCue/SoundCue.cpp
+    # Phase 62 — Additive/Override animation layer system with blend-in/out
+    Animation/Layer/AnimationLayer/AnimationLayer.cpp
+    # Phase 62 — Shelf-packing texture atlas with UV lookup
+    Render/Atlas/TextureAtlas/TextureAtlas.cpp
 )
 
 target_include_directories(AtlasEngine PUBLIC ${CMAKE_SOURCE_DIR})

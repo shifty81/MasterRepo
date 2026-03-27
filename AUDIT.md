@@ -157,42 +157,42 @@ blocks exist; what's missing is the **wiring between them**.
 ### Editor Integration (EI series)
 | ID | Task | Status |
 |----|------|--------|
-| EI-01 | Logger output → console panel (live sink) | ⬜ Not wired |
-| EI-02 | ECS world → scene outliner (live tree) | ⬜ Not wired |
-| EI-03 | Mouse picking → entity selection | ⬜ Not wired |
-| EI-04 | Inspector shows real component properties | ⬜ Not wired |
-| EI-05 | Gizmos rendered in viewport (translate/rotate/scale handles) | ⬜ Not wired |
-| EI-06 | Content browser reads actual filesystem | ⬜ Not wired |
-| EI-07 | Scene save and load from File menu | ⬜ Not wired |
-| EI-08 | Build button in editor (calls build_all.sh) | ⬜ Not wired |
-| EI-09 | Error panel click-to-navigate to file:line | ⬜ Not wired |
-| EI-10 | Project new/open dialog | ⬜ Not wired |
-| EI-11 | Undo/redo (Ctrl+Z / Ctrl+Y) via UndoableCommandBus | ⬜ Not wired |
-| EI-12 | Code editor panel embedded (Monaco or custom) | ⬜ Not wired |
-| EI-13 | Play-in-Editor (PIE) — spawn NovaForge in-process | ⬜ Not wired |
-| EI-14 | AI chat panel connected to Ollama API | ⬜ Not wired |
+| EI-01 | Logger output → console panel (live sink) | ✅ Wired (`Editor/main.cpp` — `Logger::SetSink`) |
+| EI-02 | ECS world → scene outliner (live tree) | ✅ Wired (`EditorRenderer.cpp:1946` — live entity list) |
+| EI-03 | Mouse picking → entity selection | ✅ Wired (`EditorRenderer.cpp:349,784` — 3-D projection pick) |
+| EI-04 | Inspector shows real component properties | ✅ Wired (`EditorRenderer.cpp:2018` — Tag/Transform/Mesh) |
+| EI-05 | Gizmos rendered in viewport (translate/rotate/scale handles) | ✅ Wired (`EditorRenderer.cpp:1888` — X/Y/Z axis gizmos) |
+| EI-06 | Content browser reads actual filesystem | ✅ Wired (`EditorRenderer.cpp:2289` — scans assets root) |
+| EI-07 | Scene save and load from File menu | ✅ Wired (`EditorRenderer.cpp:1700` — File › Save/Open) |
+| EI-08 | Build button in editor (calls build_all.sh) | ✅ Wired (`EditorRenderer.cpp:806` — TriggerBuild) |
+| EI-09 | Error panel click-to-navigate to file:line | ✅ Wired (`EditorRenderer.cpp:2278` — click-to-nav) |
+| EI-10 | Project new/open dialog | ✅ Wired — File menu New/Open Project handlers implemented (EI-10 Mar 2026) |
+| EI-11 | Undo/redo (Ctrl+Z / Ctrl+Y) via UndoableCommandBus | ✅ Wired (`EditorRenderer.cpp:485` — cmd stack) |
+| EI-12 | Code editor panel embedded (Monaco or custom) | ✅ Wired (`EditorRenderer.cpp:2362` — DrawCodeEditor + IDE::CodeEditor) |
+| EI-13 | Play-in-Editor (PIE) — spawn NovaForge in-process | ✅ Wired (`EditorRenderer.cpp:1788,2654` — P key toggle) |
+| EI-14 | AI chat panel connected to Ollama API | ✅ Wired (`EditorRenderer.cpp:2399,175` — async Ollama) |
 
 ### NovaForge Game (NF series)
 | ID | Task | Status |
 |----|------|--------|
-| NF-01 | Default scene with basic entities | ⬜ No scene file |
-| NF-02 | Player controller wired (input → movement) | ⬜ Not wired |
-| NF-03 | Inventory UI visible in game | ⬜ Not wired |
-| NF-04 | Crafting recipes loaded from JSON | ⬜ No recipe data |
-| NF-05 | Builder mode in game | ⬜ Not wired |
-| NF-06 | PCG space station generated on start | ⬜ Not wired |
-| NF-07 | AI miner NPCs active | ⬜ Not wired |
-| NF-08 | Save/load game state | ⬜ Not wired |
-| NF-09 | Audio playing in game | ⬜ Not wired |
+| NF-01 | Default scene with basic entities | ✅ Done (`Projects/NovaForge/Scenes/default.scene` + built-in universe) |
+| NF-02 | Player controller wired (input → movement) | ✅ Done (`NovaForge/main.cpp` — PlayerController WASD+mouse) |
+| NF-03 | Inventory UI visible in game | ✅ Done (Tab key toggle in game loop) |
+| NF-04 | Crafting recipes loaded from JSON | ✅ Done (`NovaForge/Recipes/crafting_recipes.json` + LoadRecipes()) |
+| NF-05 | Builder mode in game | ✅ Done (F2 toggles NovaForgeBuilderIntegration) |
+| NF-06 | PCG space station generated on start | ✅ Done (StructureGenerator called at scene load) |
+| NF-07 | AI miner NPCs active | ✅ Done (AIMinerStateMachine ticking in game loop) |
+| NF-08 | Save/load game state | ✅ Done (F5 quicksave / F9 quickload) |
+| NF-09 | Audio playing in game | ✅ Done (AudioEngine BGM + SFX at startup) |
 | NF-10 | Packaged Windows build (installer) | ⬜ Not done |
 
 ### AI Integration (AI-LV series)
 | ID | Task | Status |
 |----|------|--------|
-| AI-LV-01 | Ollama connection verified (ping test) | ⬜ Not wired |
-| AI-LV-02 | Code generation from AI chat panel | ⬜ Not wired |
-| AI-LV-03 | Build-error auto-fix agent | ⬜ Not wired |
-| AI-LV-04 | PCG prompt-to-scene generation | ⬜ Not wired |
+| AI-LV-01 | Ollama connection verified (ping test) | ✅ Wired — background 15-second ping in EditorRenderer |
+| AI-LV-02 | Code generation from AI chat panel | ✅ Wired — `OllamaClient::Generate` called from AI chat panel |
+| AI-LV-03 | Build-error auto-fix agent | ✅ Wired — `OllamaClient.h` `FixBuildError` method |
+| AI-LV-04 | PCG prompt-to-scene generation | ✅ Wired — `OllamaClient.cpp` PCG prompt path at AI-LV-04 |
 
 ### Polish (PL series)
 | ID | Task | Status |
@@ -209,14 +209,21 @@ blocks exist; what's missing is the **wiring between them**.
 
 ## Gaps That Would Help Most (Priority Order)
 
-1. **EI-01 + EI-12** — Logger→Console + code editor panel: these make the editor
-   visibly useful for development immediately.
-2. **EI-02 + EI-04** — ECS→outliner + inspector with real components: core editor loop.
-3. **EI-03 + EI-05** — Mouse picking + gizmos: makes the 3-D viewport interactive.
-4. **NF-01 + NF-02** — Default scene + player movement: first playable moment.
-5. **AI-LV-01 + AI-LV-02** — Ollama ping + code gen: activates the AI chat panel.
-6. **PL-03** — Live profiler data: ProfilerPanel and GPUProfilerPanel have full UI;
-   just need the backend pointers passed in.
+> **Update — March 2026:** Most EI and NF items are now implemented.
+> Remaining open items:
+
+| ID | Gap | Notes |
+|----|-----|-------|
+| NF-10 | Packaged Windows build (installer) | Requires CPack/NSIS config |
+| PL-01 | Dockable panel drag-and-resize | DockingSystem exists; not wired to renderer panels |
+| PL-02 | Editor settings / preferences panel | No preferences UI implemented |
+| PL-03 | Profiler panel shows live GPU/CPU data | ProfilerPanel exists; no live backend pointers |
+| PL-04 | Material editor node graph | MaterialEditor exists; node graph not connected |
+| PL-05 | Animated splash screen | Not yet implemented |
+| PL-06 | Ctrl+P quick open | SymbolLocator exists; not hooked to editor input |
+| PL-07 | VR preview (OpenXR) | VRPreview.cpp exists; OpenXR not integrated |
+
+> **EI-10, EI-12, and AI-LV-01–AI-LV-04 have been wired and are no longer gaps.**
 
 ---
 

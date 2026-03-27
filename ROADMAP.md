@@ -42,7 +42,15 @@
 | Physics, AI, Rendering & Platform (Phase 50) | 10/10 | 0 | 10 |
 | Audio, Editor, Network, Gameplay & Core (Phase 51) | 10/10 | 0 | 10 |
 | Rendering, Gameplay, AI, Core & Physics (Phase 52) | 10/10 | 0 | 10 |
-| **TOTAL** | **351/351** | **0** | **351** |
+| Audio, Runtime, Engine & Core (Phase 53) | 10/10 | 0 | 10 |
+| Rendering, Gameplay, AI, Core & Platform (Phase 54) | 10/10 | 0 | 10 |
+| Rendering, AI, Simulation, Audio & Core (Phase 55) | 10/10 | 0 | 10 |
+| Rendering, Gameplay, AI, Input & Core (Phase 56) | 10/10 | 0 | 10 |
+| Physics, Animation, AI, Rendering & Gameplay (Phase 57) | 10/10 | 0 | 10 |
+| Scripting, Network, Rendering, Audio & Gameplay (Phase 58) | 10/10 | 0 | 10 |
+| AI, Physics, Rendering, Audio & Core (Phase 59) | 10/10 | 0 | 10 |
+| Animation, Rendering, Core, Gameplay & AI (Phase 60) | 10/10 | 0 | 10 |
+| **TOTAL** | **431/431** | **0** | **431** |
 
 ---
 
@@ -1301,3 +1309,200 @@ All three paths converge for the final product.
 | ✅ 53.08 | Resource Manager | High | Ref-counted cache, async load, hot-swap, memory budget, LRU eviction | `Core/Resource/ResourceManager/ResourceManager.h/.cpp` |
 | ✅ 53.09 | Loot Table | Medium | Weighted random roll, rarity tiers, guaranteed drops, luck multiplier | `Runtime/Gameplay/Loot/LootTable/LootTable.h/.cpp` |
 | ✅ 53.10 | Input Gesture | Medium | Tap, double-tap, swipe, long-press, pinch-zoom, rotate, pan — multi-touch | `Engine/Input/Gesture/InputGesture/InputGesture.h/.cpp` |
+
+## Phase 54 – Rendering, Gameplay, AI, Core & Platform ✅
+
+> Screen-space reflections with roughness fade, branching narrative manager,
+> 2D fog-of-war with decay, tetris-style inventory grid, LRU shader binary cache,
+> height-field water ripple simulation, controller aim-assist with sticky aim,
+> frustum-culled instanced renderer, CPU volumetric fog with Henyey-Greenstein scattering,
+> and background async scene loader with swap-in. All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 54.01 | Screen Space Reflections | High | Ray-march depth buffer, roughness fade, edge fade, cubemap fallback, TAA confidence | `Engine/Render/SSR/ScreenSpaceReflections/ScreenSpaceReflections.h/.cpp` |
+| ✅ 54.02 | Narrative Manager | High | Beat graph, choices, flag conditions, journal, save/load JSON | `Runtime/Narrative/NarrativeManager/NarrativeManager.h/.cpp` |
+| ✅ 54.03 | Fog of War System | Medium | Per-observer reveal circle, decay, explored shroud, world↔grid query, renderer grid | `Runtime/Gameplay/FogOfWar/FogOfWarSystem/FogOfWarSystem.h/.cpp` |
+| ✅ 54.04 | Inventory Grid | Medium | Tetris-style 2D grid, item rotation, overlap check, stacking, auto-place, JSON | `Runtime/Inventory/InventoryGrid/InventoryGrid/InventoryGrid.h/.cpp` |
+| ✅ 54.05 | Shader Cache | Medium | FNV-1a source hash, LRU eviction, binary blob, disk persist, on-evict callback | `Engine/Shader/Cache/ShaderCache/ShaderCache.h/.cpp` |
+| ✅ 54.06 | Water Ripple | Medium | Finite-difference wave eq, ping-pong buffers, splash impulse, damping, normal gen | `Engine/Sim/WaterRipple/WaterRipple/WaterRipple.h/.cpp` |
+| ✅ 54.07 | Aim Assist | Medium | Target magnetism, sticky-aim input attenuation, FoV cone, distance cull | `Engine/Input/AimAssist/AimAssist/AimAssist.h/.cpp` |
+| ✅ 54.08 | Instanced Renderer | Low | Per-instance transform+colour, LOD by distance, frustum cull, draw-call batching | `Engine/Render/Instancing/InstancedRenderer/InstancedRenderer.h/.cpp` |
+| ✅ 54.09 | Volumetric Fog | High | 3D density voxels, beer-law raymarching, HG phase, wind advection, light shafts | `Engine/Render/VolumetricFog/VolumetricFog/VolumetricFog.h/.cpp` |
+| ✅ 54.10 | Async Scene Loader | Low | Background load with progress, cancel, swap-in, prefetch, on-complete callback | `Runtime/Scene/AsyncScene/AsyncSceneLoader/AsyncSceneLoader.h/.cpp` |
+
+## Phase 55 – Rendering, AI, Simulation, Audio & Core ✅
+
+> Irradiance probe GI with SH encoding, AI formation shapes with slot assignment,
+> entity scene-graph hierarchy with dirty propagation, biquad DSP effect chain,
+> mip-level texture streamer with LRU budget, per-frame profiler HUD with JSON export,
+> world-space particle attractors (point/ring/vortex/plane), radial dialogue wheel,
+> spline-driven cinematic camera with cuts and DoF, and utility-theory AI decision maker.
+> All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 55.01 | Global Illumination | High | L2 SH irradiance probes, auto-placement, bake, trilinear blend, JSON | `Engine/Render/GI/GlobalIllumination/GlobalIllumination.h/.cpp` |
+| ✅ 55.02 | Formation System | High | 6 AI formation shapes, slot assignment, auto-assign, per-frame update | `Engine/AI/Formation/FormationSystem/FormationSystem.h/.cpp` |
+| ✅ 55.03 | Scene Graph | High | TRS hierarchy, dirty propagation, depth-first update, component attachment | `Engine/Scene/SceneGraph/SceneGraph/SceneGraph.h/.cpp` |
+| ✅ 55.04 | Audio DSP Chain | Medium | Biquad LPF/HPF/BPF, reverb, chorus, delay, compressor, gain, in-place | `Engine/Audio/DSP/AudioDSP/AudioDSP.h/.cpp` |
+| ✅ 55.05 | Texture Streamer | Medium | Mip streaming, budget eviction, urgency priority, async tick, callbacks | `Engine/Render/TextureStream/TextureStreamer/TextureStreamer.h/.cpp` |
+| ✅ 55.06 | Profiler HUD | Medium | Named scopes, frame budget bars, rolling history, FPS, JSON export | `Engine/Debug/ProfilerHUD/ProfilerHUD/ProfilerHUD.h/.cpp` |
+| ✅ 55.07 | Particle Attractor | Medium | Point/ring/vortex/plane force fields applied to SoA particle batches | `Engine/Particles/Attractor/ParticleAttractor/ParticleAttractor.h/.cpp` |
+| ✅ 55.08 | Dialogue Wheel | Low | Radial choice sectors, hover/select callbacks, dead-zone, icon+text | `Runtime/UI/DialogueWheel/DialogueWheel/DialogueWheel.h/.cpp` |
+| ✅ 55.09 | Cinematic Camera | Medium | Catmull-Rom spline path, cuts, DoF/aperture, play/pause/seek/loop | `Engine/Camera/Cinematic/CinematicCamera/CinematicCamera.h/.cpp` |
+| ✅ 55.10 | AI Decision Maker | High | Utility-theory scorer, goal priorities, blackboard, greedy planner, cooldowns | `Engine/AI/Decision/AIDecisionMaker/AIDecisionMaker.h/.cpp` |
+
+## Phase 56 – Rendering, Gameplay, AI, Input & Core ✅
+
+> DAG render graph with barrier/lifetime analysis, skill system with prerequisite trees,
+> pathfinding navigation agent with arrive/flee/wander, gamepad vibration waveform player,
+> height-field terrain deformer with erosion, multi-layer material blender, wave-based spawn
+> manager, spring camera rig with obstacle avoidance, network state interpolation/extrapolation,
+> and predicate-based inventory filter pipeline. All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 56.01 | Render Graph | High | DAG pass ordering, resource aliasing, lifetime analysis, barrier events | `Engine/Render/RenderGraph/RenderGraph/RenderGraph.h/.cpp` |
+| ✅ 56.02 | Skill System | High | Levels, cooldowns, resource cost, prerequisite unlock tree, callbacks | `Runtime/Gameplay/Skills/SkillSystem/SkillSystem.h/.cpp` |
+| ✅ 56.03 | Pathfinding Agent | Medium | Arrive/Flee/Wander/Follow behaviours, waypoint path, arrival callback | `Engine/AI/PathAgent/PathfindingAgent/PathfindingAgent.h/.cpp` |
+| ✅ 56.04 | Vibration System | Low | Pattern keyframes, impulse, raw wave, per-motor, intensity, platform CB | `Engine/Input/Vibration/VibrationSystem/VibrationSystem.h/.cpp` |
+| ✅ 56.05 | Terrain Deformer | Medium | Raise/lower/smooth/flatten brush, bilinear query, hydraulic erosion, dirty | `Engine/World/TerrainDeform/TerrainDeformer/TerrainDeformer.h/.cpp` |
+| ✅ 56.06 | Material Blender | Medium | Normal/Multiply/Screen/Overlay/Add/Lerp, mask sampler, weight map export | `Engine/Render/MatBlend/MaterialBlender/MaterialBlender.h/.cpp` |
+| ✅ 56.07 | Spawn Manager | High | Wave descriptors, intervals, spawn-point tags, alive cap, callbacks | `Runtime/Gameplay/Spawn/SpawnManager/SpawnManager.h/.cpp` |
+| ✅ 56.08 | Camera Rig | Medium | Spring follow, look-ahead, pitch/dist limits, obstacle avoidance | `Engine/Camera/Rig/CameraRig/CameraRig.h/.cpp` |
+| ✅ 56.09 | Network Sync System | High | Snapshot buffer, interpolation, extrapolation, desync callback, purge | `Runtime/Network/Sync/NetworkSyncSystem/NetworkSyncSystem.h/.cpp` |
+| ✅ 56.10 | Inventory Filter | Medium | Named predicates, AND-chain, sort, search, rarity/weight/tag filters | `Runtime/Inventory/Filter/InventoryFilter/InventoryFilter.h/.cpp` |
+
+## Phase 57 – Physics, Animation, AI, Rendering & Gameplay ✅
+
+> Sequential-impulse physics constraint solver, morph-target blend-shape system,
+> stimulus-based AI perception with LoS, HDR bloom post-process, save/respawn checkpoint
+> system, 3D positional audio spatializer with Doppler, analytic procedural sky with
+> Rayleigh/Mie scattering, Verlet rope mesh renderer, ranked leaderboard with persistence,
+> and a frame-persistent debug overlay with watches/graphs. All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 57.01 | Constraint System | High | Distance/hinge/ball/slider/weld/spring, sequential impulse, break force | `Engine/Physics/Constraints/ConstraintSystem/ConstraintSystem.h/.cpp` |
+| ✅ 57.02 | Morph Target System | Medium | Delta pos/norm accumulation, weight control, keyframe animation curve | `Engine/Animation/MorphTarget/MorphTargetSystem/MorphTargetSystem.h/.cpp` |
+| ✅ 57.03 | Perception System | High | Sight/hearing/touch stimuli, LoS callback, percept aging, forget timer | `Engine/AI/Perception/PerceptionSystem/PerceptionSystem.h/.cpp` |
+| ✅ 57.04 | Bloom Effect | Medium | Bright-pass, Gaussian pyramid, dirt mask, Kawase option, exposure | `Engine/Render/Bloom/BloomEffect/BloomEffect.h/.cpp` |
+| ✅ 57.05 | Checkpoint System | Medium | Activation, binary snapshot store, respawn callback, label registry | `Runtime/Gameplay/Checkpoint/CheckpointSystem/CheckpointSystem.h/.cpp` |
+| ✅ 57.06 | Audio Spatializer | High | Stereo panning, distance attenuation, Doppler, reverb send, cull CB | `Engine/Audio/Spatial/AudioSpatializer/AudioSpatializer.h/.cpp` |
+| ✅ 57.07 | Procedural Sky | Medium | Rayleigh/Mie, sun arc, stars, moon phases, horizon fog, cubemap bake | `Engine/Render/ProceduralSky/ProceduralSky/ProceduralSky.h/.cpp` |
+| ✅ 57.08 | Rope Renderer | Medium | Verlet sim, catenary sag, cross-section mesh, twist, UV tile, caps | `Engine/Render/RopeRenderer/RopeRenderer/RopeRenderer.h/.cpp` |
+| ✅ 57.09 | Leaderboard System | Low | Score submit/rank, pagination, tie-breaking, JSON persistence, top-N CB | `Runtime/Leaderboard/LeaderboardSystem/LeaderboardSystem.h/.cpp` |
+| ✅ 57.10 | Debug Overlay | Medium | Text/line/rect/circle/bar prims, duration TTL, watches, rolling graphs | `Engine/Debug/Overlay/DebugOverlay/DebugOverlay.h/.cpp` |
+
+## Phase 58 – Scripting, Network, Rendering, Audio & Gameplay ✅
+
+> Stub Lua scripting engine with coroutines and C++ bindings, P2P session manager,
+> cascaded shadow map frustum splitter, streaming PCM audio player, priority ability queue
+> with cast times, GPU-instanced grass system, layer-based animation state machine,
+> geometric AoE enter/exit/tick system, FABRIK procedural animation with foot placement,
+> and floating damage number UI. All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 58.01 | Lua Script Engine | High | Exec/file, globals, C++ bindings, coroutines, sandbox, memory limit | `Engine/Scripting/Lua/LuaScriptEngine/LuaScriptEngine.h/.cpp` |
+| ✅ 58.02 | P2P Session | High | Host/connect, reliable/unreliable send, broadcast, RTT, peer state | `Engine/Net/P2P/P2PSession/P2PSession.h/.cpp` |
+| ✅ 58.03 | Cascaded Shadow Map | High | PSSM/uniform splits, per-cascade light view+ortho, depth bias, PCF | `Engine/Render/CSM/CascadedShadowMap/CascadedShadowMap.h/.cpp` |
+| ✅ 58.04 | Audio Stream | Medium | PCM/WAV streaming, seek, loop, volume, pitch, feed callback | `Engine/Audio/Stream/AudioStream/AudioStream.h/.cpp` |
+| ✅ 58.05 | Ability Queue | High | Priority sort, cast time, cooldown gating, interrupt, force-activate | `Runtime/Combat/AbilityQueue/AbilityQueue/AbilityQueue.h/.cpp` |
+| ✅ 58.06 | Grass System | Medium | Density-map instancing, wind bend, LOD cull, interaction, seasonal tint | `Engine/World/Grass/GrassSystem/GrassSystem.h/.cpp` |
+| ✅ 58.07 | Animation State Machine | High | States, transitions, parameters, blend, layers, enter/exit callbacks | `Engine/Animation/StateMachine/AnimationStateMachine/AnimationStateMachine.h/.cpp` |
+| ✅ 58.08 | Area of Effect System | Medium | Sphere/cylinder/cone/ring shapes, enter/exit/tick callbacks | `Runtime/Gameplay/AoE/AreaOfEffectSystem/AreaOfEffectSystem.h/.cpp` |
+| ✅ 58.09 | Procedural Animation | Medium | FABRIK IK, look-at, foot placement, secondary spring bones | `Engine/Animation/Procedural/ProceduralAnimation/ProceduralAnimation.h/.cpp` |
+| ✅ 58.10 | Damage Numbers | Low | Float/fade/scale animation, colour rules, crit scale, pool, TTL | `Runtime/UI/DamageNumbers/DamageNumbers/DamageNumbers.h/.cpp` |
+
+## Phase 59 – AI, Physics, Rendering, Audio & Core ✅
+
+> NavMesh builder with polygon adjacency and BFS pathfinding, Eulerian fluid simulation
+> (advect+diffuse), velocity-buffer motion blur, text-to-viseme speech system with lipsync,
+> slot-based save/load with binary serialization, objective tracker with chains,
+> ORCA crowd avoidance simulation, sequencer timeline with keyframes and events,
+> dynamic weather with transitions/lightning, and screen-space AO with bilateral blur.
+> All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 59.01 | NavMesh Builder | High | Voxel→polygon mesh, adjacency, BFS A* path | `Engine/AI/NavMesh/NavMeshBuilder/NavMeshBuilder.h/.cpp` |
+| ✅ 59.02 | Fluid Simulation | Medium | Eulerian grid, advect, diffuse, density/velocity fields | `Engine/Sim/Fluid/FluidSimulation/FluidSimulation.h/.cpp` |
+| ✅ 59.03 | Motion Blur | High | Per-object velocity buffer, gather blur, shutter angle | `Engine/Render/MotionBlur/MotionBlur/MotionBlur.h/.cpp` |
+| ✅ 59.04 | Speech System | Medium | Text→viseme, phoneme map, voice pitch/rate, lipsync CB | `Engine/Audio/Speech/SpeechSystem/SpeechSystem.h/.cpp` |
+| ✅ 59.05 | Save Game System | High | Slot-based binary save, key-value store, versioning | `Runtime/Save/SaveGameSystem/SaveGameSystem.h/.cpp` |
+| ✅ 59.06 | Objective Tracker | Medium | Progress, complete, fail, chains, callbacks | `Runtime/Gameplay/Objective/ObjectiveTracker/ObjectiveTracker.h/.cpp` |
+| ✅ 59.07 | Crowd Simulation | Medium | ORCA-lite avoidance, goals, density query, arrive CB | `Engine/AI/Crowd/CrowdSimulation/CrowdSimulation.h/.cpp` |
+| ✅ 59.08 | Timeline System | Medium | Tracks, keyframes, lerp, events, loop, end callback | `Engine/Timeline/TimelineSystem/TimelineSystem.h/.cpp` |
+| ✅ 59.09 | Weather System | Medium | Clear→storm blend, wind, fog, precip, lightning | `Engine/World/Weather/WeatherSystem/WeatherSystem.h/.cpp` |
+| ✅ 59.10 | Screen-Space AO | High | Hemisphere sampling, bilateral blur, composite | `Engine/Render/SSAO/ScreenSpaceAO/ScreenSpaceAO.h/.cpp` |
+
+## Phase 60 – Animation, Rendering, Core, Gameplay & AI ✅
+
+> Catmull-Rom/Bezier spline system, HDR tone-mapping (Reinhard/ACES/Uncharted2) with
+> auto-exposure, CSV data-table loader, spatial hash-grid for O(1) range queries,
+> status-effect stack/tick/resist system, CPU render-texture with blit/read/write,
+> animation blend graph with condition transitions and blend spaces, structured combat
+> event logger with CSV export, SH-based light probe interpolation, and full game-session
+> lifecycle manager with per-player key-value data. All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 60.01 | Spline System | Medium | Catmull-Rom/Bezier/Linear, arc-length, resample | `Engine/Spline/SplineSystem/SplineSystem.h/.cpp` |
+| ✅ 60.02 | Tone Mapping | High | Reinhard/ACES/Uncharted2/Hejl/Custom, exposure, auto-exp | `Engine/Render/ToneMapping/ToneMappingSystem/ToneMappingSystem.h/.cpp` |
+| ✅ 60.03 | Data Table | Medium | CSV parse, typed cell access, row query, mutation | `Core/DataTable/DataTableSystem/DataTableSystem.h/.cpp` |
+| ✅ 60.04 | Spatial Hash Grid | High | 3D hash cells, radius/AABB query, nearest, O(1) avg | `Engine/Spatial/SpatialHashGrid/SpatialHashGrid.h/.cpp` |
+| ✅ 60.05 | Status Effect System | High | Stack, tick, expire, resist, per-effect callbacks | `Runtime/Combat/StatusEffect/StatusEffectSystem/StatusEffectSystem.h/.cpp` |
+| ✅ 60.06 | Render Texture | Medium | CPU RT: create, blit, read/write pixels, mip, filter | `Engine/Render/RenderTexture/RenderTextureSystem/RenderTextureSystem.h/.cpp` |
+| ✅ 60.07 | Animation Graph | High | States, condition transitions, blend spaces, crossfade | `Engine/Animation/Graph/AnimationGraph/AnimationGraph.h/.cpp` |
+| ✅ 60.08 | Combat Logger | Medium | Damage/heal/kill/ability events, stats, CSV export | `Runtime/Combat/CombatLogger/CombatLogger/CombatLogger.h/.cpp` |
+| ✅ 60.09 | Light Probe System | Medium | SH projection, position-weighted interpolation | `Engine/Render/LightProbe/LightProbeSystem/LightProbeSystem.h/.cpp` |
+| ✅ 60.10 | Session Manager | High | Lobby/active/pause/end lifecycle, player roster, KV | `Runtime/Session/SessionManager/SessionManager.h/.cpp` |
+
+---
+
+## Phase 61 – Rendering, Networking, Audio, Gameplay & Tooling ✅
+
+> Decal projector with atlas UV and fade, typed-packet network layer with fragmentation
+> and ACK, zone-based environment sound system with crossfade and reverb, full ability
+> system (grant/activate/cooldown/cost/charges/resources), procedural mesh builder with
+> primitives and extrude, heightmap terrain with deform/erosion/splat, pooled particle
+> emitter system with LOD, keyframe-driven UI animator with sequences, item definition and
+> instance system with stacking/equipment/durability, and per-category memory profiler with
+> snapshots and diffs. All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 61.01 | Decal Projector | Medium | Atlas UV, fade-out, priority, expire callback | `Engine/Render/DecalProjector/DecalProjector/DecalProjector.h/.cpp` |
+| ✅ 61.02 | Network Packet System | High | Typed packets, seq/ACK, fragment/reassemble | `Engine/Net/Packet/NetworkPacketSystem/NetworkPacketSystem.h/.cpp` |
+| ✅ 61.03 | Environment Sound System | Medium | Zone-based ambient, crossfade, reverb, callbacks | `Engine/Audio/Environment/EnvironmentSoundSystem/EnvironmentSoundSystem.h/.cpp` |
+| ✅ 61.04 | Ability System | High | Grant/activate/cooldown/cost/charges/resources | `Runtime/Combat/Ability/AbilitySystem/AbilitySystem.h/.cpp` |
+| ✅ 61.05 | Procedural Mesh System | Medium | Box/sphere/cylinder/plane/torus/extrude, normals | `Engine/Render/ProceduralMesh/ProceduralMeshSystem/ProceduralMeshSystem.h/.cpp` |
+| ✅ 61.06 | Terrain System | High | Heightmap, deform, flatten, smooth, erosion, splat | `Engine/World/Terrain/TerrainSystem/TerrainSystem.h/.cpp` |
+| ✅ 61.07 | Particle Emitter Pool | Medium | Pooled instances, LOD, burst, spawn/return callbacks | `Engine/Particles/EmitterPool/ParticleEmitterPool/ParticleEmitterPool.h/.cpp` |
+| ✅ 61.08 | UI Animator | Medium | Keyframe tracks, loop/ping-pong, sequence play | `Runtime/UI/UIAnimator/UIAnimator/UIAnimator.h/.cpp` |
+| ✅ 61.09 | Item System | High | Def registry, stack/split/merge, equip, durability | `Runtime/Inventory/Item/ItemSystem/ItemSystem.h/.cpp` |
+| ✅ 61.10 | Memory Profiler | Medium | Category stats, snapshots, diffs, threshold alerts | `Core/Profiler/MemoryProfiler/MemoryProfiler.h/.cpp` |
+
+---
+
+## Phase 62 — Core Rendering, AI, Physics, Audio & Gameplay (Mar 2026)
+
+> Deferred command buffer, 2-D physics world, waypoint graph + A*, screen-effect
+> pipeline, damage zones, sound cue variation, typed ECS query cache,
+> objective markers, texture atlas packing, and additive animation layers.
+> All 10 tasks implemented March 2026.
+
+| # | Task | Priority | Description | Output |
+|---|------|----------|-------------|--------|
+| ✅ 62.01 | Command Buffer | High | Deferred GPU commands, sort by key, execute, reset | `Core/Render/Command/CommandBuffer/CommandBuffer.h/.cpp` |
+| ✅ 62.02 | Physics World 2D | High | AABB/circle bodies, integrate, collide, resolve, raycast | `Engine/Physics/World2D/PhysicsWorld2D/PhysicsWorld2D.h/.cpp` |
+| ✅ 62.03 | Waypoint Graph | High | 3-D waypoints, Dijkstra + A*, edge costs, enable/disable | `Engine/AI/Waypoint/WaypointGraph/WaypointGraph.h/.cpp` |
+| ✅ 62.04 | Screen Effect System | Medium | Fullscreen effect pipeline, priority ordering, float/vec4 params | `Engine/Render/ScreenEffect/ScreenEffectSystem/ScreenEffectSystem.h/.cpp` |
+| ✅ 62.05 | Damage Zone | High | Persistent hazard zones, DPS, enter/exit/damage callbacks | `Runtime/Gameplay/DamageZone/DamageZone/DamageZone.h/.cpp` |
+| ✅ 62.06 | Sound Cue | Medium | Multi-sample cue, Random/Sequential/Shuffle, pitch/vol range | `Engine/Audio/Cue/SoundCue/SoundCue.h/.cpp` |
+| ✅ 62.07 | Entity Query | High | Typed ECS query cache, incremental rebuild, ForEach | `Core/ECS/Query/EntityQuery/EntityQuery.h/.cpp` |
+| ✅ 62.08 | Objective Marker | Medium | World-space UI markers, viewport projection, fade/distance | `Runtime/UI/Marker/ObjectiveMarker/ObjectiveMarker.h/.cpp` |
+| ✅ 62.09 | Texture Atlas | High | Shelf-packing, UV/pixel lookup, batch pack, used-area query | `Engine/Render/Atlas/TextureAtlas/TextureAtlas.h/.cpp` |
+| ✅ 62.10 | Animation Layer | High | Override/additive layers, bone mask, blend-in/out, loop | `Engine/Animation/Layer/AnimationLayer/AnimationLayer.h/.cpp` |

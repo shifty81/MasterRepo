@@ -52,6 +52,12 @@ add_library(CoreLib STATIC
     Localization/LocalizationSystem/LocalizationSystem.cpp
     # Phase 37.06 — mod loader: scan, load, hook registry, Lua binding
     Scripting/ModLoader.cpp
+    # Phase 61 — Per-category memory profiler with snapshots and diffs
+    Profiler/MemoryProfiler/MemoryProfiler.cpp
+    # Phase 62 — Deferred render command buffer with sort and execute
+    Render/Command/CommandBuffer/CommandBuffer.cpp
+    # Phase 62 — Typed ECS component query cache with incremental rebuild
+    ECS/Query/EntityQuery/EntityQuery.cpp
 )
 
 target_compile_features(CoreLib PUBLIC cxx_std_20)
