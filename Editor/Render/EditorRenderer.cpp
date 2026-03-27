@@ -682,14 +682,13 @@ void EditorRenderer::OnChar(unsigned int codepoint) {
 
 // ── Scroll wheel — zoom viewport (change orbit distance) ─────────────────
 void EditorRenderer::OnScroll(double /*dx*/, double dy) {
-    // Scroll ProjectAI chat history
+    // Scroll ProjectAI chat history when mouse is over the right sidebar AI panel
     if (m_projectAIVisible) {
-        float paiW = std::min(680.f, (float)m_width  - 60.f);
-        float paiH = std::min(520.f, (float)m_height - 80.f);
-        float paiX = ((float)m_width  - paiW) * 0.5f;
-        float paiY = ((float)m_height - paiH) * 0.5f;
-        if (m_mouseX >= paiX && m_mouseX < paiX + paiW &&
-            m_mouseY >= paiY && m_mouseY < paiY + paiH) {
+        float aiX = (float)m_width - kInspectorW;
+        float aiY = kMenuH + kToolbarH;
+        float aiH = (float)m_height - kStatusH - kConsoleH - aiY;
+        if (m_mouseX >= aiX && m_mouseX < (float)m_width &&
+            m_mouseY >= aiY && m_mouseY < aiY + aiH) {
             m_projectAIScrollY = std::max(0.f, m_projectAIScrollY - (float)dy * 20.f);
             return;
         }
@@ -1766,7 +1765,7 @@ void EditorRenderer::DrawToolbar(float x, float y, float w, float h) {
     float acx = x + w - 80.f;
     bool achov = (m_mouseX >= acx && m_mouseX < acx + 72.f &&
                   m_mouseY >= by  && m_mouseY < by + bh);
-    DrawRect(acx, by, 72.f, bh, m_aiChatVisible ? 0x094771FF : (achov ? 0x3E3E52FF : 0x252526FF));
+    DrawRect(acx, by, 72.f, bh, m_projectAIVisible ? 0x094771FF : (achov ? 0x3E3E52FF : 0x252526FF));
     DrawRectOutline(acx, by, 72.f, bh, kBorderColor);
     DrawText("AI Chat", acx + 6.f, by + 5.f, kTextAccent);
     if (achov && m_leftMousePressed) m_projectAIVisible = !m_projectAIVisible;
@@ -2564,7 +2563,11 @@ void EditorRenderer::Render(double dt) {
     // ── Main panels ────────────────────────────────────────────────────────
     DrawOutliner (outlinerX,  mainY,  kOutlinerW,  mainH);
     DrawViewport (viewportX,  mainY,  viewportW,   mainH);
-    DrawInspector(inspectorX, mainY,  kInspectorW, mainH);
+    // Right sidebar: ProjectAI panel (AI Chat) when toggled, otherwise Inspector
+    if (m_projectAIVisible)
+        DrawProjectAIPanel(inspectorX, mainY, kInspectorW, mainH);
+    else
+        DrawInspector(inspectorX, mainY,  kInspectorW, mainH);
     DrawConsole  (0.f,        consoleY, W, kConsoleH);
 
     // ── Borders between panels ─────────────────────────────────────────────
@@ -2598,15 +2601,6 @@ void EditorRenderer::Render(double dt) {
         float acX = W - kInspectorW - acW - 4.f;
         float acY = mainY + 10.f;
         DrawAIChat(acX, acY, acW, acH);
-    }
-
-    // ProjectAI panel — ChatGPT-style, shown at startup and via Ctrl+Space
-    if (m_projectAIVisible) {
-        float paiW = std::min(680.f, W - 60.f);
-        float paiH = std::min(520.f, H - 80.f);
-        float paiX = (W - paiW) * 0.5f;
-        float paiY = (H - paiH) * 0.5f;
-        DrawProjectAIPanel(paiX, paiY, paiW, paiH);
     }
 
     // Keybinds reference panel — F1
@@ -2657,8 +2651,8 @@ void EditorRenderer::DrawKeybindsPanel(float x, float y, float w, float h) {
         { "Ctrl+B",          "Build project"              },
         { "F5",              "Build project"              },
         { "F1",              "Keybinds panel"             },
-        { "Ctrl+Space",      "AI Chat panel"              },
-        { "ESC  (panels)",   "Close keybinds / AI"        },
+        { "Ctrl+Space",      "Toggle AI Chat sidebar"     },
+        { "ESC  (panels)",   "Close keybinds / AI sidebar"},
         { nullptr, nullptr }
     };
 
@@ -2690,12 +2684,10 @@ void EditorRenderer::DrawKeybindsPanel(float x, float y, float w, float h) {
 
 // ── ProjectAI — ChatGPT-style panel with project file access ───────────────
 void EditorRenderer::DrawProjectAIPanel(float x, float y, float w, float h) {
-    DrawRect(x, y, w, h, 0x0D0D1AEE);
-    DrawRectOutline(x, y, w, h, 0x336699FF, 2.f);
-    DrawPanelHeader("  Atlas AI  —  Project Assistant  (Ollama / local)",
-                    x, y, w, kPanelHdrH, 0x0A2040FF);
+    DrawRect(x, y, w, h, 0x0D0D1AFF);
+    DrawPanelHeader("  Atlas AI  (Ollama)", x, y, w, kPanelHdrH, 0x0A2040FF);
 
-    // Close button (top-right)
+    // Close button (top-right) — returns to Inspector
     float cbx = x + w - 22.f, cby = y + 3.f;
     bool  cbHov = (m_mouseX >= cbx && m_mouseX < cbx + 18.f &&
                    m_mouseY >= cby && m_mouseY < cby + 14.f);
@@ -2800,7 +2792,7 @@ void EditorRenderer::DrawProjectAIPanel(float x, float y, float w, float h) {
     bool pending = m_aiFuture.valid() &&
                    m_aiFuture.wait_for(std::chrono::milliseconds(0)) != std::future_status::ready;
     DrawText(pending ? "  ⏳ Waiting for Ollama…"
-                     : "  Model: codellama  |  localhost:11434  |  Ctrl+Space to hide",
+                     : "  codellama | localhost:11434 | Ctrl+Space",
              x + 6.f, statusY + 3.f, pending ? kTextWarn : kTextMuted, 0.9f);
 }
 
