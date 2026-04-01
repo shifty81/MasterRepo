@@ -1,0 +1,34 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NovaForgeEditor", "VisualStudio\NovaForgeEditor.vcxproj", "{2A8B4C5D-E6F7-4A1B-9C2D-3E4F5A6B7C8D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NovaForgeGame", "VisualStudio\NovaForgeGame.vcxproj", "{3B9C5D6E-F7A8-5B2C-AD3E-4F5A6B7C8D9E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NovaForgeTests", "VisualStudio\NovaForgeTests.vcxproj", "{4CAD6E7F-A8B9-6C3D-BE4F-5A6B7C8D9EAF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2A8B4C5D-E6F7-4A1B-9C2D-3E4F5A6B7C8D}.Debug|x64.ActiveCfg = Debug|x64
+		{2A8B4C5D-E6F7-4A1B-9C2D-3E4F5A6B7C8D}.Debug|x64.Build.0 = Debug|x64
+		{2A8B4C5D-E6F7-4A1B-9C2D-3E4F5A6B7C8D}.Release|x64.ActiveCfg = Release|x64
+		{2A8B4C5D-E6F7-4A1B-9C2D-3E4F5A6B7C8D}.Release|x64.Build.0 = Release|x64
+		{3B9C5D6E-F7A8-5B2C-AD3E-4F5A6B7C8D9E}.Debug|x64.ActiveCfg = Debug|x64
+		{3B9C5D6E-F7A8-5B2C-AD3E-4F5A6B7C8D9E}.Debug|x64.Build.0 = Debug|x64
+		{3B9C5D6E-F7A8-5B2C-AD3E-4F5A6B7C8D9E}.Release|x64.ActiveCfg = Release|x64
+		{3B9C5D6E-F7A8-5B2C-AD3E-4F5A6B7C8D9E}.Release|x64.Build.0 = Release|x64
+		{4CAD6E7F-A8B9-6C3D-BE4F-5A6B7C8D9EAF}.Debug|x64.ActiveCfg = Debug|x64
+		{4CAD6E7F-A8B9-6C3D-BE4F-5A6B7C8D9EAF}.Debug|x64.Build.0 = Debug|x64
+		{4CAD6E7F-A8B9-6C3D-BE4F-5A6B7C8D9EAF}.Release|x64.ActiveCfg = Release|x64
+		{4CAD6E7F-A8B9-6C3D-BE4F-5A6B7C8D9EAF}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
