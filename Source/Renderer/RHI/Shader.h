@@ -1,6 +1,6 @@
 #pragma once
-#include "Source/Core/Math/Vector.h"
-#include "Source/Core/Math/Matrix.h"
+#include "Core/Math/Vector.h"
+#include "Core/Math/Matrix.h"
 #include <cstdint>
 #include <string>
 

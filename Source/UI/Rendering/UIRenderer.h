@@ -1,5 +1,5 @@
 #pragma once
-#include "Source/UI/Framework/Widget.h"
+#include "UI/Framework/Widget.h"
 #include <cstdint>
 #include <string_view>
 

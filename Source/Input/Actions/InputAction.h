@@ -1,6 +1,6 @@
 #pragma once
-#include "Source/Input/Devices/Keyboard.h"
-#include "Source/Input/Devices/Mouse.h"
+#include "Input/Devices/Keyboard.h"
+#include "Input/Devices/Mouse.h"
 #include <string>
 #include <string_view>
 #include <vector>

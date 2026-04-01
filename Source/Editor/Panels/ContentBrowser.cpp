@@ -1,4 +1,4 @@
-#include "Source/Editor/Panels/ContentBrowser.h"
+#include "Editor/Panels/ContentBrowser.h"
 
 namespace NF::Editor {
 

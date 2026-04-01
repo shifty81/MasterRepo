@@ -1,7 +1,7 @@
 #pragma once
-#include "Source/Core/Math/Vector.h"
-#include "Source/Engine/ECS/World.h"
-#include "Source/Renderer/RHI/RenderDevice.h"
+#include "Core/Math/Vector.h"
+#include "Engine/ECS/World.h"
+#include "Renderer/RHI/RenderDevice.h"
 
 namespace NF::Editor {
 

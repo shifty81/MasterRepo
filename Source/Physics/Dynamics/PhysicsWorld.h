@@ -1,6 +1,6 @@
 #pragma once
-#include "Source/Physics/Dynamics/RigidBody.h"
-#include "Source/Physics/Collision/CollisionDetection.h"
+#include "Physics/Dynamics/RigidBody.h"
+#include "Physics/Collision/CollisionDetection.h"
 #include <vector>
 
 namespace NF {

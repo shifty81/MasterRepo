@@ -1,5 +1,5 @@
-#include "Source/Engine/ECS/World.h"
-#include "Source/Core/Logging/Log.h"
+#include "Engine/ECS/World.h"
+#include "Core/Logging/Log.h"
 #include <algorithm>
 #include <string>
 

@@ -1,4 +1,4 @@
-#include "Source/Input/Actions/InputAction.h"
+#include "Input/Actions/InputAction.h"
 #include <algorithm>
 
 namespace NF::Input {

@@ -1,4 +1,4 @@
-#include "Source/Renderer/Lighting/LightSystem.h"
+#include "Renderer/Lighting/LightSystem.h"
 #include <algorithm>
 
 namespace NF {

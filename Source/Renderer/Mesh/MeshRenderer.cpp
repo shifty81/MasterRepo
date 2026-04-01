@@ -1,5 +1,5 @@
-#include "Source/Renderer/Mesh/MeshRenderer.h"
-#include "Source/Core/Logging/Log.h"
+#include "Renderer/Mesh/MeshRenderer.h"
+#include "Core/Logging/Log.h"
 
 #ifdef NF_HAS_OPENGL
 #include <GL/gl.h>

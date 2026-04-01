@@ -1,4 +1,4 @@
-#include "Source/Editor/Panels/ConsolePanel.h"
+#include "Editor/Panels/ConsolePanel.h"
 
 namespace NF::Editor {
 

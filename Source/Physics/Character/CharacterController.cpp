@@ -1,5 +1,5 @@
-#include "Source/Physics/Character/CharacterController.h"
-#include "Source/Physics/Dynamics/PhysicsWorld.h"
+#include "Physics/Character/CharacterController.h"
+#include "Physics/Dynamics/PhysicsWorld.h"
 
 namespace NF {
 

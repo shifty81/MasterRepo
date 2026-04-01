@@ -1,6 +1,6 @@
 #pragma once
-#include "Source/UI/Framework/Widget.h"
-#include "Source/Core/Math/Vector.h"
+#include "UI/Framework/Widget.h"
+#include "Core/Math/Vector.h"
 #include <memory>
 
 namespace NF {

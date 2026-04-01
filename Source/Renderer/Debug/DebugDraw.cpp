@@ -1,5 +1,5 @@
-#include "Source/Renderer/Debug/DebugDraw.h"
-#include "Source/Renderer/RHI/RenderDevice.h"
+#include "Renderer/Debug/DebugDraw.h"
+#include "Renderer/RHI/RenderDevice.h"
 #include <cmath>
 #include <numbers>
 

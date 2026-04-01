@@ -1,6 +1,6 @@
 // Entry point for the NovaForge Game runtime
-#include "Source/Engine/Application/EngineLoop.h"
-#include "Source/Core/Logging/Log.h"
+#include "Engine/Application/EngineLoop.h"
+#include "Core/Logging/Log.h"
 
 int main(int argc, char* argv[])
 {

@@ -1,4 +1,4 @@
-#include "Source/Animation/IK/IKSolver.h"
+#include "Animation/IK/IKSolver.h"
 #include <cmath>
 
 namespace NF {

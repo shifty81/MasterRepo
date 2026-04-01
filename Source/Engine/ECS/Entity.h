@@ -1,5 +1,5 @@
 #pragma once
-#include "Source/Engine/ECS/World.h"
+#include "Engine/ECS/World.h"
 
 namespace NF {
 

@@ -1,4 +1,4 @@
-#include "Source/Input/Devices/Keyboard.h"
+#include "Input/Devices/Keyboard.h"
 
 namespace NF::Input {
 

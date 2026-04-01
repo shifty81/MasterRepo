@@ -1,5 +1,5 @@
-#include "Source/UI/Rendering/UIRenderer.h"
-#include "Source/Core/Logging/Log.h"
+#include "UI/Rendering/UIRenderer.h"
+#include "Core/Logging/Log.h"
 
 namespace NF {
 

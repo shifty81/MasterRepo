@@ -1,5 +1,5 @@
 #pragma once
-#include "Source/Animation/Skeleton/Skeleton.h"
+#include "Animation/Skeleton/Skeleton.h"
 #include <string>
 #include <memory>
 

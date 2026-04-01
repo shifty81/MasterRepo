@@ -1,6 +1,6 @@
-#include "Source/Renderer/Materials/Material.h"
-#include "Source/Renderer/RHI/Shader.h"
-#include "Source/Renderer/RHI/Texture.h"
+#include "Renderer/Materials/Material.h"
+#include "Renderer/RHI/Shader.h"
+#include "Renderer/RHI/Texture.h"
 
 namespace NF {
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "Source/Animation/BlendTree/BlendNode.h"
+#include "Animation/BlendTree/BlendNode.h"
 #include <string>
 #include <vector>
 #include <functional>

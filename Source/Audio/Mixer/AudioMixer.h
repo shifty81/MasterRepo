@@ -1,5 +1,5 @@
 #pragma once
-#include "Source/Audio/Spatial/SpatialAudio.h"
+#include "Audio/Spatial/SpatialAudio.h"
 #include <unordered_map>
 
 namespace NF {

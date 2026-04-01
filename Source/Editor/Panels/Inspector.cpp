@@ -1,4 +1,4 @@
-#include "Source/Editor/Panels/Inspector.h"
+#include "Editor/Panels/Inspector.h"
 
 namespace NF::Editor {
 

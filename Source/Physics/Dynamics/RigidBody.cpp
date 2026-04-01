@@ -1,4 +1,4 @@
-#include "Source/Physics/Dynamics/RigidBody.h"
+#include "Physics/Dynamics/RigidBody.h"
 
 namespace NF {
 

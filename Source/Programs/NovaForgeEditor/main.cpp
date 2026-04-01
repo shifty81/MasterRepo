@@ -1,6 +1,6 @@
 // Entry point for the NovaForge Editor
-#include "Source/Editor/Application/EditorApp.h"
-#include "Source/Core/Logging/Log.h"
+#include "Editor/Application/EditorApp.h"
+#include "Core/Logging/Log.h"
 
 int main(int argc, char* argv[])
 {

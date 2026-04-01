@@ -1,4 +1,4 @@
-#include "Source/UI/Widgets/TextInput.h"
+#include "UI/Widgets/TextInput.h"
 
 namespace NF {
 

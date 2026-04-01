@@ -1,8 +1,8 @@
-#include "Source/Renderer/Pipeline/ForwardRenderer.h"
-#include "Source/Renderer/RHI/RenderDevice.h"
-#include "Source/Renderer/Mesh/MeshRenderer.h"
-#include "Source/Renderer/Materials/Material.h"
-#include "Source/Core/Logging/Log.h"
+#include "Renderer/Pipeline/ForwardRenderer.h"
+#include "Renderer/RHI/RenderDevice.h"
+#include "Renderer/Mesh/MeshRenderer.h"
+#include "Renderer/Materials/Material.h"
+#include "Core/Logging/Log.h"
 #include <vector>
 
 namespace NF {

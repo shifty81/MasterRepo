@@ -1,4 +1,4 @@
-#include "Source/Editor/Commands/EditorCommand.h"
+#include "Editor/Commands/EditorCommand.h"
 
 namespace NF::Editor {
 

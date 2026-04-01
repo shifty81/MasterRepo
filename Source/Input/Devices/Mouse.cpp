@@ -1,4 +1,4 @@
-#include "Source/Input/Devices/Mouse.h"
+#include "Input/Devices/Mouse.h"
 
 namespace NF::Input {
 

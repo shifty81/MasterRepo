@@ -1,7 +1,7 @@
 #pragma once
-#include "Source/Renderer/RHI/RenderDevice.h"
-#include "Source/Engine/ECS/World.h"
-#include "Source/Engine/World/Level.h"
+#include "Renderer/RHI/RenderDevice.h"
+#include "Engine/ECS/World.h"
+#include "Engine/World/Level.h"
 #include <memory>
 
 namespace NF::Editor {

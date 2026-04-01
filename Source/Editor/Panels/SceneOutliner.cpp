@@ -1,4 +1,4 @@
-#include "Source/Editor/Panels/SceneOutliner.h"
+#include "Editor/Panels/SceneOutliner.h"
 
 namespace NF::Editor {
 

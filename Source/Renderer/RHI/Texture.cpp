@@ -1,5 +1,5 @@
-#include "Source/Renderer/RHI/Texture.h"
-#include "Source/Core/Logging/Log.h"
+#include "Renderer/RHI/Texture.h"
+#include "Core/Logging/Log.h"
 
 #ifdef NF_HAS_OPENGL
 #include <GL/gl.h>

@@ -1,5 +1,5 @@
-#include "Source/Renderer/PostProcess/PostProcessStack.h"
-#include "Source/Renderer/RHI/Texture.h"
+#include "Renderer/PostProcess/PostProcessStack.h"
+#include "Renderer/RHI/Texture.h"
 
 namespace NF {
 

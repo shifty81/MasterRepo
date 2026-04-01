@@ -1,5 +1,5 @@
-#include "Source/Engine/World/Level.h"
-#include "Source/Core/Logging/Log.h"
+#include "Engine/World/Level.h"
+#include "Core/Logging/Log.h"
 
 namespace NF {
 

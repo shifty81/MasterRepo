@@ -1,5 +1,5 @@
-#include "Source/Editor/Application/EditorApp.h"
-#include "Source/Core/Logging/Log.h"
+#include "Editor/Application/EditorApp.h"
+#include "Core/Logging/Log.h"
 #include <thread>
 
 namespace NF::Editor {

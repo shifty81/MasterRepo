@@ -1,5 +1,5 @@
-#include "Source/Engine/Application/EngineLoop.h"
-#include "Source/Core/Logging/Log.h"
+#include "Engine/Application/EngineLoop.h"
+#include "Core/Logging/Log.h"
 #include <thread>
 
 namespace NF {

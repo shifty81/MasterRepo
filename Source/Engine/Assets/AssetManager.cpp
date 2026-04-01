@@ -1,5 +1,5 @@
-#include "Source/Engine/Assets/AssetManager.h"
-#include "Source/Core/Logging/Log.h"
+#include "Engine/Assets/AssetManager.h"
+#include "Core/Logging/Log.h"
 #include <vector>
 
 namespace NF {

@@ -1,4 +1,4 @@
-#include "Source/Animation/BlendTree/BlendNode.h"
+#include "Animation/BlendTree/BlendNode.h"
 #include <algorithm>
 
 namespace NF {

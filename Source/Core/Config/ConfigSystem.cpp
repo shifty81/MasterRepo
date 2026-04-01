@@ -1,4 +1,4 @@
-#include "Source/Core/Config/ConfigSystem.h"
+#include "Core/Config/ConfigSystem.h"
 #include <fstream>
 
 namespace NF {
