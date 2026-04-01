@@ -32,7 +32,7 @@ bool EditorApp::Init() {
     wc.style         = CS_HREDRAW | CS_VREDRAW;
     wc.lpfnWndProc   = EditorWndProc;
     wc.hInstance     = hInstance;
-    wc.hCursor       = LoadCursorW(nullptr, IDC_ARROW);
+    wc.hCursor       = LoadCursorW(nullptr, reinterpret_cast<LPCWSTR>(IDC_ARROW));
     wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
     wc.lpszClassName = L"NovaForgeEditor";
 
