@@ -1,6 +1,7 @@
 add_library(NFInput STATIC
     Devices/Keyboard.cpp
     Devices/Mouse.cpp
+    Devices/Gamepad.cpp
     Actions/InputAction.cpp
 )
 

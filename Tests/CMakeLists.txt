@@ -1,4 +1,35 @@
 # NovaForge Test Suite
-# TODO: Add test framework (GoogleTest or Catch2)
 
-message(STATUS "  Tests configured (no tests yet)")
+include(FetchContent)
+
+FetchContent_Declare(
+    Catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG        v3.5.2
+    GIT_SHALLOW    TRUE
+)
+FetchContent_MakeAvailable(Catch2)
+
+# Core tests
+add_executable(NFTests
+    Core/MathTests.cpp
+    Core/LogTests.cpp
+    Engine/ECSTests.cpp
+    Engine/BehaviorTreeTests.cpp
+    Input/GamepadTests.cpp
+)
+
+target_include_directories(NFTests PRIVATE ${CMAKE_SOURCE_DIR}/Source)
+
+target_link_libraries(NFTests PRIVATE
+    NF::Core
+    NF::Engine
+    NF::Input
+    Catch2::Catch2WithMain
+)
+
+include(CTest)
+include(Catch)
+catch_discover_tests(NFTests)
+
+message(STATUS "  Tests configured (Catch2)")
