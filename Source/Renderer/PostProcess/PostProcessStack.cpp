@@ -10,17 +10,20 @@ void PostProcessStack::AddPass(std::shared_ptr<PostProcessPass> pass) {
 void PostProcessStack::Execute(Texture& scene, Texture& output) {
     if (m_Passes.empty()) return;
 
+    // Single-pass: read directly from scene, write directly to output.
     if (m_Passes.size() == 1) {
         m_Passes[0]->Apply(scene, output);
         return;
     }
 
-    // Ping-pong between two intermediate textures for multi-pass chains.
+    // Multi-pass: ping-pong between two intermediate textures.
+    // Pass 0        : scene       -> pingPong[0]
+    // Pass 1..N-2   : pingPong[k] -> pingPong[k^1]  (alternating)
+    // Pass N-1 (last): pingPong[k] -> output
     Texture pingPong[2];
     pingPong[0].Create(scene.GetWidth(), scene.GetHeight(), TextureFormat::RGBA8);
     pingPong[1].Create(scene.GetWidth(), scene.GetHeight(), TextureFormat::RGBA8);
 
-    // First pass reads from scene, writes to pingPong[0].
     m_Passes[0]->Apply(scene, pingPong[0]);
 
     for (std::size_t i = 1; i + 1 < m_Passes.size(); ++i) {
@@ -29,7 +32,6 @@ void PostProcessStack::Execute(Texture& scene, Texture& output) {
         m_Passes[i]->Apply(src, dst);
     }
 
-    // Final pass writes to the caller-supplied output.
     m_Passes.back()->Apply(pingPong[(m_Passes.size() - 2) % 2], output);
 }
 

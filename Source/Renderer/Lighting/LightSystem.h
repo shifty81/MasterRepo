@@ -46,7 +46,8 @@ private:
     };
 
     std::vector<LightEntry> m_Lights;
-    LightId                 m_NextId{1};
+    mutable std::vector<Light> m_FlatCache;
+    LightId                    m_NextId{1};
 };
 
 } // namespace NF
