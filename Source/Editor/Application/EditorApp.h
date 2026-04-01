@@ -2,6 +2,12 @@
 #include "Renderer/RHI/RenderDevice.h"
 #include "Engine/ECS/World.h"
 #include "Engine/World/Level.h"
+#include "Editor/Panels/DockingSystem.h"
+#include "Editor/Panels/SceneOutliner.h"
+#include "Editor/Panels/Inspector.h"
+#include "Editor/Panels/ContentBrowser.h"
+#include "Editor/Panels/ConsolePanel.h"
+#include "Editor/Viewport/EditorViewport.h"
 #include <memory>
 
 namespace NF::Editor {
@@ -30,6 +36,19 @@ private:
     Level                         m_Level;
     bool                          m_Running{false};
     void*                         m_Hwnd{nullptr};
+    int                           m_ClientWidth{1280};
+    int                           m_ClientHeight{720};
+
+    /// @brief Advance all panels and issue one frame of rendering.
+    /// @param dt Elapsed seconds since the previous frame.
+    void TickFrame(float dt);
+
+    DockingSystem  m_DockingSystem;
+    SceneOutliner  m_SceneOutliner;
+    Inspector      m_Inspector;
+    ContentBrowser m_ContentBrowser;
+    ConsolePanel   m_ConsolePanel;
+    EditorViewport m_Viewport;
 };
 
 } // namespace NF::Editor
