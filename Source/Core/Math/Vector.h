@@ -70,7 +70,7 @@ struct Vector3 {
     [[nodiscard]] float Length()   const noexcept { return std::sqrt(LengthSq()); }
 
     /// @brief Return a unit-length copy of this vector.
-    [[nodiscard]] Vector3 Normalize() const noexcept {
+    [[nodiscard]] Vector3 Normalized() const noexcept {
         const float l = Length();
         return l > 0.f ? *this / l : *this;
     }

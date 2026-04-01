@@ -25,6 +25,7 @@ std::string_view Logger::LevelToString(LogLevel level) noexcept {
 }
 
 void Logger::SetMinLevel(LogLevel level) noexcept {
+    std::lock_guard lock(s_Mutex);
     s_MinLevel = level;
 }
 

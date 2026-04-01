@@ -40,7 +40,7 @@ void TaskSystem::Init(uint32_t threadCount) {
     assert(!m_Impl && "TaskSystem::Init called more than once");
 
     if (threadCount == 0)
-        threadCount = std::max(1u, std::thread::hardware_concurrency());
+        threadCount = std::max(1u, std::thread::hardware_concurrency()); // hardware_concurrency() may return 0
 
     m_Impl = new Impl();
     m_Impl->Workers.reserve(threadCount);
