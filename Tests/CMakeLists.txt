@@ -10,13 +10,16 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(Catch2)
 
-# Core tests
+# All tests in one executable
 add_executable(NFTests
     Core/MathTests.cpp
     Core/LogTests.cpp
+    Core/CoreSystemTests.cpp
     Engine/ECSTests.cpp
     Engine/BehaviorTreeTests.cpp
     Input/GamepadTests.cpp
+    Physics/PhysicsTests.cpp
+    Animation/AnimationTests.cpp
 )
 
 target_include_directories(NFTests PRIVATE ${CMAKE_SOURCE_DIR}/Source)
@@ -25,6 +28,8 @@ target_link_libraries(NFTests PRIVATE
     NF::Core
     NF::Engine
     NF::Input
+    NF::Physics
+    NF::Animation
     Catch2::Catch2WithMain
 )
 

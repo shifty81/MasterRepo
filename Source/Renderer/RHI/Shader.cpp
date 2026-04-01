@@ -2,7 +2,7 @@
 #include "Core/Logging/Log.h"
 
 #ifdef NF_HAS_OPENGL
-#include <GL/gl.h>
+#include "Renderer/RHI/GLHeaders.h"
 #endif
 
 namespace NF {
