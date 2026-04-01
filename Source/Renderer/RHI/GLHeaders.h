@@ -1,20 +1,10 @@
 #pragma once
 /// @file GLHeaders.h
-/// @brief Platform-safe OpenGL include.
+/// @brief Platform-safe OpenGL include via GLAD.
 ///
-/// On Windows the Windows SDK's GL/gl.h depends on WINGDIAPI and APIENTRY
-/// which are defined by <windows.h>.  Always include this file instead of
-/// including <GL/gl.h> directly to guarantee the correct include order on
-/// every platform.
+/// GLAD provides function-pointer loading for all OpenGL 1.2+ entry points
+/// (e.g. glActiveTexture, glGenBuffers, glBindVertexArray).  On Windows the
+/// stock <GL/gl.h> only exposes OpenGL 1.1, so GLAD must be included instead.
+/// Always include this file rather than <GL/gl.h> or <glad/gl.h> directly.
 
-#ifdef _WIN32
-#  ifndef WIN32_LEAN_AND_MEAN
-#    define WIN32_LEAN_AND_MEAN
-#  endif
-#  ifndef NOMINMAX
-#    define NOMINMAX
-#  endif
-#  include <windows.h>
-#endif
-
-#include <GL/gl.h>
+#include <glad/gl.h>
