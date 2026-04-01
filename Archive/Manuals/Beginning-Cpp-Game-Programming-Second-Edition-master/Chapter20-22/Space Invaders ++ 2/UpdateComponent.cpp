@@ -1,3 +1,0 @@
-/*
-All Functionality in UpdateComponent.h
-*/
