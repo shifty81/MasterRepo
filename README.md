@@ -1,162 +1,81 @@
-# MasterRepo
+# NovaForge Engine
 
-> **Offline, AI-powered game engine + editor + game project.**
-> Everything runs locally. No cloud. No subscriptions.
+A modern, Unreal-inspired game engine built in C++20 with a custom editor, rendering pipeline, and gameplay framework.
 
----
+## Architecture
 
-## ✅ What Is Done Right Now
+```
+Source/
+├── Core/           # Foundation: math, memory, logging, threading, events, reflection, serialization
+├── Engine/         # Runtime: ECS, world, components, game framework, assets, game AI
+├── Renderer/       # Rendering: RHI (OpenGL), forward pipeline, materials, lighting, post-process
+├── Physics/        # Physics: collision detection, rigid bodies, character controller
+├── Audio/          # Audio: device, spatial audio, mixer
+├── Animation/      # Animation: skeleton, blend tree, state machine, IK
+├── Input/          # Input: keyboard, mouse, gamepad, action mappings
+├── Networking/     # Networking: sockets, replication, sessions, HTTP
+├── UI/             # UI framework: custom widget system (no ImGui)
+├── Editor/         # Editor: viewport, gizmos, outliner, inspector, content browser
+└── Programs/       # Executables: NovaForgeEditor, NovaForgeGame
+```
 
-### 🎮 AtlasEditor (the editor)
-- **3D orbit viewport** — RMB orbit, MMB pan, scroll zoom, F to reset camera
-- **ECS scene outliner** — live entity list from the runtime ECS world
-- **Inspector** — shows Transform, MeshRenderer, RigidBody, Tags for selected entity
-- **Gizmo manipulation** — W/E/R to switch Move/Rotate/Scale; drag X/Y/Z axes
-- **Grid snap** — G key toggles snapping, configurable grid size
-- **PIE (Play In Editor)** — P to start, ESC to stop; planets visibly orbit in simulation; green viewport border while playing
-- **Full undo/redo** — Ctrl+Z / Ctrl+Y; Create, Delete, Move entity all undoable
-- **Copy / Paste / Duplicate** — Ctrl+C, Ctrl+V, Ctrl+D
-- **Delete** — Delete key (undoable)
-- **Scene save/load** — Ctrl+S / Ctrl+O; saves to `Projects/NovaForge/Scenes/editor_save.scene`; tags round-tripped correctly
-- **New Entity / Duplicate Entity** — via toolbar or Scene menu (undoable)
-- **Add Component popup** — Transform, MeshRenderer, RigidBody, Tag
-- **Console panel** — live log output, command input
-- **Content browser** — file tree panel
-- **Code editor panel** — syntax-highlighted editor panel
-- **F1 keybinds panel** — full shortcut reference sheet overlay
-- **AI Chat panel** — Ctrl+Space; real async Ollama calls (codellama @ localhost:11434)
-- **ProjectAI panel** — ChatGPT-style floating panel shown at startup; project-context-aware
-- **Build button** — F5 / Ctrl+B triggers project build
-- **File menu** — Save Scene, Open Scene, Exit (via menu only — ESC never closes the editor)
+## Build Requirements
 
-### 🚀 NovaForge (the game)
-- **3D FPS camera** — WASD movement, mouse look, crosshair
-- **Star system** — Sol + all planets + asteroid belts + stations rendered as 3D spheres/boxes
-- **Approach prompts** — land/orbit UI when near celestial bodies
-- **AI miners** — autonomous ships that fly to deposits and earn credits
-- **Builder mode** — F2 to toggle ship/station construction
-- **HUD** — FPS counter, entity count, miner count, earnings, status bar
-- **Quick save/load** — F5 / F9
-- **Editor round-trip** — loads `editor_save.scene` at startup if present, so editor changes appear in-game automatically
+- **CMake** 3.20+
+- **C++20** compiler (GCC 11+, Clang 14+, MSVC 2022+)
+- **OpenGL** (system)
+- **GLFW** (auto-downloaded via FetchContent if not found)
 
-### 🤖 Atlas AI Server (`AI/Server/`)
-- **Standalone local web server** — FastAPI on `http://localhost:8080`
-- **ChatGPT-style web UI** — dark theme, markdown rendering, code blocks
-- **Project-aware** — deep-indexes the entire repo (C++ symbols, file tree, docs) on startup
-- **File browser sidebar** — browse and view any project file from the browser
-- **`/read path`** — type `/read Engine/Core/Engine.h` to view a file in chat
-- **Chat history** — persists across requests, clearable
-- **Re-index button** — force a full re-scan
-- Refactored from [Arbiter](https://github.com/shifty81/Arbiter)'s FastAPI + archive manager
+## Quick Start
 
-### 🏗️ Engine & Systems (all compile clean)
-All 16 CMake targets build with zero errors:
-`VersionLib` · `TrainingDataLib` · `UILib` · `AtlasEngine` · `CoreLib` · `BuilderLib` · `AILib` · `RuntimeLib` · `PCGLib` · `IDELib` · `AgentsLib` · `ToolsLib` · `EditorLib` · `NovaForge` · `ToolsGUI` · `AtlasEditor`
-
-Full subsystem list (261 tasks completed): see **[ROADMAP.md](ROADMAP.md)**
-
----
-
-## 🚀 Quick Start
-
-### Build the editor + game
 ```bash
-mkdir -p Builds/Debug && cd Builds/Debug
-cmake ../.. -DCMAKE_BUILD_TYPE=Debug
-cmake --build . --target AtlasEditor NovaForge
+# Configure
+cmake -B Builds/Debug -DCMAKE_BUILD_TYPE=Debug
+
+# Build
+cmake --build Builds/Debug --parallel
+
+# Run Editor
+./Builds/Debug/bin/NovaForgeEditor
+
+# Run Game
+./Builds/Debug/bin/NovaForgeGame
 ```
 
-### Run the editor
-```
-Builds/Debug/bin/AtlasEditor.exe
-```
+## Build Options
 
-### Run the game
-```
-Builds/Debug/bin/NovaForge.exe
-```
+| Option | Default | Description |
+|--------|---------|-------------|
+| `NF_BUILD_EDITOR` | ON | Build the NovaForge Editor |
+| `NF_BUILD_GAME` | ON | Build the NovaForge Game runtime |
+| `NF_BUILD_TESTS` | OFF | Build the test suite |
 
-### Start the AI server (local web UI)
+## CMake Presets
+
 ```bash
-cd AI/Server
-./start.sh          # Linux/macOS/Git Bash
-start.bat           # Windows
-
-# Then open: http://localhost:8080
-# Requires: ollama serve && ollama pull codellama
+cmake --preset debug        # Debug build
+cmake --preset release      # Release build
+cmake --build --preset debug
 ```
 
----
+## Module Dependencies
 
-## 🎮 Editor Keybinds
-
-| Key | Action |
-|-----|--------|
-| **W / E / R** | Move / Rotate / Scale gizmo |
-| **G** | Toggle grid snap |
-| **P** | Start PIE simulation |
-| **ESC** (in PIE) | Stop PIE |
-| **F** | Reset camera to scene |
-| **F1** | Keybinds reference panel |
-| **Ctrl+Z / Y** | Undo / Redo |
-| **Ctrl+C / V / D** | Copy / Paste / Duplicate entity |
-| **Delete** | Delete selected entity (undoable) |
-| **Ctrl+S / O** | Save / Open scene |
-| **Ctrl+B / F5** | Build project |
-| **Ctrl+Space** | AI Chat panel |
-| **RMB drag** | Orbit camera |
-| **MMB drag** | Pan camera |
-| **Scroll** | Zoom |
-| **LMB click** | Select entity |
-
----
-
-## 📁 Project Structure
-
-| Directory | Purpose |
-|-----------|---------|
-| `Engine/` | Low-level engine (render, physics, audio, input) |
-| `Core/` | Shared systems (events, reflection, serialization, ECS) |
-| `Editor/` | Custom editor — viewport, gizmos, outliner, inspector |
-| `Runtime/` | Gameplay — ECS world, player, inventory, combat |
-| `AI/` | AI systems — OllamaClient, agents, multi-agent coordinator |
-| `AI/Server/` | **Standalone AI web server** (FastAPI, port 8080) |
-| `Agents/` | AI agent implementations (code, fix, build, asset, PCG) |
-| `Builder/` | Starbase-style module builder (parts, snap, weld) |
-| `PCG/` | Procedural content generation (geometry, worlds, quests) |
-| `IDE/` | Integrated IDE (code editor, AI chat panel) |
-| `Projects/NovaForge/` | The game — 3D space / FPS built on the engine |
-| `Archive/` | Archived code for AI learning (never deleted) |
-| `Docs/` | Documentation and guides |
-
----
-
-## 🗺️ Planned / In Progress
-
-| Area | Status |
-|------|--------|
-| Scene editing → game round-trip | ✅ Done (editor_save.scene) |
-| Undo/redo for all operations | ✅ Done |
-| PIE simulation | ✅ Done (orbital animation) |
-| Standalone AI web UI | ✅ Done (AI/Server) |
-| Multiplayer sync | 🔜 Planned (Phase 37) |
-| Economy / faction system | 🔜 Planned |
-| Ship-to-ship combat | 🔜 Planned |
-| Player progression | 🔜 Planned |
-| Modding / Lua hooks | 🔜 Planned |
-| Full UI theme system | 🔜 Planned |
-| Integration test suite | 🔜 Planned |
-
----
-
-## Rules
-
-- **Never Delete** — Old code goes to `Archive/`. AI learns from everything.
-- **Atlas Rule** — No ImGui. All editor UI is custom and fully skinnable.
-- **Offline First** — All AI models run locally. No cloud dependency.
-- **Sandbox Rule** — AI never modifies live project directly.
+```
+NF::Core ──────────────────────────────────────────────────┐
+NF::Engine ──── NF::Core                                   │
+NF::Renderer ── NF::Core, NF::Engine, OpenGL, GLFW         │
+NF::Physics ─── NF::Core, NF::Engine                       │
+NF::Audio ───── NF::Core                                   │
+NF::Animation ─ NF::Core, NF::Engine                       │
+NF::Input ───── NF::Core                                   │
+NF::Networking─ NF::Core                                   │
+NF::UI ──────── NF::Core, NF::Renderer                     │
+NF::Editor ──── NF::Core, NF::Engine, NF::Renderer, ...    │
+                                                           │
+NovaForgeEditor ── all modules ────────────────────────────┘
+NovaForgeGame ──── all modules (except Editor)
+```
 
 ## License
 
-See [LICENSE](LICENSE) for details.
-
+GNU General Public License v3.0 — see [LICENSE](LICENSE).
