@@ -1,5 +1,6 @@
 #include "Editor/Application/EditorApp.h"
 #include "Core/Logging/Log.h"
+#include <chrono>
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -68,13 +69,67 @@ bool EditorApp::Init() {
         return false;
     }
     m_Level.Load("untitled.level");
+
+    // Viewport
+    m_Viewport.Init(m_RenderDevice.get());
+    m_Viewport.Resize(m_ClientWidth, m_ClientHeight);
+
+    // Panels
+    m_SceneOutliner.SetWorld(&m_Level.GetWorld());
+    m_SceneOutliner.SetOnSelectionChanged([this](EntityId id) {
+        m_Inspector.SetSelectedEntity(id, &m_Level.GetWorld());
+    });
+    m_ContentBrowser.SetRootPath("Content");
+
+    // Register panels with the docking system
+    m_DockingSystem.RegisterPanel("SceneOutliner",
+        [this](float, float, float, float) { m_SceneOutliner.Draw(); });
+    m_DockingSystem.RegisterPanel("Viewport",
+        [this](float, float, float, float) { m_Viewport.Draw(); });
+    m_DockingSystem.RegisterPanel("Inspector",
+        [this](float, float, float, float) { m_Inspector.Draw(); });
+    m_DockingSystem.RegisterPanel("ContentBrowser",
+        [this](float, float, float, float) { m_ContentBrowser.Draw(); });
+    m_DockingSystem.RegisterPanel("Console",
+        [this](float, float, float, float) { m_ConsolePanel.Draw(); });
+
+    // Default layout:
+    //   SceneOutliner (20%) | Viewport (56%) | Inspector (24%)
+    //                          Viewport splits vertically: Viewport (75%) / Console (25%)
+    //                                           Inspector splits vertically: Inspector (60%) / ContentBrowser (40%)
+    m_DockingSystem.SetRootSplit("SceneOutliner", "Viewport", 0.20f);
+    m_DockingSystem.SplitPanel("Viewport",  "Inspector",     SplitAxis::Horizontal, 0.70f);
+    m_DockingSystem.SplitPanel("Inspector", "ContentBrowser", SplitAxis::Vertical,  0.60f);
+    m_DockingSystem.SplitPanel("Viewport",  "Console",        SplitAxis::Vertical,  0.75f);
+
     m_Running = true;
     Logger::Log(LogLevel::Info, "Editor", "EditorApp::Init complete");
     return true;
 }
 
+void EditorApp::TickFrame(float dt)
+{
+    m_RenderDevice->BeginFrame();
+    m_RenderDevice->Clear(0.18f, 0.18f, 0.18f, 1.f);
+    m_Level.Update(dt);
+
+    m_DockingSystem.Update(dt);
+    m_SceneOutliner.Update(dt);
+    m_Inspector.Update(dt);
+    m_ContentBrowser.Update(dt);
+    m_ConsolePanel.Update(dt);
+    m_Viewport.Update(dt);
+    m_DockingSystem.Draw(static_cast<float>(m_ClientWidth),
+                         static_cast<float>(m_ClientHeight));
+
+    m_RenderDevice->EndFrame();
+}
+
 void EditorApp::Run() {
     Logger::Log(LogLevel::Info, "Editor", "EditorApp::Run – entering editor loop");
+
+    using Clock = std::chrono::steady_clock;
+    auto lastTime = Clock::now();
 
 #ifdef _WIN32
     MSG msg{};
@@ -91,17 +146,33 @@ void EditorApp::Run() {
             DispatchMessageW(&msg);
         }
 
-        m_RenderDevice->BeginFrame();
-        m_RenderDevice->Clear(0.18f, 0.18f, 0.18f, 1.f);
-        m_Level.Update(0.016f);
-        m_RenderDevice->EndFrame();
+        // Propagate window resize to the viewport
+        {
+            RECT rc{};
+            if (GetClientRect(static_cast<HWND>(m_Hwnd), &rc))
+            {
+                int newW = rc.right  - rc.left;
+                int newH = rc.bottom - rc.top;
+                if (newW != m_ClientWidth || newH != m_ClientHeight)
+                {
+                    m_ClientWidth  = newW;
+                    m_ClientHeight = newH;
+                    m_Viewport.Resize(m_ClientWidth, m_ClientHeight);
+                }
+            }
+        }
+
+        auto now = Clock::now();
+        float dt = std::chrono::duration<float>(now - lastTime).count();
+        lastTime = now;
+        TickFrame(dt);
     }
 #else
     while (m_Running) {
-        m_RenderDevice->BeginFrame();
-        m_RenderDevice->Clear(0.18f, 0.18f, 0.18f, 1.f);
-        m_Level.Update(0.016f);
-        m_RenderDevice->EndFrame();
+        auto now = Clock::now();
+        float dt = std::chrono::duration<float>(now - lastTime).count();
+        lastTime = now;
+        TickFrame(dt);
     }
 #endif
 }
