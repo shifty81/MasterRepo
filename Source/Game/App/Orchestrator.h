@@ -1,0 +1,56 @@
+#pragma once
+#include "Engine/World/Level.h"
+#include "Renderer/RHI/RenderDevice.h"
+#include <memory>
+
+namespace NF::Game {
+
+/// @brief Top-level game runtime orchestrator.
+///
+/// Owns the active @c Level and holds a non-owning pointer to the
+/// @c RenderDevice provided at Init() time.  Call Init(), then loop
+/// Tick(), then Shutdown().
+class Orchestrator {
+public:
+    Orchestrator() = default;
+    ~Orchestrator() = default;
+
+    Orchestrator(const Orchestrator&)            = delete;
+    Orchestrator& operator=(const Orchestrator&) = delete;
+
+    // -------------------------------------------------------------------------
+    // Lifecycle
+    // -------------------------------------------------------------------------
+
+    /// @brief Initialise all runtime subsystems.
+    /// @param renderDevice Non-owning pointer to the render device; must
+    ///        outlive this Orchestrator.
+    /// @return True on success.
+    bool Init(RenderDevice* renderDevice);
+
+    /// @brief Advance the game simulation by one variable-rate tick.
+    /// @param dt Elapsed seconds since the last frame.
+    void Tick(float dt);
+
+    /// @brief Tear down all runtime subsystems.
+    void Shutdown();
+
+    // -------------------------------------------------------------------------
+    // Accessors
+    // -------------------------------------------------------------------------
+
+    /// @brief Returns a pointer to the active level, or nullptr before Init().
+    [[nodiscard]] Level*       GetLevel()       noexcept { return &m_Level; }
+    /// @copydoc GetLevel()
+    [[nodiscard]] const Level* GetLevel() const noexcept { return &m_Level; }
+
+    /// @brief Returns true after a successful Init() and before Shutdown().
+    [[nodiscard]] bool IsInitialized() const noexcept { return m_Initialized; }
+
+private:
+    Level         m_Level;
+    RenderDevice* m_RenderDevice{nullptr};
+    bool          m_Initialized{false};
+};
+
+} // namespace NF::Game

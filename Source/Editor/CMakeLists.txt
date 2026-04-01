@@ -6,6 +6,10 @@ add_library(NFEditor STATIC
     Panels/Inspector.cpp
     Panels/ContentBrowser.cpp
     Panels/ConsolePanel.cpp
+    Panels/DockingSystem.cpp
+    Panels/PreferencesPanel.cpp
+    Panels/LiveProfilerBackend.cpp
+    Panels/MaterialEditorPanel.cpp
     Commands/EditorCommand.cpp
 )
 
