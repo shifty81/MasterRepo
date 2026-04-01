@@ -79,6 +79,25 @@
     },
 
     {
+      "name": "windows-x64-debug-tests",
+      "displayName": "Windows x86-64 Debug + Tests",
+      "description": "Windows Debug build with test suite enabled.",
+      "inherits": "base",
+      "generator": "Visual Studio 17 2022",
+      "architecture": {
+        "value": "x64",
+        "strategy": "set"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_SYSTEM_NAME": "Windows",
+        "NF_BUILD_EDITOR": "ON",
+        "NF_BUILD_GAME": "ON",
+        "NF_BUILD_TESTS": "ON"
+      }
+    },
+
+    {
       "name": "ci-debug",
       "displayName": "CI Debug (Windows)",
       "description": "Used by ci_pipeline.sh — debug + tests",
@@ -120,6 +139,11 @@
     {
       "name": "windows-x64-debug",
       "configurePreset": "windows-x64-debug",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-x64-debug-tests",
+      "configurePreset": "windows-x64-debug-tests",
       "configuration": "Debug"
     },
     {
