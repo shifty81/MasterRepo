@@ -44,7 +44,7 @@ bool PreferencesPanel::Load(const std::string& path)
         if (key == "theme")                m_Data.theme               = ThemeFromString(val);
         else if (key == "fpsLimit")        m_Data.fpsLimit            = static_cast<uint32_t>(std::stoul(val));
         else if (key == "autosaveEnabled") m_Data.autosaveEnabled     = (val == "1" || val == "true");
-        else if (key == "autosaveInterval")m_Data.autosaveIntervalSec = static_cast<uint32_t>(std::stoul(val));
+        else if (key == "autosaveInterval") m_Data.autosaveIntervalSec = static_cast<uint32_t>(std::stoul(val));
         else if (key == "showGrid")        m_Data.showGrid            = (val == "1" || val == "true");
         else if (key == "uiScale")         m_Data.uiScale             = std::stof(val);
         else if (key == "recentProjectsDir") m_Data.recentProjectsDir = val;

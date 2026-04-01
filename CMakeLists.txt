@@ -26,6 +26,7 @@ add_subdirectory(Source/Animation)
 add_subdirectory(Source/Input)
 add_subdirectory(Source/Networking)
 add_subdirectory(Source/UI)
+add_subdirectory(Source/Game)
 
 if(NF_BUILD_EDITOR)
     add_subdirectory(Source/Editor)
