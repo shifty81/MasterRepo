@@ -29,6 +29,7 @@ private:
     std::unique_ptr<RenderDevice> m_RenderDevice;
     Level                         m_Level;
     bool                          m_Running{false};
+    void*                         m_Hwnd{nullptr};
 };
 
 } // namespace NF::Editor
