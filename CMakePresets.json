@@ -73,9 +73,8 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_SYSTEM_NAME": "Windows",
-        "BUILD_EDITOR": "ON",
-        "BUILD_RUNTIME": "ON",
-        "BUILD_AI": "ON"
+        "NF_BUILD_EDITOR": "ON",
+        "NF_BUILD_GAME": "ON"
       }
     },
 

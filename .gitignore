@@ -1,74 +1,40 @@
 # Build outputs
-Builds/debug/
-Builds/release/
-Builds/Debug/
-Builds/Release/
-Builds/Editor/
-Builds/CI_*/
-compile_commands.json
+Builds/
+build/
+cmake-build-*/
+out/
 
-# Dependency / virtual environment
-venv/
-node_modules/
-__pycache__/
-*.pyc
-
-# IDE / Editor state
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+.vs/
 
-# OS files
+# Compiled objects
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exe
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+install_manifest.txt
+
+# Package managers
+vcpkg_installed/
+
+# OS
 .DS_Store
 Thumbs.db
 
-# AI model files (too large for git)
-AI/Models/*.bin
-AI/Models/*.gguf
-AI/Models/*.safetensors
-AI/Models/*.pt
-AI/Models/*.onnx
-
-# Large asset files (use Git LFS or separate storage)
-*.fbx
-*.blend
-*.blend1
-*.wav
-*.mp4
-*.obj
-*.npy
-
 # Logs
-Logs/Build/*
-Logs/Agent/*
-Logs/AI/*
-Logs/Server/*
-Logs/Backup/*
-!Logs/README.md
-!Logs/Build/.gitkeep
-!Logs/Agent/.gitkeep
-!Logs/AI/.gitkeep
-!Logs/Server/.gitkeep
-
-# Workspace state (local-only)
-WorkspaceState/*.json
-
-# Temp / cache
-Experiments/Temp/
-Cache/
-!Core/Cache/
-*.tmp
-
-# CMake build artifacts
-build/
-cmake-build-*/
-CMakeFiles/
-CMakeCache.txt
-cmake_install.cmake
-Makefile
-Scripts/Tools/New Rich Text Document.rtf
-*.pdf
-/MasterRepo
-*.gch
+*.log
