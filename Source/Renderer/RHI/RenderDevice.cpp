@@ -9,6 +9,15 @@ namespace NF {
 
 bool RenderDevice::Init(GraphicsAPI api) {
     m_API = api;
+#ifdef NF_HAS_OPENGL
+    if (api == GraphicsAPI::OpenGL) {
+        if (!gladLoaderLoadGL()) {
+            NF_LOG_ERROR("Renderer", "RenderDevice: gladLoaderLoadGL failed -- ensure an OpenGL context is current");
+            return false;
+        }
+        NF_LOG_INFO("Renderer", "RenderDevice: OpenGL function pointers loaded via GLAD");
+    }
+#endif
     m_Initialised = true;
     NF_LOG_INFO("Renderer", "RenderDevice initialised");
     return true;

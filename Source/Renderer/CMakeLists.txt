@@ -1,5 +1,24 @@
 find_package(OpenGL QUIET)
 
+# GLAD OpenGL extension loader (provides all post-1.1 functions on Windows)
+set(GLAD_TARGET "")
+if(OpenGL_FOUND)
+    include(FetchContent)
+    FetchContent_Declare(
+        glad_config
+        GIT_REPOSITORY https://github.com/Dav1dde/glad.git
+        GIT_TAG        v2.0.8
+        GIT_SHALLOW    TRUE
+        SOURCE_SUBDIR  cmake
+    )
+    FetchContent_MakeAvailable(glad_config)
+    # LOADER  = generate a standalone proc-address loader (wglGetProcAddress / dlsym);
+    #           no external loader function needs to be passed in.
+    # REPRODUCIBLE = produce deterministic output (no build-time timestamps).
+    glad_add_library(glad_gl STATIC REPRODUCIBLE LOADER API gl:core=3.3)
+    set(GLAD_TARGET glad_gl)
+endif()
+
 # GLFW discovery with FetchContent fallback
 set(GLFW_LIBS "")
 if(OpenGL_FOUND)
@@ -59,6 +78,9 @@ target_link_libraries(NFRenderer PUBLIC
 if(OpenGL_FOUND)
     target_compile_definitions(NFRenderer PUBLIC NF_HAS_OPENGL=1)
     target_link_libraries(NFRenderer PUBLIC OpenGL::GL)
+    if(GLAD_TARGET)
+        target_link_libraries(NFRenderer PUBLIC ${GLAD_TARGET})
+    endif()
     if(GLFW_LIBS)
         target_link_libraries(NFRenderer PUBLIC ${GLFW_LIBS})
     endif()
