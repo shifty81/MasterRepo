@@ -4,8 +4,10 @@
 #include <chrono>
 
 #ifdef _WIN32
-// Require Windows 10 for per-monitor V2 DPI awareness and GetDpiForWindow.
-#ifndef _WIN32_WINNT
+// Require Windows 10 minimum for per-monitor V2 DPI awareness and GetDpiForWindow.
+// Raise _WIN32_WINNT to 0x0A00 if a lower version was already defined.
+#if !defined(_WIN32_WINNT) || _WIN32_WINNT < 0x0A00
+#  undef  _WIN32_WINNT
 #  define _WIN32_WINNT 0x0A00
 #endif
 #define WIN32_LEAN_AND_MEAN
@@ -65,9 +67,15 @@ void EditorApp::DispatchOsEvent(unsigned msg, uintptr_t wParam, intptr_t lParam)
     switch (msg)
     {
     case WM_MOUSEMOVE:
-        m_Input.mouseX = static_cast<float>(GET_X_LPARAM(lp));
-        m_Input.mouseY = static_cast<float>(GET_Y_LPARAM(lp));
+    {
+        const float newX = static_cast<float>(GET_X_LPARAM(lp));
+        const float newY = static_cast<float>(GET_Y_LPARAM(lp));
+        m_Input.mouseDeltaX = newX - m_Input.mouseX;
+        m_Input.mouseDeltaY = newY - m_Input.mouseY;
+        m_Input.mouseX = newX;
+        m_Input.mouseY = newY;
         break;
+    }
 
     case WM_LBUTTONDOWN:
     case WM_LBUTTONDBLCLK:
@@ -87,18 +95,57 @@ void EditorApp::DispatchOsEvent(unsigned msg, uintptr_t wParam, intptr_t lParam)
         break;
 
     case WM_RBUTTONDOWN:
+        m_Input.mouseX           = static_cast<float>(GET_X_LPARAM(lp));
+        m_Input.mouseY           = static_cast<float>(GET_Y_LPARAM(lp));
         m_Input.rightDown        = true;
         m_Input.rightJustPressed = true;
+        SetCapture(static_cast<HWND>(m_Hwnd));
         break;
 
     case WM_RBUTTONUP:
+        m_Input.mouseX  = static_cast<float>(GET_X_LPARAM(lp));
+        m_Input.mouseY  = static_cast<float>(GET_Y_LPARAM(lp));
         m_Input.rightDown = false;
+        ReleaseCapture();
+        break;
+
+    case WM_MBUTTONDOWN:
+        m_Input.mouseX            = static_cast<float>(GET_X_LPARAM(lp));
+        m_Input.mouseY            = static_cast<float>(GET_Y_LPARAM(lp));
+        m_Input.middleDown        = true;
+        m_Input.middleJustPressed = true;
+        SetCapture(static_cast<HWND>(m_Hwnd));
+        break;
+
+    case WM_MBUTTONUP:
+        m_Input.mouseX      = static_cast<float>(GET_X_LPARAM(lp));
+        m_Input.mouseY      = static_cast<float>(GET_Y_LPARAM(lp));
+        m_Input.middleDown  = false;
+        ReleaseCapture();
         break;
 
     case WM_MOUSEWHEEL:
         m_Input.wheelDelta +=
             static_cast<float>(GET_WHEEL_DELTA_WPARAM(wp)) / static_cast<float>(WHEEL_DELTA);
         break;
+
+    case WM_KEYDOWN:
+    case WM_SYSKEYDOWN:
+    {
+        const unsigned vk = static_cast<unsigned>(wParam) & 0xFFu;
+        if (!m_Input.keysDown[vk])
+            m_Input.keysJustPressed[vk] = true;
+        m_Input.keysDown[vk] = true;
+        break;
+    }
+
+    case WM_KEYUP:
+    case WM_SYSKEYUP:
+    {
+        const unsigned vk = static_cast<unsigned>(wParam) & 0xFFu;
+        m_Input.keysDown[vk] = false;
+        break;
+    }
 
     case WM_DPICHANGED:
     {
@@ -241,6 +288,8 @@ bool EditorApp::Init() {
     // Wire input state to interactive panels
     m_SceneOutliner.SetInputState(&m_Input);
     m_ConsolePanel.SetInputState(&m_Input);
+    m_ContentBrowser.SetInputState(&m_Input);
+    m_Viewport.SetInputState(&m_Input);
 
     // Panels
     m_SceneOutliner.SetWorld(&m_Level.GetWorld());

@@ -1,4 +1,5 @@
 #pragma once
+#include "Editor/Application/EditorInputState.h"
 #include <string>
 
 namespace NF { class UIRenderer; }
@@ -15,6 +16,10 @@ public:
     /// @brief Set the UIRenderer used for drawing.
     void SetUIRenderer(UIRenderer* r) noexcept { m_Renderer = r; }
 
+    /// @brief Provide the current per-frame OS input state.
+    /// @param input Non-owning pointer updated by EditorApp each frame.
+    void SetInputState(const EditorInputState* input) noexcept { m_Input = input; }
+
     /// @brief Advance panel state.
     void Update(float dt);
 
@@ -25,9 +30,10 @@ public:
     [[nodiscard]] const std::string& GetSelectedAsset() const noexcept { return m_SelectedAsset; }
 
 private:
-    std::string  m_RootPath;
-    std::string  m_SelectedAsset;
-    UIRenderer*  m_Renderer{nullptr};
+    std::string             m_RootPath;
+    std::string             m_SelectedAsset;
+    UIRenderer*             m_Renderer{nullptr};
+    const EditorInputState* m_Input{nullptr};
 };
 
 } // namespace NF::Editor
