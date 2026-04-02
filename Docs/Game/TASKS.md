@@ -1,26 +1,34 @@
-# NovaForge Game — Tasks
+# NovaForge Game — Reset Task List
 
-## Completed (imported from NovaForge-Project)
-- [x] Establish game module structure (`Source/Game/`)
-- [x] Import design documentation (`Docs/Game/`)
-- [x] Define project manifest (`novaforge.project.json`)
-- [x] Define game architecture and module dependency graph
+## Phase 0 — Bootstrap
+- [ ] add `Config/novaforge.project.json`
+- [ ] verify clean configure/build from fresh checkout
+- [ ] verify editor executable is produced
+- [ ] verify game executable is produced
+- [ ] verify project context resolves correctly
+- [ ] add startup smoke-test checklist
 
-## Game Module Buildout
-- [ ] `NF::Game::App` — Bootstrap, Session, ProjectContext, Orchestrator
-- [ ] `NF::Game::World` — GameWorld facade over NF::Level
-- [ ] `NF::Game::App::Diagnostics` — RuntimeDiagnostics JSON reporter
-- [ ] `NF::Game::App::Playtest` — PlaytestSession + TestHarness
+## Phase 1 — Dev World Only
+- [ ] define single dev world target
+- [ ] lock spawn path
+- [ ] wire editor load path into dev world
+- [ ] wire runtime load path into dev world
+- [ ] add basic save/load hooks
+- [ ] add world debug overlay
 
-## Gameplay Systems
-- [ ] implement world and voxel primitives
-- [ ] implement player R.I.G. baseline
-- [ ] implement building and salvage baseline
-- [ ] implement season authority
-- [ ] implement client and server startup
-- [ ] implement validation suite
-- [ ] implement packaging and release pipeline
+## Phase 2 — Voxel Runtime Only
+- [ ] implement chunk schema
+- [ ] implement voxel storage/indexing
+- [ ] implement edit API
+- [ ] implement serialization
+- [ ] implement voxel debug validation
+- [ ] add editor voxel inspection path
 
-## CI / Build
-- [ ] wire smoke-test playtest session into CI
-- [ ] validate content schemas against CONTENT_RULES.md
+## Phase 3 — First Interaction Loop Only
+- [ ] add starter R.I.G. state
+- [ ] add first usable mining or interaction tool
+- [ ] add first resource type and pickup path
+- [ ] add simple inventory baseline
+- [ ] add place or repair action
+- [ ] add minimal HUD/status display
+- [ ] validate loop in editor and standalone client

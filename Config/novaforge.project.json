@@ -1,0 +1,26 @@
+{
+  "project": {
+    "name": "NovaForge",
+    "type": "standalone-game-repo",
+    "version": "0.1.0-reset",
+    "defaultWorld": "DevWorld",
+    "defaultStartupMode": "Editor"
+  },
+  "paths": {
+    "contentRoot": "Content",
+    "configRoot": "Config",
+    "saveRoot": "Saved",
+    "logRoot": "Saved/Logs"
+  },
+  "phases": [
+    "Phase0_Bootstrap",
+    "Phase1_DevWorldOnly",
+    "Phase2_VoxelRuntimeOnly",
+    "Phase3_FirstInteractionLoopOnly"
+  ],
+  "rules": {
+    "voxelAuthoritative": true,
+    "editorShipsWithGame": false,
+    "allowSuiteFeaturesInRepo": false
+  }
+}
