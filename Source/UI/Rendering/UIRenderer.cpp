@@ -224,13 +224,13 @@ void UIRenderer::Flush() {
     glUseProgram(static_cast<GLuint>(m_ShaderProgram));
 
     // Build orthographic projection: (0,0) top-left, (W,H) bottom-right
-    float L = 0.f, R2 = m_ViewportWidth;
-    float T = 0.f, B  = m_ViewportHeight;
+    float L = 0.f, Right = m_ViewportWidth;
+    float T = 0.f, Bot   = m_ViewportHeight;
     float proj[16] = {
-        2.f / (R2 - L),      0.f,              0.f, 0.f,
-        0.f,                  2.f / (T - B),    0.f, 0.f,
-        0.f,                  0.f,             -1.f, 0.f,
-       -(R2 + L) / (R2 - L), -(T + B) / (T - B), 0.f, 1.f
+        2.f / (Right - L),          0.f,                    0.f, 0.f,
+        0.f,                        2.f / (T - Bot),        0.f, 0.f,
+        0.f,                        0.f,                   -1.f, 0.f,
+       -(Right + L) / (Right - L), -(T + Bot) / (T - Bot), 0.f, 1.f
     };
 
     GLint loc = glGetUniformLocation(static_cast<GLuint>(m_ShaderProgram), "uProjection");
@@ -258,8 +258,8 @@ void UIRenderer::EndFrame() {
     GLboolean depthWasEnabled = glIsEnabled(GL_DEPTH_TEST);
     GLboolean blendWasEnabled = glIsEnabled(GL_BLEND);
     GLint prevBlendSrc = 0, prevBlendDst = 0;
-    glGetIntegerv(GL_BLEND_SRC_ALPHA, &prevBlendSrc);
-    glGetIntegerv(GL_BLEND_DST_ALPHA, &prevBlendDst);
+    glGetIntegerv(GL_BLEND_SRC, &prevBlendSrc);
+    glGetIntegerv(GL_BLEND_DST, &prevBlendDst);
 
     // Set 2-D rendering state
     glDisable(GL_DEPTH_TEST);
