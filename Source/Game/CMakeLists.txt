@@ -19,6 +19,10 @@ add_library(NFGame STATIC
     Voxel/VoxelSerializer.cpp
     Voxel/VoxelDebugOverlay.cpp
 
+    # Voxel Mesh (Phase 4)
+    Voxel/VoxelMesher.cpp
+    Voxel/ChunkMeshCache.cpp
+
     # Interaction Loop (Phase 3)
     Interaction/RigState.cpp
     Interaction/Inventory.cpp

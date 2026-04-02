@@ -23,6 +23,7 @@ add_executable(NFTests
     Bootstrap/BootstrapSmokeTests.cpp
     DevWorld/DevWorldTests.cpp
     Voxel/VoxelTests.cpp
+    VoxelMesh/VoxelMeshTests.cpp
     Interaction/InteractionTests.cpp
 )
 

@@ -279,6 +279,11 @@ bool EditorApp::Init() {
                                   static_cast<float>(m_ClientHeight));
     m_UIRenderer.SetDpiScale(m_DpiScale);
 
+    // Initialise the forward renderer and chunk mesh cache (Phase 4).
+    m_ForwardRenderer.Init(m_RenderDevice.get());
+    m_MeshCache.Init(&m_ForwardRenderer);
+    m_MeshCache.RebuildDirty(m_GameWorld.GetChunkMap());
+
     Logger::Log(LogLevel::Info, "Editor", "[6/6] EditorApp — wiring panels and layout");
     // Wire UIRenderer to all subsystems
     m_DockingSystem.SetUIRenderer(&m_UIRenderer);
@@ -370,7 +375,17 @@ void EditorApp::TickFrame(float dt)
     m_RenderDevice->Clear(0.18f, 0.18f, 0.18f, 1.f);
     m_Level.Update(dt);
 
-    // Begin UI rendering pass
+    // ---- Phase 4: render voxel chunk meshes via ForwardRenderer ----
+    m_MeshCache.RebuildDirty(m_GameWorld.GetChunkMap());
+    {
+        Matrix4x4 view = m_Viewport.GetViewMatrix();
+        Matrix4x4 proj = m_Viewport.GetProjectionMatrix();
+        m_ForwardRenderer.BeginScene(view, proj);
+        m_MeshCache.Render();
+        m_ForwardRenderer.EndScene();
+    }
+
+    // Begin UI rendering pass (2-D overlay on top of the 3-D scene)
     m_UIRenderer.SetViewportSize(static_cast<float>(m_ClientWidth),
                                   static_cast<float>(m_ClientHeight));
     m_UIRenderer.BeginFrame();
@@ -456,6 +471,8 @@ void EditorApp::Run() {
 
 void EditorApp::Shutdown() {
     Logger::Log(LogLevel::Info, "Editor", "EditorApp::Shutdown");
+    m_MeshCache.Shutdown();
+    m_ForwardRenderer.Shutdown();
     m_GameWorld.Shutdown();
     m_Level.Unload();
     m_UIRenderer.Shutdown();

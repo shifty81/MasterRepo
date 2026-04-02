@@ -1,7 +1,9 @@
 #pragma once
 #include "Renderer/RHI/RenderDevice.h"
+#include "Renderer/Pipeline/ForwardRenderer.h"
 #include "UI/Rendering/UIRenderer.h"
 #include "Game/App/Orchestrator.h"
+#include "Game/Voxel/ChunkMeshCache.h"
 #include <cstdint>
 #include <memory>
 
@@ -11,7 +13,8 @@ namespace NF::Game {
 ///
 /// Creates a platform window, an OpenGL rendering context, and runs the full
 /// Phase 3 interaction loop via the @c Orchestrator.  A minimal HUD is drawn
-/// each frame using the custom @c UIRenderer.
+/// each frame using the custom @c UIRenderer.  Voxel chunk meshes are
+/// rendered via @c ForwardRenderer and @c ChunkMeshCache (Phase 4).
 ///
 /// On Windows a proper Win32 window is created.  On other platforms the game
 /// loop runs headless (no window) for CI / headless smoke-test purposes.
@@ -40,8 +43,10 @@ public:
 
 private:
     std::unique_ptr<RenderDevice> m_RenderDevice;
+    ForwardRenderer               m_ForwardRenderer;
     UIRenderer                    m_UIRenderer;
     Orchestrator                  m_Orchestrator;
+    ChunkMeshCache                m_MeshCache;
 
     bool  m_Running{false};
     void* m_Hwnd{nullptr};
@@ -57,6 +62,11 @@ private:
     bool  m_LeftDown{false};
     bool  m_LeftJustPressed{false};
 
+    // Simple FPS camera state
+    float m_CamYaw{0.f};
+    float m_CamPitch{0.3f};
+    float m_CamZoom{30.f};
+
     /// @brief Advance simulation and render one frame.
     void TickFrame(float dt);
 
@@ -65,6 +75,12 @@ private:
 
     // Flush per-frame edge-triggered flags after all systems have read them.
     void FlushFrameInput() noexcept;
+
+    /// @brief Compute the current view matrix from the camera state.
+    [[nodiscard]] NF::Matrix4x4 GetViewMatrix() const noexcept;
+
+    /// @brief Compute the current projection matrix.
+    [[nodiscard]] NF::Matrix4x4 GetProjectionMatrix() const noexcept;
 };
 
 } // namespace NF::Game

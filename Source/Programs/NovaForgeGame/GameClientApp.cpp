@@ -1,10 +1,14 @@
 #include "GameClientApp.h"
 #include "Core/Logging/Log.h"
+#include "Core/Math/Matrix.h"
+#include "Core/Math/Vector.h"
 #include "Game/Interaction/RigState.h"
 #include "Game/Interaction/Inventory.h"
 #include "Game/Interaction/ResourceItem.h"
 #include <chrono>
 #include <algorithm>
+#include <cmath>
+#include <numbers>
 #include <string>
 
 #ifdef _WIN32
@@ -194,6 +198,11 @@ bool GameClientApp::Init()
         return false;
     }
 
+    // Phase 4: initialise the forward renderer and chunk mesh cache.
+    m_ForwardRenderer.Init(m_RenderDevice.get());
+    m_MeshCache.Init(&m_ForwardRenderer);
+    m_MeshCache.RebuildDirty(m_Orchestrator.GetGameWorld().GetChunkMap());
+
     m_Running = true;
     NF::Logger::Log(NF::LogLevel::Info, "GameClient", "GameClientApp::Init complete");
     return true;
@@ -249,6 +258,9 @@ void GameClientApp::Run()
 #else
     // Headless loop for CI / non-Windows platforms — run for a fixed number of
     // frames and exit so automated tests can validate the game systems.
+    // Headless loop for CI / non-Windows platforms — run 120 frames
+    // (approximately 2 seconds at 60 FPS) to exercise all game systems
+    // then exit so automated tests can validate correctness.
     constexpr int kHeadlessFrames = 120;
     for (int frame = 0; frame < kHeadlessFrames && m_Running; ++frame)
     {
@@ -268,6 +280,8 @@ void GameClientApp::Run()
 void GameClientApp::Shutdown()
 {
     NF::Logger::Log(NF::LogLevel::Info, "GameClient", "GameClientApp::Shutdown");
+    m_MeshCache.Shutdown();
+    m_ForwardRenderer.Shutdown();
     m_Orchestrator.Shutdown();
     m_UIRenderer.Shutdown();
     m_RenderDevice->Shutdown();
@@ -288,6 +302,17 @@ void GameClientApp::TickFrame(float dt)
 {
     m_Orchestrator.Tick(dt);
 
+    // ---- Phase 4: render voxel chunk meshes ----
+    m_MeshCache.RebuildDirty(m_Orchestrator.GetGameWorld().GetChunkMap());
+    {
+        NF::Matrix4x4 view = GetViewMatrix();
+        NF::Matrix4x4 proj = GetProjectionMatrix();
+        m_ForwardRenderer.BeginScene(view, proj);
+        m_MeshCache.Render();
+        m_ForwardRenderer.EndScene();
+    }
+
+    // ---- 2-D HUD overlay ----
     m_UIRenderer.SetViewportSize(static_cast<float>(m_ClientWidth),
                                   static_cast<float>(m_ClientHeight));
     m_UIRenderer.BeginFrame();
@@ -376,6 +401,53 @@ void GameClientApp::FlushFrameInput() noexcept
     for (int i = 0; i < 256; ++i)
         m_KeysJustPressed[i] = false;
     m_LeftJustPressed = false;
+}
+
+// ---------------------------------------------------------------------------
+// Camera
+// ---------------------------------------------------------------------------
+
+NF::Matrix4x4 GameClientApp::GetViewMatrix() const noexcept
+{
+    const float cp = std::cos(m_CamPitch), sp = std::sin(m_CamPitch);
+    const float cy = std::cos(m_CamYaw),  sy = std::sin(m_CamYaw);
+
+    // Target is slightly above world origin so the terrain is visible.
+    NF::Vector3 target{0.f, 6.f, 0.f};
+    NF::Vector3 eye{
+        target.X + m_CamZoom * cp * sy,
+        target.Y + m_CamZoom * sp,
+        target.Z + m_CamZoom * cp * cy
+    };
+    NF::Vector3 forward = (target - eye).Normalized();
+    NF::Vector3 right   = forward.Cross({0.f, 1.f, 0.f}).Normalized();
+    NF::Vector3 up      = right.Cross(forward);
+
+    NF::Matrix4x4 v = NF::Matrix4x4::Identity();
+    v.M[0][0] = right.X;    v.M[1][0] = right.Y;    v.M[2][0] = right.Z;
+    v.M[0][1] = up.X;       v.M[1][1] = up.Y;       v.M[2][1] = up.Z;
+    v.M[0][2] = -forward.X; v.M[1][2] = -forward.Y; v.M[2][2] = -forward.Z;
+    v.M[3][0] = -right.Dot(eye);
+    v.M[3][1] = -up.Dot(eye);
+    v.M[3][2] =  forward.Dot(eye);
+    return v;
+}
+
+NF::Matrix4x4 GameClientApp::GetProjectionMatrix() const noexcept
+{
+    const float aspect = (m_ClientHeight > 0)
+        ? static_cast<float>(m_ClientWidth) / static_cast<float>(m_ClientHeight) : 1.f;
+    const float fovY  = 0.7854f; // ~45 degrees
+    const float nearZ = 0.1f, farZ = 1000.f;
+    const float f     = 1.f / std::tan(fovY * 0.5f);
+
+    NF::Matrix4x4 p{};
+    p.M[0][0] = f / aspect;
+    p.M[1][1] = f;
+    p.M[2][2] = (farZ + nearZ) / (nearZ - farZ);
+    p.M[2][3] = -1.f;
+    p.M[3][2] = (2.f * farZ * nearZ) / (nearZ - farZ);
+    return p;
 }
 
 } // namespace NF::Game

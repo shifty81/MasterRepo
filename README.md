@@ -16,8 +16,8 @@ This repository is the complete monorepo: the engine runtime, the game-specific 
 | **Phase 1** — Dev World | Stable sandbox world, spawn path, save/load, world debug overlay | ✅ Done |
 | **Phase 2** — Voxel Runtime | Chunk data model, edit API, serialization, voxel inspection in editor | ✅ Done |
 | **Phase 3** — First Interaction Loop | R.I.G. state, mining tool, resources, inventory, HUD, standalone client | ✅ Done |
-| **Phase 4** — Low-Poly Visual Wrapper | Mesh layer over voxel geometry | 🔜 Next |
-| **Phase 5** — Movement & FPS Camera | Player controller, FPS view, collision | 🔜 Planned |
+| **Phase 4** — Voxel Mesh Rendering | Mesher, GPU cache, Phong shader, lit terrain in editor + client | ✅ Done |
+| **Phase 5** — Movement & FPS Camera | Player controller, FPS view, collision | 🔜 Next |
 | **Phase 6** — Multiplayer Foundation | Server authority, replication, sessions | 🔜 Planned |
 
 > See [`Docs/Game/ROADMAP.md`](Docs/Game/ROADMAP.md) and [`Docs/Game/TASKS.md`](Docs/Game/TASKS.md) for the full backlog.
@@ -35,8 +35,9 @@ This repository is the complete monorepo: the engine runtime, the game-specific 
 - **Voxel Inspector** — live chunk map stats, voxel overlay toggle
 - **HUD Panel** — R.I.G. health/energy bars, tool slot, inventory counts (in editor)
 - **Standalone Game Client** — Win32 window, OpenGL, HUD overlay, full Phase 3 interaction loop
+- **Voxel Mesh Rendering** — culled-face mesher, GPU mesh cache, Phong-lit shader with per-type colour palette, 9-chunk starter terrain
 - **Interaction Loop** — mine voxels, collect resources, place/repair voxels, inventory management
-- **184 Catch2 unit tests** — Core, Engine, Physics, Animation, Input, Voxel, Interaction
+- **194 Catch2 unit tests** — Core, Engine, Physics, Animation, Input, Voxel, VoxelMesh, Interaction
 
 ---
 

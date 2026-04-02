@@ -32,3 +32,12 @@
 - [x] add place or repair action
 - [x] add minimal HUD/status display
 - [x] validate loop in editor and standalone client
+
+## Phase 4 — Voxel Mesh Rendering
+- [x] implement VoxelMesher (culled-face generation with normals + type palette)
+- [x] implement ChunkMeshCache (GPU mesh per chunk, dirty rebuild)
+- [x] create voxel GLSL shader (Phong lighting, per-type colour palette)
+- [x] wire ForwardRenderer into EditorViewport
+- [x] wire ForwardRenderer into GameClientApp
+- [x] generate starter terrain (9 chunks) in GameWorld::Initialize
+- [x] add VoxelMesh unit tests (10 tests)

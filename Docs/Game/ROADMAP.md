@@ -68,3 +68,20 @@ Deliverables:
 - broad galaxy simulation
 - generic tooling layers
 - Atlas-linked workspace features
+
+### Phase 4 — Voxel Mesh Rendering
+Goal: render voxel chunks as lit 3-D geometry in both editor and client.
+
+Deliverables:
+- VoxelMesher generates MeshData from Chunk (culled-face, normals, type-palette)
+- ChunkMeshCache maintains a GPU Mesh per chunk, rebuilds dirty chunks
+- Voxel GLSL shader with Phong lighting and per-type colour palette
+- ForwardRenderer wired into EditorViewport and GameClientApp
+- Starter terrain (9 chunks) generated at world init
+- Tests for mesher correctness (face count, culling, normals, palette)
+
+### Phase 5 — Movement & FPS Camera
+Goal: player controller, collision detection, FPS navigation.
+
+### Phase 6 — Multiplayer Foundation
+Goal: server authority, replication, sessions.
