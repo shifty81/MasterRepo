@@ -23,6 +23,7 @@ add_executable(NFTests
     Bootstrap/BootstrapSmokeTests.cpp
     DevWorld/DevWorldTests.cpp
     Voxel/VoxelTests.cpp
+    Interaction/InteractionTests.cpp
 )
 
 target_include_directories(NFTests PRIVATE ${CMAKE_SOURCE_DIR}/Source)

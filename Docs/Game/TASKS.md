@@ -25,10 +25,10 @@
 - [x] add editor voxel inspection path
 
 ## Phase 3 — First Interaction Loop Only
-- [ ] add starter R.I.G. state
-- [ ] add first usable mining or interaction tool
-- [ ] add first resource type and pickup path
-- [ ] add simple inventory baseline
-- [ ] add place or repair action
-- [ ] add minimal HUD/status display
-- [ ] validate loop in editor and standalone client
+- [x] add starter R.I.G. state
+- [x] add first usable mining or interaction tool
+- [x] add first resource type and pickup path
+- [x] add simple inventory baseline
+- [x] add place or repair action
+- [x] add minimal HUD/status display
+- [x] validate loop in editor and standalone client

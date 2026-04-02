@@ -11,6 +11,7 @@ add_library(NFEditor STATIC
     Panels/LiveProfilerBackend.cpp
     Panels/MaterialEditorPanel.cpp
     Panels/VoxelInspector.cpp
+    Panels/HUDPanel.cpp
     Commands/EditorCommand.cpp
 )
 
