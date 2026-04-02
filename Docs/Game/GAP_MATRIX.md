@@ -1,38 +1,83 @@
 # MasterRepo Reset — Gap Matrix
 
-## Already Present
-- root CMake setup
-- module layout for engine/editor/game
-- bootstrap/session/orchestrator shell
-- world facade shell
-- editor app shell
-- executable split for editor and game
-- roadmap and rules docs in some form
+## Completed
 
-## Missing or Incomplete
+### Phase 0 — Bootstrap ✅
+- [x] root CMake setup
+- [x] module layout for engine/editor/game
+- [x] bootstrap/session/orchestrator shell
+- [x] editor app shell + standalone game executable
+- [x] project manifest (`Config/novaforge.project.json`)
+- [x] deterministic startup logging
+- [x] 6 Catch2 smoke tests
 
-### Phase 0
-- explicit project manifest in repo
-- deterministic startup profile/config spec
-- clean startup smoke-test target
-- clear editor boot contract doc
-- clear game boot contract doc
+### Phase 1 — Dev World ✅
+- [x] concrete dev world config (`Content/Definitions/DevWorld.json`)
+- [x] fixed spawn rules (seed=42, spawn 128,32,128)
+- [x] world save/load baseline (BinaryArchive, NFSV magic)
+- [x] world debug overlay
+- [x] editor + game load paths wired
 
-### Phase 1
-- concrete dev world asset/config
-- fixed spawn rules
-- world save/load baseline
-- movement and camera test criteria
+### Phase 2 — Voxel Runtime ✅
+- [x] formal voxel chunk schema (32³ chunks, 8 voxel types)
+- [x] voxel storage/indexing (ChunkMap, ChunkCoord)
+- [x] voxel edit API (mine, damage, repair)
+- [x] voxel serialization (NFCK magic, round-trip)
+- [x] chunk validation/debug layer (VoxelDebugOverlay)
+- [x] editor voxel inspection (VoxelInspector panel)
+- [x] 39 tests
 
-### Phase 2
-- formal voxel chunk schema
-- voxel serialization contract
-- chunk validation/debug layer
-- editor voxel authoring path
+### Phase 3 — First Interaction Loop ✅
+- [x] starter R.I.G. gameplay state (RigState)
+- [x] first usable tool (MiningTool + durability)
+- [x] inventory baseline (Inventory + stacking)
+- [x] resource pickup (ResourceItem)
+- [x] minimal HUD (HUDPanel)
+- [x] editor + standalone client validation
+- [x] 32 tests
 
-### Phase 3
-- starter R.I.G. gameplay state
-- first usable tool loop
-- inventory baseline
-- minimal playable HUD
-- end-to-end interaction smoke test
+### Phase 4 — Voxel Mesh Rendering ✅
+- [x] VoxelMesher (culled-face, normals, palette)
+- [x] ChunkMeshCache (GPU mesh, dirty rebuild)
+- [x] Phong GLSL shader
+- [x] ForwardRenderer wired into editor + client
+- [x] 9-chunk starter terrain
+- [x] 10 tests
+
+### Phase 5 — Movement & FPS Camera ✅
+- [x] IsSolidAt / RaycastVoxel spatial queries
+- [x] PlayerMovement (WASD, mouse look, jump, sprint, gravity)
+- [x] Voxel-aware AABB collision
+- [x] FPS camera in GameClientApp
+- [x] HUD position/grounded display
+- [x] 21 tests
+
+### Phase 6 — Multiplayer Foundation ✅
+- [x] NetMessage protocol (typed packets, 8-byte header)
+- [x] NetChannel (framed reliable delivery)
+- [x] NetReplicator (snapshot build/serialize/apply)
+- [x] GameServer (authoritative host, per-client movement)
+- [x] GameClient (connect, input, snapshots)
+- [x] 30 tests
+
+## Current Gaps
+
+### Documentation
+- [ ] ROADMAP.md has no plan beyond Phase 6
+- [ ] ARCHITECTURE.md lists 22 Gameplay subdirs but only 14 exist in code (now 22)
+
+### Stubs / Partial Implementations
+- [ ] Socket transport is a no-op stub — multiplayer cannot connect over a real network
+- [ ] Audio module has minimal stubs — no platform audio playback
+- [ ] Orchestrator does not integrate Phase 6 net code (GameServer/GameClient)
+- [ ] 14 Gameplay systems are empty 2-line stubs (deferred by design)
+
+### Missing Features (Deferred)
+- [ ] Low-poly visual wrapper over voxel structure
+- [ ] Chunk streaming / LOD
+- [ ] Real platform socket implementation (Win32 Winsock / POSIX)
+- [ ] Platform audio backend (WASAPI / CoreAudio / ALSA)
+- [ ] CPack installer packaging
+- [ ] Editor splash screen
+- [ ] Editor symbol locator (Ctrl+P)
+- [ ] OpenXR VR preview

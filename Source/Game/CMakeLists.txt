@@ -52,6 +52,14 @@ add_library(NFGame STATIC
     Gameplay/Salvage/SalvageSystem.cpp
     Gameplay/Season/TitanRaceSystem.cpp
     Gameplay/Characters/CharacterSystem.cpp
+    Gameplay/Station/StationServices.cpp
+    Gameplay/Manufacturing/ManufacturingQueue.cpp
+    Gameplay/Fleet/FleetSystem.cpp
+    Gameplay/WorldSim/WorldSimSystem.cpp
+    Gameplay/Inventory/InventorySystem.cpp
+    Gameplay/Storage/StorageSystem.cpp
+    Gameplay/Anomaly/AnomalySystem.cpp
+    Gameplay/WarSector/WarSectorSystem.cpp
 )
 
 add_library(NF::Game ALIAS NFGame)

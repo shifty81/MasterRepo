@@ -62,3 +62,37 @@
 - [x] define NetPlayerState, NetVoxelEdit, NetWorldSnapshot, NetClientInput structs
 - [x] wire server-side authoritative PlayerMovement per client
 - [x] add Phase 6 unit tests (30 tests: protocol, channel, replicator, server, client)
+
+## Phase 7 — Platform Networking & Orchestrator Integration
+- [ ] implement platform Socket (Win32 Winsock2 / POSIX)
+- [ ] add Orchestrator net-mode enum (Solo, ListenServer, Dedicated, Client)
+- [ ] wire GameServer + GameClient lifecycle into Orchestrator
+- [ ] add local loopback integration test (server + client in-process)
+- [ ] implement listen-server mode (host plays while serving)
+- [ ] implement connection handshake end-to-end over real socket
+- [ ] add Phase 7 unit + integration tests
+
+## Phase 8 — Chunk Streaming & LOD
+- [ ] implement ChunkStreamer (load/unload within radius)
+- [ ] add background-thread chunk generation from seed
+- [ ] implement distance-based mesh LOD
+- [ ] add memory budget / chunk eviction policy
+- [ ] add save-on-unload for modified chunks
+- [ ] add Phase 8 unit tests
+
+## Phase 9 — Audio Foundation
+- [ ] implement platform audio backend (WASAPI / stub)
+- [ ] wire real AudioDevice init with hardware
+- [ ] add sound asset loading (WAV/OGG)
+- [ ] implement AudioMixer channels with volume/pan
+- [ ] implement SpatialAudio 3D positioning + attenuation
+- [ ] add placeholder sounds for mining/interaction/ambient
+- [ ] add Phase 9 unit tests
+
+## Phase 10 — Advanced Gameplay Systems
+- [ ] implement MiningSystem (full mining progression)
+- [ ] implement BuilderSystem (voxel construction)
+- [ ] implement ProgressionSystem (XP, unlocks, skills)
+- [ ] implement InventorySystem + StorageSystem (containers, transfer)
+- [ ] implement CombatSystem (damage, health, death/respawn)
+- [ ] add Phase 10 unit tests
