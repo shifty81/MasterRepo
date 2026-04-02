@@ -17,12 +17,12 @@
 - [x] add world debug overlay
 
 ## Phase 2 — Voxel Runtime Only
-- [ ] implement chunk schema
-- [ ] implement voxel storage/indexing
-- [ ] implement edit API
-- [ ] implement serialization
-- [ ] implement voxel debug validation
-- [ ] add editor voxel inspection path
+- [x] implement chunk schema
+- [x] implement voxel storage/indexing
+- [x] implement edit API
+- [x] implement serialization
+- [x] implement voxel debug validation
+- [x] add editor voxel inspection path
 
 ## Phase 3 — First Interaction Loop Only
 - [ ] add starter R.I.G. state

@@ -20,6 +20,14 @@ public:
     /// @brief Release all renderer-owned resources.
     void Shutdown();
 
+    /// @brief Set the DPI scale factor (monitor DPI / 96).  Applied as a
+    /// multiplier to the @p scale argument in DrawText().
+    /// @param scale DPI scale; 1.0 = standard 96 DPI, 1.5 = 144 DPI, etc.
+    void SetDpiScale(float scale) noexcept { m_DpiScale = scale > 0.f ? scale : 1.f; }
+
+    /// @brief Return the current DPI scale factor.
+    [[nodiscard]] float GetDpiScale() const noexcept { return m_DpiScale; }
+
     /// @brief Set the viewport size used for the orthographic projection.
     /// @param width  Viewport width in pixels.
     /// @param height Viewport height in pixels.
@@ -62,6 +70,7 @@ private:
     bool  m_Initialised{false};
     float m_ViewportWidth{1280.f};
     float m_ViewportHeight{720.f};
+    float m_DpiScale{1.f};
 
     uint32_t m_ShaderProgram{0};
     uint32_t m_VAO{0};

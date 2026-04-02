@@ -3,6 +3,10 @@
 #include "Game/World/DevWorldConfig.h"
 #include "Game/World/WorldDebugOverlay.h"
 #include "Game/World/WorldSaveLoad.h"
+#include "Game/Voxel/ChunkMap.h"
+#include "Game/Voxel/VoxelEditApi.h"
+#include "Game/Voxel/VoxelSerializer.h"
+#include "Game/Voxel/VoxelDebugOverlay.h"
 #include "Engine/ECS/World.h"
 
 namespace NF::Game {
@@ -14,7 +18,7 @@ namespace NF::Game {
 /// access is still performed through @c GetLevel().GetWorld().
 class GameWorld {
 public:
-    GameWorld() = default;
+    GameWorld() : m_EditApi(m_ChunkMap) {}
 
     // -------------------------------------------------------------------------
     // Lifecycle
@@ -36,7 +40,7 @@ public:
     // Save / Load
     // -------------------------------------------------------------------------
 
-    /// @brief Save current world state to disk.
+    /// @brief Save current world state (entities + voxels) to disk.
     /// @param path File path for the save file.
     /// @return True on success.
     bool SaveWorld(const std::string& path);
@@ -46,12 +50,21 @@ public:
     /// @return True on success.
     bool LoadWorld(const std::string& path);
 
+    /// @brief Save only the voxel chunk map to @p chunkPath.
+    bool SaveChunks(const std::string& chunkPath);
+
+    /// @brief Load voxel chunk map from @p chunkPath.
+    bool LoadChunks(const std::string& chunkPath);
+
     // -------------------------------------------------------------------------
     // Debug
     // -------------------------------------------------------------------------
 
     /// @brief Capture and log the debug overlay to the console.
     void LogDebugOverlay();
+
+    /// @brief Log voxel layer stats and validate all chunks.
+    void LogVoxelDebug();
 
     /// @brief Access the debug overlay.
     [[nodiscard]] WorldDebugOverlay& GetDebugOverlay() noexcept { return m_DebugOverlay; }
@@ -79,6 +92,16 @@ public:
     /// @brief Returns true after a successful Initialize() and before Shutdown().
     [[nodiscard]] bool IsReady() const noexcept { return m_Ready; }
 
+    // ---- Voxel access -------------------------------------------------------
+
+    /// @brief Direct access to the chunk map.
+    [[nodiscard]] ChunkMap&       GetChunkMap()       noexcept { return m_ChunkMap; }
+    [[nodiscard]] const ChunkMap& GetChunkMap() const noexcept { return m_ChunkMap; }
+
+    /// @brief High-level voxel edit operations (set, mine, damage, repair).
+    [[nodiscard]] VoxelEditApi&       GetVoxelEditApi()       noexcept { return m_EditApi; }
+    [[nodiscard]] const VoxelEditApi& GetVoxelEditApi() const noexcept { return m_EditApi; }
+
 private:
     Level             m_Level;
     DevWorldConfig    m_Config;
@@ -86,6 +109,10 @@ private:
     WorldSaveLoad     m_SaveLoad;
     EntityId          m_PlayerEntity{NullEntity};
     bool              m_Ready{false};
+
+    // Voxel layer
+    ChunkMap      m_ChunkMap;
+    VoxelEditApi  m_EditApi;
 };
 
 } // namespace NF::Game
