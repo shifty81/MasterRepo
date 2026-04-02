@@ -94,3 +94,12 @@ Deliverables:
 
 ### Phase 6 — Multiplayer Foundation
 Goal: server authority, replication, sessions.
+
+Deliverables:
+- NetMessage protocol with typed packets and binary serialisation
+- NetChannel for framed, reliable message delivery over Socket
+- NetReplicator for delta-state snapshot building and application
+- GameServer: headless authoritative host, per-client movement, snapshot broadcast
+- GameClient: session lifecycle, input submission, snapshot reception
+- Replicated data types: NetPlayerState, NetVoxelEdit, NetWorldSnapshot, NetClientInput
+- Tests for protocol, channel, replicator, server, and client

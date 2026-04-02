@@ -1,0 +1,418 @@
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_approx.hpp>
+
+#include "Networking/Protocol/NetMessage.h"
+#include "Networking/Channel/NetChannel.h"
+#include "Networking/Transport/Socket.h"
+#include "Game/Net/NetReplicator.h"
+#include "Game/Net/GameServer.h"
+#include "Game/Net/GameClient.h"
+
+using namespace NF;
+using namespace NF::Game;
+using Catch::Approx;
+
+// ============================================================================
+// NetMessage — protocol layer
+// ============================================================================
+
+TEST_CASE("NetMessage: header size is 8 bytes", "[Multiplayer]") {
+    REQUIRE(sizeof(NetMessageHeader) == 8);
+}
+
+TEST_CASE("NetMessage: Seal produces correct header + payload", "[Multiplayer]") {
+    NetMessage msg(NetMessageType::ClientHello);
+    msg.WriteString("TestPlayer");
+    msg.Seal();
+
+    REQUIRE(msg.GetType() == NetMessageType::ClientHello);
+    REQUIRE(msg.GetPayloadSize() > 0);
+    REQUIRE(msg.GetData().size() == sizeof(NetMessageHeader) + msg.GetPayloadSize());
+}
+
+TEST_CASE("NetMessage: round-trip from bytes", "[Multiplayer]") {
+    // Build a message.
+    auto original = MakeServerWelcome(42);
+
+    // Reconstruct from raw bytes.
+    NetMessage restored(original.GetData().data(), original.GetData().size());
+
+    REQUIRE(restored.GetType() == NetMessageType::ServerWelcome);
+    REQUIRE(restored.GetPayloadSize() == sizeof(uint32_t));
+
+    auto ar = restored.BeginRead();
+    uint32_t clientId = 0;
+    ar.Serialize(clientId);
+    REQUIRE(clientId == 42);
+}
+
+TEST_CASE("NetMessage: ClientHello carries player name", "[Multiplayer]") {
+    auto msg = MakeClientHello("Nova");
+    NetMessage restored(msg.GetData().data(), msg.GetData().size());
+
+    auto ar = restored.BeginRead();
+    uint32_t len = 0;
+    ar.Serialize(len);
+    REQUIRE(len == 4);
+}
+
+TEST_CASE("NetMessage: ServerPing round-trip", "[Multiplayer]") {
+    auto ping = MakeServerPing(99);
+    NetMessage restored(ping.GetData().data(), ping.GetData().size());
+    REQUIRE(restored.GetType() == NetMessageType::ServerPing);
+
+    auto ar = restored.BeginRead();
+    uint32_t seq = 0;
+    ar.Serialize(seq);
+    REQUIRE(seq == 99);
+}
+
+TEST_CASE("NetMessage: empty payload", "[Multiplayer]") {
+    NetMessage msg(NetMessageType::ClientDisconnect);
+    msg.Seal();
+
+    REQUIRE(msg.GetPayloadSize() == 0);
+    REQUIRE(msg.GetData().size() == sizeof(NetMessageHeader));
+}
+
+// ============================================================================
+// NetChannel — framing layer
+// ============================================================================
+
+TEST_CASE("NetChannel: queue and flush without socket does not crash", "[Multiplayer]") {
+    NetChannel channel;
+    auto msg = MakeServerPing(1);
+    channel.QueueSend(msg);
+
+    // No socket attached — flush should return -1.
+    REQUIRE(channel.Flush() == -1);
+}
+
+TEST_CASE("NetChannel: attached to connected socket reports connected", "[Multiplayer]") {
+    Socket sock;
+    sock.Connect("localhost", 1234); // stub always succeeds
+
+    NetChannel channel;
+    channel.Attach(&sock);
+
+    REQUIRE(channel.IsConnected());
+}
+
+TEST_CASE("NetChannel: BytesSent starts at zero", "[Multiplayer]") {
+    NetChannel channel;
+    REQUIRE(channel.BytesSent() == 0);
+    REQUIRE(channel.BytesReceived() == 0);
+}
+
+TEST_CASE("NetChannel: ReceivedCount starts at zero", "[Multiplayer]") {
+    NetChannel channel;
+    REQUIRE(channel.ReceivedCount() == 0);
+}
+
+TEST_CASE("NetChannel: PopReceived returns false when empty", "[Multiplayer]") {
+    NetChannel channel;
+    NetMessage msg;
+    REQUIRE_FALSE(channel.PopReceived(msg));
+}
+
+// ============================================================================
+// NetReplicator — snapshot building and serialisation
+// ============================================================================
+
+TEST_CASE("NetReplicator: BuildSnapshot increments sequence", "[Multiplayer]") {
+    NetReplicator rep;
+
+    std::vector<NetPlayerState> players;
+    std::vector<NetVoxelEdit> edits;
+
+    auto snap1 = rep.BuildSnapshot(1, players, edits);
+    auto snap2 = rep.BuildSnapshot(2, players, edits);
+
+    REQUIRE(snap1.SnapshotSeq == 0);
+    REQUIRE(snap2.SnapshotSeq == 1);
+}
+
+TEST_CASE("NetReplicator: BuildSnapshot consumes pending edits", "[Multiplayer]") {
+    NetReplicator rep;
+
+    rep.RecordVoxelEdit(10, 5, 3, 1);
+    rep.RecordVoxelEdit(11, 5, 3, 2);
+    REQUIRE(rep.GetPendingEdits().size() == 2);
+
+    std::vector<NetPlayerState> players;
+    auto& pendingRef = const_cast<std::vector<NetVoxelEdit>&>(rep.GetPendingEdits());
+    auto snap = rep.BuildSnapshot(1, players, pendingRef);
+
+    REQUIRE(snap.VoxelEdits.size() == 2);
+    REQUIRE(rep.GetPendingEdits().empty());
+}
+
+TEST_CASE("NetReplicator: ApplySnapshot rejects stale", "[Multiplayer]") {
+    NetReplicator rep;
+
+    NetWorldSnapshot snap1;
+    snap1.SnapshotSeq = 5;
+    REQUIRE(rep.ApplySnapshot(snap1));
+
+    NetWorldSnapshot snap2;
+    snap2.SnapshotSeq = 3; // stale
+    REQUIRE_FALSE(rep.ApplySnapshot(snap2));
+}
+
+TEST_CASE("NetReplicator: serialize/deserialize snapshot round-trip", "[Multiplayer]") {
+    NetWorldSnapshot snapshot;
+    snapshot.Tick        = 42;
+    snapshot.SnapshotSeq = 7;
+
+    // Add a player.
+    NetPlayerState player;
+    player.ClientId   = 1;
+    player.Position   = {10.f, 20.f, 30.f};
+    player.Yaw        = 1.5f;
+    player.Pitch      = -0.3f;
+    player.Health     = 80.f;
+    player.Energy     = 60.f;
+    player.Grounded   = true;
+    player.ToolSlot   = 2;
+    snapshot.Players.push_back(player);
+
+    // Add a voxel edit.
+    NetVoxelEdit edit;
+    edit.WorldX   = 5;
+    edit.WorldY   = 10;
+    edit.WorldZ   = 15;
+    edit.NewType  = 3;
+    edit.Sequence = 1;
+    snapshot.VoxelEdits.push_back(edit);
+
+    // Serialize.
+    auto bytes = NetReplicator::SerializeSnapshot(snapshot);
+    REQUIRE(!bytes.empty());
+
+    // Deserialize.
+    auto restored = NetReplicator::DeserializeSnapshot(bytes.data(), bytes.size());
+
+    REQUIRE(restored.Tick == 42);
+    REQUIRE(restored.SnapshotSeq == 7);
+    REQUIRE(restored.Players.size() == 1);
+    REQUIRE(restored.Players[0].ClientId == 1);
+    REQUIRE(restored.Players[0].Position.X == Approx(10.f));
+    REQUIRE(restored.Players[0].Position.Y == Approx(20.f));
+    REQUIRE(restored.Players[0].Position.Z == Approx(30.f));
+    REQUIRE(restored.Players[0].Yaw == Approx(1.5f));
+    REQUIRE(restored.Players[0].Pitch == Approx(-0.3f));
+    REQUIRE(restored.Players[0].Health == Approx(80.f));
+    REQUIRE(restored.Players[0].Energy == Approx(60.f));
+    REQUIRE(restored.Players[0].Grounded == true);
+    REQUIRE(restored.Players[0].ToolSlot == 2);
+
+    REQUIRE(restored.VoxelEdits.size() == 1);
+    REQUIRE(restored.VoxelEdits[0].WorldX == 5);
+    REQUIRE(restored.VoxelEdits[0].WorldY == 10);
+    REQUIRE(restored.VoxelEdits[0].WorldZ == 15);
+    REQUIRE(restored.VoxelEdits[0].NewType == 3);
+    REQUIRE(restored.VoxelEdits[0].Sequence == 1);
+}
+
+TEST_CASE("NetReplicator: empty snapshot serialization", "[Multiplayer]") {
+    NetWorldSnapshot snapshot;
+    snapshot.Tick = 0;
+    snapshot.SnapshotSeq = 0;
+
+    auto bytes = NetReplicator::SerializeSnapshot(snapshot);
+    auto restored = NetReplicator::DeserializeSnapshot(bytes.data(), bytes.size());
+
+    REQUIRE(restored.Tick == 0);
+    REQUIRE(restored.Players.empty());
+    REQUIRE(restored.VoxelEdits.empty());
+}
+
+TEST_CASE("NetReplicator: RecordVoxelEdit assigns sequences", "[Multiplayer]") {
+    NetReplicator rep;
+    rep.RecordVoxelEdit(1, 2, 3, 4);
+    rep.RecordVoxelEdit(5, 6, 7, 8);
+
+    const auto& edits = rep.GetPendingEdits();
+    REQUIRE(edits.size() == 2);
+    REQUIRE(edits[0].Sequence == 0);
+    REQUIRE(edits[1].Sequence == 1);
+}
+
+// ============================================================================
+// GameServer — authoritative server
+// ============================================================================
+
+TEST_CASE("GameServer: Init succeeds with valid world", "[Multiplayer]") {
+    GameWorld world;
+    world.Initialize("Content");
+
+    GameServer server;
+    REQUIRE(server.Init(&world, 0));
+    REQUIRE(server.IsRunning());
+    REQUIRE(server.ClientCount() == 0);
+
+    server.Shutdown();
+    REQUIRE_FALSE(server.IsRunning());
+}
+
+TEST_CASE("GameServer: Init fails with null world", "[Multiplayer]") {
+    GameServer server;
+    REQUIRE_FALSE(server.Init(nullptr, 0));
+}
+
+TEST_CASE("GameServer: AddLocalClient assigns incrementing ids", "[Multiplayer]") {
+    GameWorld world;
+    world.Initialize("Content");
+
+    GameServer server;
+    server.Init(&world, 0);
+
+    uint32_t id1 = server.AddLocalClient("Player1");
+    uint32_t id2 = server.AddLocalClient("Player2");
+
+    REQUIRE(id1 == 1);
+    REQUIRE(id2 == 2);
+    REQUIRE(server.ClientCount() == 2);
+
+    server.Shutdown();
+}
+
+TEST_CASE("GameServer: Tick advances tick counter", "[Multiplayer]") {
+    GameWorld world;
+    world.Initialize("Content");
+
+    GameServer server;
+    server.Init(&world, 0);
+    server.AddLocalClient("Player1");
+
+    REQUIRE(server.GetTick() == 0);
+
+    server.Tick(1.f / 60.f);
+    REQUIRE(server.GetTick() == 1);
+
+    server.Tick(1.f / 60.f);
+    REQUIRE(server.GetTick() == 2);
+
+    server.Shutdown();
+}
+
+TEST_CASE("GameServer: GetClientState returns valid state after tick", "[Multiplayer]") {
+    GameWorld world;
+    world.Initialize("Content");
+
+    GameServer server;
+    server.Init(&world, 0);
+    uint32_t id = server.AddLocalClient("Player1");
+
+    server.Tick(1.f / 60.f);
+
+    const auto* state = server.GetClientState(id);
+    REQUIRE(state != nullptr);
+    REQUIRE(state->ClientId == id);
+
+    server.Shutdown();
+}
+
+TEST_CASE("GameServer: SubmitLocalInput moves player", "[Multiplayer]") {
+    GameWorld world;
+    world.Initialize("Content");
+
+    GameServer server;
+    server.Init(&world, 0);
+    uint32_t id = server.AddLocalClient("Player1");
+
+    // Get initial position.
+    server.Tick(1.f / 60.f);
+    const auto* state0 = server.GetClientState(id);
+    float initialZ = state0->Position.Z;
+
+    // Submit forward input for several frames.
+    for (int i = 0; i < 30; ++i) {
+        NetClientInput input;
+        input.ClientId = id;
+        input.Forward  = 1.f;
+        server.SubmitLocalInput(id, input);
+        server.Tick(1.f / 60.f);
+    }
+
+    const auto* state1 = server.GetClientState(id);
+    // Player should have moved forward (Z axis at yaw=0).
+    REQUIRE(state1->Position.Z != Approx(initialZ).margin(0.1f));
+
+    server.Shutdown();
+}
+
+TEST_CASE("GameServer: snapshot contains all players", "[Multiplayer]") {
+    GameWorld world;
+    world.Initialize("Content");
+
+    GameServer server;
+    server.Init(&world, 0);
+    server.AddLocalClient("P1");
+    server.AddLocalClient("P2");
+
+    server.Tick(1.f / 60.f);
+
+    const auto& snap = server.GetLastSnapshot();
+    REQUIRE(snap.Players.size() == 2);
+    REQUIRE(snap.Tick == 1);
+
+    server.Shutdown();
+}
+
+// ============================================================================
+// GameClient — client lifecycle
+// ============================================================================
+
+TEST_CASE("GameClient: initial state is Disconnected", "[Multiplayer]") {
+    GameClient client;
+    REQUIRE(client.GetState() == GameClientState::Disconnected);
+    REQUIRE_FALSE(client.IsConnected());
+    REQUIRE(client.GetClientId() == 0);
+}
+
+TEST_CASE("GameClient: Connect with stub socket succeeds", "[Multiplayer]") {
+    GameClient client;
+    REQUIRE(client.Connect("localhost", 7777, "TestPlayer"));
+    REQUIRE(client.IsConnected());
+
+    client.Disconnect();
+    REQUIRE_FALSE(client.IsConnected());
+}
+
+TEST_CASE("GameClient: double Connect returns false", "[Multiplayer]") {
+    GameClient client;
+    client.Connect("localhost", 7777, "Player1");
+    REQUIRE_FALSE(client.Connect("localhost", 7778, "Player2"));
+
+    client.Disconnect();
+}
+
+TEST_CASE("GameClient: Update does not crash when connected", "[Multiplayer]") {
+    GameClient client;
+    client.Connect("localhost", 7777, "TestPlayer");
+
+    // Update several frames — should not crash (stub socket returns no data).
+    for (int i = 0; i < 10; ++i)
+        client.Update(1.f / 60.f);
+
+    client.Disconnect();
+}
+
+TEST_CASE("GameClient: SubmitInput does not crash", "[Multiplayer]") {
+    GameClient client;
+    client.Connect("localhost", 7777, "TestPlayer");
+
+    NetClientInput input;
+    input.Forward = 1.f;
+    input.Jump    = true;
+    client.SubmitInput(input);
+
+    client.Update(1.f / 60.f);
+    client.Disconnect();
+}
+
+TEST_CASE("GameClient: GetLocalPlayerState returns nullptr before snapshot", "[Multiplayer]") {
+    GameClient client;
+    REQUIRE(client.GetLocalPlayerState() == nullptr);
+}

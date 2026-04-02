@@ -32,6 +32,11 @@ add_library(NFGame STATIC
     # Movement (Phase 5)
     Movement/PlayerMovement.cpp
 
+    # Multiplayer (Phase 6)
+    Net/NetReplicator.cpp
+    Net/GameServer.cpp
+    Net/GameClient.cpp
+
     # Gameplay stubs
     Gameplay/Combat/CombatSystem.cpp
     Gameplay/Economy/TradeMarket.cpp
@@ -57,6 +62,7 @@ target_link_libraries(NFGame PUBLIC
     NF::Core
     NF::Engine
     NF::Renderer
+    NF::Networking
 )
 
 message(STATUS "  NF::Game configured")

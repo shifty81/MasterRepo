@@ -52,3 +52,13 @@
 - [x] wire mouse look (RMB) and WASD input into GameClientApp
 - [x] add HUD position/grounded display
 - [x] add Phase 5 unit tests (21 tests: IsSolidAt, raycast, movement, collision)
+
+## Phase 6 — Multiplayer Foundation
+- [x] implement NetMessage protocol (typed packets, header, serialize/deserialize)
+- [x] implement NetChannel (framed reliable message delivery over Socket)
+- [x] implement NetReplicator (snapshot build, serialize/deserialize, apply)
+- [x] implement GameServer (authoritative host, accepts local clients, ticks world)
+- [x] implement GameClient (connect, send input, receive snapshots)
+- [x] define NetPlayerState, NetVoxelEdit, NetWorldSnapshot, NetClientInput structs
+- [x] wire server-side authoritative PlayerMovement per client
+- [x] add Phase 6 unit tests (30 tests: protocol, channel, replicator, server, client)
