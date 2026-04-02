@@ -4,6 +4,7 @@ if(NF_BUILD_EDITOR)
     target_include_directories(NovaForgeEditor PRIVATE ${CMAKE_SOURCE_DIR}/Source)
     target_link_libraries(NovaForgeEditor PRIVATE
         NF::Editor
+        NF::Game
         NF::Engine
         NF::Renderer
         NF::Physics

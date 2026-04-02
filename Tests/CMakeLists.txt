@@ -21,6 +21,7 @@ add_executable(NFTests
     Physics/PhysicsTests.cpp
     Animation/AnimationTests.cpp
     Bootstrap/BootstrapSmokeTests.cpp
+    DevWorld/DevWorldTests.cpp
 )
 
 target_include_directories(NFTests PRIVATE ${CMAKE_SOURCE_DIR}/Source)

@@ -11,8 +11,11 @@ class RenderDevice {
 public:
     /// @brief Initialise the device for the given graphics API.
     /// @param api The graphics API to use.
+    /// @param nativeWindowHandle Optional platform window handle (HWND on
+    ///        Windows).  Required when @p api is OpenGL so that a rendering
+    ///        context can be created and bound to the window.
     /// @return True on success.
-    bool Init(GraphicsAPI api);
+    bool Init(GraphicsAPI api, void* nativeWindowHandle = nullptr);
 
     /// @brief Release all device resources.
     void Shutdown();
@@ -36,6 +39,9 @@ public:
 private:
     GraphicsAPI m_API{GraphicsAPI::Null};
     bool        m_Initialised{false};
+    void*       m_NativeWindowHandle{nullptr}; ///< HWND on Windows
+    void*       m_DeviceContext{nullptr};       ///< HDC on Windows
+    void*       m_RenderContext{nullptr};       ///< HGLRC on Windows
 };
 
 } // namespace NF

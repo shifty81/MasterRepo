@@ -9,6 +9,9 @@ add_library(NFGame STATIC
 
     # World
     World/GameWorld.cpp
+    World/DevWorldConfig.cpp
+    World/WorldSaveLoad.cpp
+    World/WorldDebugOverlay.cpp
 
     # Gameplay stubs
     Gameplay/Combat/CombatSystem.cpp

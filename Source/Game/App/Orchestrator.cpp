@@ -1,4 +1,5 @@
 #include "Game/App/Orchestrator.h"
+#include "Game/World/DevWorldConfig.h"
 #include "Core/Logging/Log.h"
 
 namespace NF::Game {
@@ -7,7 +8,8 @@ bool Orchestrator::Init(RenderDevice* renderDevice)
 {
     m_RenderDevice = renderDevice;
 
-    m_Level.Load("game.level");
+    // Load the dev world (Phase 1: wired runtime load path)
+    m_Level.Load("DevWorld");
 
     m_Initialized = true;
     Logger::Log(LogLevel::Info, "Game", "Orchestrator::Init complete");

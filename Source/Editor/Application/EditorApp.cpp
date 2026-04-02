@@ -83,13 +83,28 @@ bool EditorApp::Init() {
 
     Logger::Log(LogLevel::Info, "Editor", "[3/6] EditorApp — initialising render device");
     m_RenderDevice = std::make_unique<RenderDevice>();
-    if (!m_RenderDevice->Init(GraphicsAPI::Null)) {
+
+    // Use OpenGL when available, passing the native window handle so the
+    // device can create a rendering context.  Falls back to Null if OpenGL
+    // was not compiled in.
+#ifdef NF_HAS_OPENGL
+    const GraphicsAPI selectedAPI = GraphicsAPI::OpenGL;
+#else
+    const GraphicsAPI selectedAPI = GraphicsAPI::Null;
+#endif
+    if (!m_RenderDevice->Init(selectedAPI, m_Hwnd)) {
         Logger::Log(LogLevel::Error, "Editor", "RenderDevice init failed");
         return false;
     }
 
-    Logger::Log(LogLevel::Info, "Editor", "[4/6] EditorApp — loading level");
-    m_Level.Load("untitled.level");
+    Logger::Log(LogLevel::Info, "Editor", "[4/6] EditorApp — loading dev world");
+    // Load the dev world via GameWorld (Phase 1: wired editor load path)
+    {
+        const std::string contentRoot =
+            manifest.IsValid() ? manifest.ContentRoot : "Content";
+        m_GameWorld.Initialize(contentRoot);
+    }
+    m_Level.Load(manifest.IsValid() ? manifest.DefaultWorld : "DevWorld");
 
     Logger::Log(LogLevel::Info, "Editor", "[5/6] EditorApp — setting up viewport");
     // Viewport
@@ -205,6 +220,7 @@ void EditorApp::Run() {
 
 void EditorApp::Shutdown() {
     Logger::Log(LogLevel::Info, "Editor", "EditorApp::Shutdown");
+    m_GameWorld.Shutdown();
     m_Level.Unload();
     m_RenderDevice->Shutdown();
 

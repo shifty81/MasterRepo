@@ -1,0 +1,22 @@
+{
+  "world": {
+    "id": "DevWorld",
+    "displayName": "Development Sandbox",
+    "description": "Controlled sandbox world for early testing and iteration.",
+    "seed": 42,
+    "terrainSize": [256, 64, 256],
+    "gravity": -9.81
+  },
+  "spawn": {
+    "position": [128.0, 32.0, 128.0],
+    "rotation": [0.0, 0.0, 0.0, 1.0],
+    "lookDirection": [0.0, 0.0, 1.0]
+  },
+  "camera": {
+    "fov": 75.0,
+    "nearClip": 0.1,
+    "farClip": 1000.0,
+    "moveSpeed": 10.0,
+    "lookSensitivity": 0.3
+  }
+}
