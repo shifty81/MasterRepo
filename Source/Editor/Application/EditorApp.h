@@ -2,6 +2,7 @@
 #include "Renderer/RHI/RenderDevice.h"
 #include "Engine/ECS/World.h"
 #include "Engine/World/Level.h"
+#include "Game/World/GameWorld.h"
 #include "Editor/Panels/DockingSystem.h"
 #include "Editor/Panels/SceneOutliner.h"
 #include "Editor/Panels/Inspector.h"
@@ -33,6 +34,7 @@ public:
 
 private:
     std::unique_ptr<RenderDevice> m_RenderDevice;
+    NF::Game::GameWorld           m_GameWorld;
     Level                         m_Level;
     bool                          m_Running{false};
     void*                         m_Hwnd{nullptr};
