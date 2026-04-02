@@ -1,12 +1,12 @@
 # NovaForge Game — Reset Task List
 
 ## Phase 0 — Bootstrap
-- [ ] add `Config/novaforge.project.json`
-- [ ] verify clean configure/build from fresh checkout
-- [ ] verify editor executable is produced
-- [ ] verify game executable is produced
-- [ ] verify project context resolves correctly
-- [ ] add startup smoke-test checklist
+- [x] add `Config/novaforge.project.json`
+- [x] verify clean configure/build from fresh checkout
+- [x] verify editor executable is produced
+- [x] verify game executable is produced
+- [x] verify project context resolves correctly
+- [x] add startup smoke-test checklist
 
 ## Phase 1 — Dev World Only
 - [ ] define single dev world target

@@ -1,4 +1,5 @@
 #include "Game/App/Bootstrap.h"
+#include "Core/Config/ProjectManifest.h"
 #include "Core/Logging/Log.h"
 #include <memory>
 
@@ -11,6 +12,7 @@ namespace NF::Game {
 struct Bootstrap::Impl {
     std::unique_ptr<ProjectContext> Context;
     std::unique_ptr<Session>        ActiveSession;
+    ProjectManifest                 Manifest;
     bool                            Running = false;
 };
 
@@ -30,7 +32,9 @@ BootstrapResult Bootstrap::Run(const BootstrapConfig& config)
     if (m_Impl->Running)
         return { false, "Bootstrap is already running" };
 
-    // Step 1 — build project context
+    Logger::Log(LogLevel::Info, "Game", "[1/4] Bootstrap — resolving repo root");
+
+    // Step 1 — resolve repo root
     ProjectContextConfig ctxCfg = config.ContextConfig;
     if (ctxCfg.repoRoot.empty())
         ctxCfg.repoRoot = config.RepoRoot;
@@ -38,6 +42,33 @@ BootstrapResult Bootstrap::Run(const BootstrapConfig& config)
     if (ctxCfg.repoRoot.empty())
         return { false, "RepoRoot must not be empty" };
 
+    // Step 2 — load project manifest
+    Logger::Log(LogLevel::Info, "Game", "[2/4] Bootstrap — loading project manifest");
+    {
+        const std::string manifestPath =
+            ctxCfg.repoRoot + "/Config/novaforge.project.json";
+
+        if (m_Impl->Manifest.LoadFromFile(manifestPath))
+        {
+            m_Impl->Manifest.LogSummary();
+
+            // Apply manifest paths into the project context config
+            if (!m_Impl->Manifest.ContentRoot.empty())
+                ctxCfg.contentRoot = m_Impl->Manifest.ContentRoot;
+            if (!m_Impl->Manifest.ProjectVersion.empty())
+                ctxCfg.version = m_Impl->Manifest.ProjectVersion;
+            if (!m_Impl->Manifest.ProjectName.empty())
+                ctxCfg.displayName = m_Impl->Manifest.ProjectName;
+        }
+        else
+        {
+            Logger::Log(LogLevel::Warning, "Game",
+                        "Project manifest not found; using defaults");
+        }
+    }
+
+    // Step 3 — build project context
+    Logger::Log(LogLevel::Info, "Game", "[3/4] Bootstrap — building project context");
     m_Impl->Context = std::make_unique<ProjectContext>(ctxCfg);
 
     if (!m_Impl->Context->IsValid())
@@ -47,7 +78,8 @@ BootstrapResult Bootstrap::Run(const BootstrapConfig& config)
                 "Project context: " + m_Impl->Context->DisplayName()
                 + " v" + m_Impl->Context->Version());
 
-    // Step 2 — create session
+    // Step 4 — create session
+    Logger::Log(LogLevel::Info, "Game", "[4/4] Bootstrap — creating session");
     m_Impl->ActiveSession = std::make_unique<Session>();
     m_Impl->ActiveSession->OnConnected("local");
 
