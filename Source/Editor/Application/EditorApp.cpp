@@ -1,4 +1,5 @@
 #include "Editor/Application/EditorApp.h"
+#include "Core/Config/ProjectManifest.h"
 #include "Core/Logging/Log.h"
 #include <chrono>
 
@@ -22,7 +23,24 @@ static LRESULT CALLBACK EditorWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 #endif
 
 bool EditorApp::Init() {
-    Logger::Log(LogLevel::Info, "Editor", "EditorApp::Init");
+    Logger::Log(LogLevel::Info, "Editor", "[1/6] EditorApp — loading project manifest");
+
+    // Step 1 — load project manifest
+    ProjectManifest manifest;
+    {
+        const std::string manifestPath = "Config/novaforge.project.json";
+        if (manifest.LoadFromFile(manifestPath))
+        {
+            manifest.LogSummary();
+        }
+        else
+        {
+            Logger::Log(LogLevel::Warning, "Editor",
+                        "Project manifest not found; using defaults");
+        }
+    }
+
+    Logger::Log(LogLevel::Info, "Editor", "[2/6] EditorApp — creating platform window");
 
 #ifdef _WIN32
     HINSTANCE hInstance = GetModuleHandleW(nullptr);
@@ -63,23 +81,31 @@ bool EditorApp::Init() {
     m_Hwnd = hwnd;
 #endif
 
+    Logger::Log(LogLevel::Info, "Editor", "[3/6] EditorApp — initialising render device");
     m_RenderDevice = std::make_unique<RenderDevice>();
     if (!m_RenderDevice->Init(GraphicsAPI::Null)) {
         Logger::Log(LogLevel::Error, "Editor", "RenderDevice init failed");
         return false;
     }
+
+    Logger::Log(LogLevel::Info, "Editor", "[4/6] EditorApp — loading level");
     m_Level.Load("untitled.level");
 
+    Logger::Log(LogLevel::Info, "Editor", "[5/6] EditorApp — setting up viewport");
     // Viewport
     m_Viewport.Init(m_RenderDevice.get());
     m_Viewport.Resize(m_ClientWidth, m_ClientHeight);
 
+    Logger::Log(LogLevel::Info, "Editor", "[6/6] EditorApp — wiring panels and layout");
     // Panels
     m_SceneOutliner.SetWorld(&m_Level.GetWorld());
     m_SceneOutliner.SetOnSelectionChanged([this](EntityId id) {
         m_Inspector.SetSelectedEntity(id, &m_Level.GetWorld());
     });
-    m_ContentBrowser.SetRootPath("Content");
+
+    // Use manifest content root if available, else default
+    m_ContentBrowser.SetRootPath(
+        manifest.IsValid() ? manifest.ContentRoot : "Content");
 
     // Register panels with the docking system
     m_DockingSystem.RegisterPanel("SceneOutliner",

@@ -7,6 +7,7 @@ add_library(NFCore STATIC
     Serialization/Archive.cpp
     Platform/Platform.cpp
     Config/ConfigSystem.cpp
+    Config/ProjectManifest.cpp
 )
 
 add_library(NF::Core ALIAS NFCore)
