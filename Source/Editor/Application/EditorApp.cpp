@@ -270,6 +270,9 @@ bool EditorApp::Init() {
     m_Viewport.Init(m_RenderDevice.get());
     m_Viewport.Resize(m_ClientWidth, m_ClientHeight);
 
+    // Set initial OpenGL viewport to match the window client area.
+    m_RenderDevice->Resize(m_ClientWidth, m_ClientHeight);
+
     // Initialise the custom UI renderer
     m_UIRenderer.Init();
     m_UIRenderer.SetViewportSize(static_cast<float>(m_ClientWidth),
@@ -301,6 +304,11 @@ bool EditorApp::Init() {
     // Wire Phase 3 interaction loop
     m_InteractionLoop.Init(&m_GameWorld.GetVoxelEditApi());
     m_HUDPanel.SetInteractionLoop(&m_InteractionLoop);
+
+    // Wire toolbar
+    m_Toolbar.SetUIRenderer(&m_UIRenderer);
+    m_Toolbar.SetInteractionLoop(&m_InteractionLoop);
+    m_Toolbar.SetInputState(&m_Input);
 
     // Panels
     m_SceneOutliner.SetWorld(&m_Level.GetWorld());
@@ -376,8 +384,13 @@ void EditorApp::TickFrame(float dt)
     m_VoxelInspector.Update(dt);
     m_HUDPanel.Update(dt);
     m_InteractionLoop.Tick(dt);
-    m_DockingSystem.Draw(static_cast<float>(m_ClientWidth),
-                         static_cast<float>(m_ClientHeight));
+
+    // Toolbar strip at the top; docking fills the remaining area below.
+    const float toolbarH = m_Toolbar.GetHeight() * m_DpiScale;
+    m_Toolbar.Draw(0.f, 0.f, static_cast<float>(m_ClientWidth), toolbarH);
+    m_DockingSystem.Draw(0.f, toolbarH,
+                         static_cast<float>(m_ClientWidth),
+                         static_cast<float>(m_ClientHeight) - toolbarH);
 
     // Flush all batched UI draw calls to the GPU
     m_UIRenderer.EndFrame();
@@ -417,6 +430,7 @@ void EditorApp::Run() {
                 {
                     m_ClientWidth  = newW;
                     m_ClientHeight = newH;
+                    m_RenderDevice->Resize(m_ClientWidth, m_ClientHeight);
                     m_Viewport.Resize(m_ClientWidth, m_ClientHeight);
                 }
             }

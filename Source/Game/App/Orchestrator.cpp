@@ -8,8 +8,14 @@ bool Orchestrator::Init(RenderDevice* renderDevice)
 {
     m_RenderDevice = renderDevice;
 
-    // Load the dev world (Phase 1: wired runtime load path)
+    // Load the dev world via GameWorld (voxel layer + ECS + dev config).
+    m_GameWorld.Initialize("Content");
+
+    // Load the engine level alongside the game world.
     m_Level.Load("DevWorld");
+
+    // Wire the Phase 3 interaction loop to the voxel edit API.
+    m_InteractionLoop.Init(&m_GameWorld.GetVoxelEditApi());
 
     m_Initialized = true;
     Logger::Log(LogLevel::Info, "Game", "Orchestrator::Init complete");
@@ -21,6 +27,8 @@ void Orchestrator::Tick(float dt)
     if (!m_Initialized) return;
 
     m_Level.Update(dt);
+    m_GameWorld.Tick(dt);
+    m_InteractionLoop.Tick(dt);
 
     if (m_RenderDevice)
     {
@@ -34,6 +42,7 @@ void Orchestrator::Shutdown()
 {
     if (!m_Initialized) return;
 
+    m_GameWorld.Shutdown();
     m_Level.Unload();
     m_RenderDevice = nullptr;
     m_Initialized  = false;

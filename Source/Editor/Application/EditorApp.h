@@ -13,6 +13,7 @@
 #include "Editor/Panels/ConsolePanel.h"
 #include "Editor/Panels/VoxelInspector.h"
 #include "Editor/Panels/HUDPanel.h"
+#include "Editor/Panels/EditorToolbar.h"
 #include "Editor/Viewport/EditorViewport.h"
 #include <cstdint>
 #include <memory>
@@ -70,6 +71,7 @@ private:
     EditorViewport m_Viewport;
     VoxelInspector m_VoxelInspector;
     HUDPanel       m_HUDPanel;
+    EditorToolbar  m_Toolbar;
 };
 
 } // namespace NF::Editor

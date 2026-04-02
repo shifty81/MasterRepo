@@ -139,6 +139,16 @@ void RenderDevice::EndFrame() {
 #endif
 }
 
+void RenderDevice::Resize(int w, int h) noexcept {
+#ifdef NF_HAS_OPENGL
+    if (m_API == GraphicsAPI::OpenGL && w > 0 && h > 0) {
+        glViewport(0, 0, static_cast<GLsizei>(w), static_cast<GLsizei>(h));
+    }
+#else
+    (void)w; (void)h;
+#endif
+}
+
 void RenderDevice::Clear(float r, float g, float b, float a) {
 #ifdef NF_HAS_OPENGL
     if (m_API == GraphicsAPI::OpenGL) {

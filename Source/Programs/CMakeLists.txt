@@ -20,8 +20,14 @@ endif()
 
 # NovaForge Game executable
 if(NF_BUILD_GAME)
-    add_executable(NovaForgeGame NovaForgeGame/main.cpp)
-    target_include_directories(NovaForgeGame PRIVATE ${CMAKE_SOURCE_DIR}/Source)
+    add_executable(NovaForgeGame
+        NovaForgeGame/main.cpp
+        NovaForgeGame/GameClientApp.cpp
+    )
+    target_include_directories(NovaForgeGame PRIVATE
+        ${CMAKE_SOURCE_DIR}/Source
+        ${CMAKE_SOURCE_DIR}/Source/Programs/NovaForgeGame
+    )
     target_link_libraries(NovaForgeGame PRIVATE
         NF::Game
         NF::Engine

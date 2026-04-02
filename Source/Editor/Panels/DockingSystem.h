@@ -69,7 +69,7 @@ public:
     /// @brief Traverse the tree and invoke each panel's draw callback.
     /// @param totalWidth  Available width in pixels.
     /// @param totalHeight Available height in pixels.
-    void Draw(float totalWidth, float totalHeight);
+    void Draw(float x, float y, float totalWidth, float totalHeight);
 
 private:
     struct PanelEntry {
