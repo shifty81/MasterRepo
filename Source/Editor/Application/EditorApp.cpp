@@ -284,12 +284,17 @@ bool EditorApp::Init() {
     m_ContentBrowser.SetUIRenderer(&m_UIRenderer);
     m_ConsolePanel.SetUIRenderer(&m_UIRenderer);
     m_Viewport.SetUIRenderer(&m_UIRenderer);
+    m_VoxelInspector.SetUIRenderer(&m_UIRenderer);
 
     // Wire input state to interactive panels
     m_SceneOutliner.SetInputState(&m_Input);
     m_ConsolePanel.SetInputState(&m_Input);
     m_ContentBrowser.SetInputState(&m_Input);
     m_Viewport.SetInputState(&m_Input);
+    m_VoxelInspector.SetInputState(&m_Input);
+
+    // Wire voxel layer
+    m_VoxelInspector.SetChunkMap(&m_GameWorld.GetChunkMap());
 
     // Panels
     m_SceneOutliner.SetWorld(&m_Level.GetWorld());
@@ -322,15 +327,18 @@ bool EditorApp::Init() {
         [this](float x, float y, float w, float h) {
             m_ConsolePanel.Draw(x, y, w, h);
         });
+    m_DockingSystem.RegisterPanel("VoxelInspector",
+        [this](float x, float y, float w, float h) {
+            m_VoxelInspector.Draw(x, y, w, h);
+        });
 
     // Default layout:
-    //   SceneOutliner (20%) | Viewport (56%) | Inspector (24%)
-    //                          Viewport splits vertically: Viewport (75%) / Console (25%)
-    //                                           Inspector splits vertically: Inspector (60%) / ContentBrowser (40%)
+    //   SceneOutliner (20%) | Viewport+Console (56%) | Inspector+ContentBrowser+VoxelInspector (24%)
     m_DockingSystem.SetRootSplit("SceneOutliner", "Viewport", 0.20f);
-    m_DockingSystem.SplitPanel("Viewport",  "Inspector",     SplitAxis::Horizontal, 0.70f);
-    m_DockingSystem.SplitPanel("Inspector", "ContentBrowser", SplitAxis::Vertical,  0.60f);
-    m_DockingSystem.SplitPanel("Viewport",  "Console",        SplitAxis::Vertical,  0.75f);
+    m_DockingSystem.SplitPanel("Viewport",  "Inspector",      SplitAxis::Horizontal, 0.70f);
+    m_DockingSystem.SplitPanel("Inspector", "ContentBrowser",  SplitAxis::Vertical,  0.40f);
+    m_DockingSystem.SplitPanel("ContentBrowser", "VoxelInspector", SplitAxis::Vertical, 0.50f);
+    m_DockingSystem.SplitPanel("Viewport",  "Console",         SplitAxis::Vertical,  0.75f);
 
     m_Running = true;
     Logger::Log(LogLevel::Info, "Editor", "EditorApp::Init complete");
@@ -354,6 +362,7 @@ void EditorApp::TickFrame(float dt)
     m_ContentBrowser.Update(dt);
     m_ConsolePanel.Update(dt);
     m_Viewport.Update(dt);
+    m_VoxelInspector.Update(dt);
     m_DockingSystem.Draw(static_cast<float>(m_ClientWidth),
                          static_cast<float>(m_ClientHeight));
 

@@ -13,6 +13,12 @@ add_library(NFGame STATIC
     World/WorldSaveLoad.cpp
     World/WorldDebugOverlay.cpp
 
+    # Voxel Runtime (Phase 2)
+    Voxel/ChunkMap.cpp
+    Voxel/VoxelEditApi.cpp
+    Voxel/VoxelSerializer.cpp
+    Voxel/VoxelDebugOverlay.cpp
+
     # Gameplay stubs
     Gameplay/Combat/CombatSystem.cpp
     Gameplay/Economy/TradeMarket.cpp

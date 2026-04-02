@@ -10,6 +10,7 @@
 #include "Editor/Panels/Inspector.h"
 #include "Editor/Panels/ContentBrowser.h"
 #include "Editor/Panels/ConsolePanel.h"
+#include "Editor/Panels/VoxelInspector.h"
 #include "Editor/Viewport/EditorViewport.h"
 #include <cstdint>
 #include <memory>
@@ -51,8 +52,8 @@ private:
     int                           m_ClientWidth{1280};
     int                           m_ClientHeight{720};
 
-    EditorInputState              m_Input;     ///< Per-frame OS input state.
-    float                         m_DpiScale{1.f}; ///< Monitor DPI / 96.
+    EditorInputState              m_Input;          ///< Per-frame OS input state.
+    float                         m_DpiScale{1.f};  ///< Monitor DPI / 96.
 
     /// @brief Advance all panels and issue one frame of rendering.
     /// @param dt Elapsed seconds since the previous frame.
@@ -64,6 +65,7 @@ private:
     ContentBrowser m_ContentBrowser;
     ConsolePanel   m_ConsolePanel;
     EditorViewport m_Viewport;
+    VoxelInspector m_VoxelInspector;
 };
 
 } // namespace NF::Editor

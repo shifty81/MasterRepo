@@ -93,4 +93,20 @@ void GameWorld::LogDebugOverlay()
     m_DebugOverlay.LogToConsole();
 }
 
+void GameWorld::LogVoxelDebug()
+{
+    VoxelDebugOverlay::ValidateMap(m_ChunkMap);
+    VoxelDebugOverlay::LogStats(m_ChunkMap);
+}
+
+bool GameWorld::SaveChunks(const std::string& chunkPath)
+{
+    return VoxelSerializer::SaveMap(m_ChunkMap, chunkPath);
+}
+
+bool GameWorld::LoadChunks(const std::string& chunkPath)
+{
+    return VoxelSerializer::LoadMap(m_ChunkMap, chunkPath);
+}
+
 } // namespace NF::Game
