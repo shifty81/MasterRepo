@@ -5,6 +5,7 @@
 #include "Game/World/WorldDebugOverlay.h"
 #include "Game/World/GameWorld.h"
 #include <cstdint>
+#include <filesystem>
 #include <vector>
 
 using namespace NF;
@@ -24,6 +25,11 @@ std::string FindContentRoot()
     if (probe.LoadFromFile("../../Content/Definitions/DevWorld.json"))
         return "../../Content";
     return {};
+}
+
+/// @brief Return a cross-platform path in the temp directory.
+std::string TempPath(const std::string& filename) {
+    return (std::filesystem::temp_directory_path() / filename).string();
 }
 
 } // anonymous namespace
@@ -119,7 +125,7 @@ TEST_CASE("WorldSaveLoad round-trips with zero entities", "[WorldSave]") {
 }
 
 TEST_CASE("WorldSaveLoad file round-trip", "[WorldSave]") {
-    const std::string path = "/tmp/nf_test_save.nfsv";
+    const std::string path = TempPath("nf_test_save.nfsv");
     const uint32_t seed = 7;
     const std::vector<uint32_t> ids = {10, 20, 30};
 
@@ -215,7 +221,7 @@ TEST_CASE("GameWorld spawn point matches config", "[GameWorld]") {
 TEST_CASE("GameWorld save and load round-trip", "[GameWorld]") {
     auto contentRoot = FindContentRoot();
     REQUIRE(!contentRoot.empty());
-    const std::string savePath = "/tmp/nf_gameworld_save.nfsv";
+    const std::string savePath = TempPath("nf_gameworld_save.nfsv");
     GameWorld gw;
     gw.Initialize(contentRoot);
 
@@ -249,5 +255,5 @@ TEST_CASE("GameWorld tick does not crash", "[GameWorld]") {
 
 TEST_CASE("GameWorld cannot save when not initialized", "[GameWorld]") {
     GameWorld gw;
-    REQUIRE_FALSE(gw.SaveWorld("/tmp/should_not_exist.nfsv"));
+    REQUIRE_FALSE(gw.SaveWorld(TempPath("should_not_exist.nfsv")));
 }
