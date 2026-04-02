@@ -28,6 +28,7 @@ add_executable(NFTests
     Movement/MovementTests.cpp
     Multiplayer/MultiplayerTests.cpp
     ChunkStreaming/ChunkStreamingTests.cpp
+    Audio/AudioTests.cpp
 )
 
 target_include_directories(NFTests PRIVATE ${CMAKE_SOURCE_DIR}/Source)
@@ -41,6 +42,7 @@ target_link_libraries(NFTests PRIVATE
     NF::Physics
     NF::Animation
     NF::Networking
+    NF::Audio
     Catch2::Catch2WithMain
 )
 

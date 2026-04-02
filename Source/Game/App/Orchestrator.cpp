@@ -93,6 +93,17 @@ bool Orchestrator::Init(RenderDevice* renderDevice, const NetParams& params)
     }
     }
 
+    // ---- Audio (Phase 9) ----
+
+    m_AudioDevice.Init(NF::AudioBackend::Null);
+    m_AudioMixer.SetSoundBank(&m_SoundBank);
+    m_SpatialAudio.SetMixer(&m_AudioMixer);
+
+    // Generate placeholder sounds.
+    m_SoundBank.GenerateTone("sfx_mine",    800.f, 0.15f, 0.4f);
+    m_SoundBank.GenerateTone("sfx_place",   400.f, 0.2f,  0.3f);
+    m_SoundBank.GenerateNoise("sfx_ambient", 2.0f, 0.05f);
+
     m_Initialized = true;
     NF::Logger::Log(NF::LogLevel::Info, "Game",
                     "Orchestrator::Init complete (NetMode=" +
@@ -137,6 +148,9 @@ void Orchestrator::Tick(float dt)
                     static_cast<int32_t>(pos.Z));
                 m_Streamer->Tick(viewerChunk);
             }
+
+            // Phase 9: update spatial audio listener from player position.
+            m_SpatialAudio.SetListenerPosition(m_PlayerMovement.GetPosition());
         }
         else
         {
@@ -152,6 +166,9 @@ void Orchestrator::Tick(float dt)
         break;
     }
     }
+
+    // Phase 9: advance audio mixer.
+    m_AudioMixer.Update(dt);
 
     // Render.
     if (m_RenderDevice)
@@ -173,6 +190,11 @@ void Orchestrator::Shutdown()
     if (m_Client) { m_Client->Disconnect(); m_Client.reset(); }
     if (m_Server) { m_Server->Shutdown();   m_Server.reset(); }
     if (m_Streamer) { m_Streamer->Shutdown(); m_Streamer.reset(); }
+
+    // Phase 9: shutdown audio.
+    m_AudioMixer.StopAll();
+    m_SoundBank.Clear();
+    m_AudioDevice.Shutdown();
 
     m_GameWorld.Shutdown();
     m_Level.Unload();

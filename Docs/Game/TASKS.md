@@ -81,13 +81,13 @@
 - [x] add Phase 8 unit tests (22 tests)
 
 ## Phase 9 — Audio Foundation
-- [ ] implement platform audio backend (WASAPI / stub)
-- [ ] wire real AudioDevice init with hardware
-- [ ] add sound asset loading (WAV/OGG)
-- [ ] implement AudioMixer channels with volume/pan
-- [ ] implement SpatialAudio 3D positioning + attenuation
-- [ ] add placeholder sounds for mining/interaction/ambient
-- [ ] add Phase 9 unit tests
+- [x] implement platform audio backend (WASAPI / stub)
+- [x] wire real AudioDevice init with hardware
+- [x] add sound asset loading (WAV/OGG)
+- [x] implement AudioMixer channels with volume/pan
+- [x] implement SpatialAudio 3D positioning + attenuation
+- [x] add placeholder sounds for mining/interaction/ambient
+- [x] add Phase 9 unit tests (33 tests)
 
 ## Phase 10 — Advanced Gameplay Systems
 - [ ] implement MiningSystem (full mining progression)

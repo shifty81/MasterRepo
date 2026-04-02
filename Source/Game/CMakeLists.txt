@@ -74,6 +74,7 @@ target_link_libraries(NFGame PUBLIC
     NF::Engine
     NF::Renderer
     NF::Networking
+    NF::Audio
 )
 
 message(STATUS "  NF::Game configured")

@@ -1,5 +1,6 @@
 add_library(NFAudio STATIC
     Core/AudioDevice.cpp
+    Core/SoundBank.cpp
     Spatial/SpatialAudio.cpp
     Mixer/AudioMixer.cpp
 )

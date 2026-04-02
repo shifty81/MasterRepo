@@ -7,6 +7,10 @@
 #include "Game/Net/GameServer.h"
 #include "Game/Net/GameClient.h"
 #include "Game/Voxel/ChunkStreamer.h"
+#include "Audio/Core/AudioDevice.h"
+#include "Audio/Core/SoundBank.h"
+#include "Audio/Mixer/AudioMixer.h"
+#include "Audio/Spatial/SpatialAudio.h"
 #include <memory>
 #include <string>
 
@@ -83,6 +87,22 @@ public:
     /// @brief Returns the chunk streamer (non-null after Init for server modes).
     [[nodiscard]] ChunkStreamer* GetChunkStreamer() noexcept { return m_Streamer.get(); }
 
+    /// @brief Returns the audio device (always available after Init).
+    [[nodiscard]] AudioDevice&       GetAudioDevice()       noexcept { return m_AudioDevice; }
+    [[nodiscard]] const AudioDevice& GetAudioDevice() const noexcept { return m_AudioDevice; }
+
+    /// @brief Returns the sound bank.
+    [[nodiscard]] SoundBank&       GetSoundBank()       noexcept { return m_SoundBank; }
+    [[nodiscard]] const SoundBank& GetSoundBank() const noexcept { return m_SoundBank; }
+
+    /// @brief Returns the audio mixer.
+    [[nodiscard]] AudioMixer&       GetAudioMixer()       noexcept { return m_AudioMixer; }
+    [[nodiscard]] const AudioMixer& GetAudioMixer() const noexcept { return m_AudioMixer; }
+
+    /// @brief Returns the spatial audio manager.
+    [[nodiscard]] SpatialAudio&       GetSpatialAudio()       noexcept { return m_SpatialAudio; }
+    [[nodiscard]] const SpatialAudio& GetSpatialAudio() const noexcept { return m_SpatialAudio; }
+
     /// @brief Returns the GameServer (non-null when Solo/ListenServer/Dedicated).
     [[nodiscard]] GameServer* GetServer() noexcept { return m_Server.get(); }
     /// @brief Returns the GameClient (non-null when ListenServer/Client).
@@ -108,6 +128,12 @@ private:
 
     // Phase 8 chunk streaming
     std::unique_ptr<ChunkStreamer> m_Streamer;
+
+    // Phase 9 audio
+    AudioDevice  m_AudioDevice;
+    SoundBank    m_SoundBank;
+    AudioMixer   m_AudioMixer;
+    SpatialAudio m_SpatialAudio;
 };
 
 } // namespace NF::Game

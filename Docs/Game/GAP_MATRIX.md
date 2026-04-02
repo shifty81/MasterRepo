@@ -83,18 +83,27 @@
 - [x] Custom generator callback support
 - [x] 22 new tests (285 total)
 
+### Phase 9 — Audio Foundation ✅
+- [x] AudioDevice with platform backend enum (Null / WASAPI, with fallback)
+- [x] SoundAsset struct (interleaved PCM float samples, mono/stereo)
+- [x] SoundBank (WAV 16-bit/8-bit PCM + IEEE float loading, procedural tone + noise generation)
+- [x] AudioMixer (channel model: ChannelHandle, volume, pan, looping, priority, kMaxChannels=64)
+- [x] SpatialAudio (inverse-distance attenuation, stereo panning via listener orientation)
+- [x] AudioDevice + SoundBank + AudioMixer + SpatialAudio wired into Orchestrator
+- [x] Placeholder sounds generated at init (sfx_mine, sfx_place, sfx_ambient)
+- [x] SpatialAudio listener position updated from PlayerMovement each tick
+- [x] 33 new tests (318 total)
+
 ## Current Gaps
 
 ### Documentation
 - [ ] ROADMAP.md has no plan beyond Phase 10
 
 ### Stubs / Partial Implementations
-- [ ] Audio module has minimal stubs — no platform audio playback
 - [ ] 22 Gameplay systems are empty 2-line stubs (deferred by design)
 
 ### Missing Features (Deferred)
 - [ ] Low-poly visual wrapper over voxel structure
-- [ ] Platform audio backend (WASAPI / CoreAudio / ALSA)
 - [ ] CPack installer packaging
 - [ ] Editor splash screen
 - [ ] Editor symbol locator (Ctrl+P)
