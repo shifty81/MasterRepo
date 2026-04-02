@@ -16,12 +16,14 @@ namespace NF::Game {
 struct ConnectedClient {
     uint32_t       ClientId{0};
     std::string    PlayerName;
-    NF::Socket     ClientSocket;     ///< Socket for this client.
+    NF::Socket     ClientSocket;     ///< Socket for this client (moved-in for remote).
     NF::NetChannel Channel;          ///< Framed message channel.
     PlayerMovement Movement;         ///< Server-side authoritative movement.
     NetPlayerState LastState;        ///< Last broadcast state.
     NetClientInput LastInput;        ///< Last received input.
     bool           Connected{false};
+    bool           IsLocal{false};   ///< True for in-process (local) clients.
+    bool           Welcomed{false};  ///< True after ServerWelcome has been sent.
 };
 
 /// @brief Headless authoritative game server.
@@ -43,21 +45,12 @@ public:
 
     /// @brief Initialise the server with a game world.
     ///
-    /// The server takes a non-owning reference to the GameWorld; the caller
-    /// must ensure the world outlives the server.
     /// @param world  The authoritative game world.
-    /// @param port   TCP port to listen on (0 = in-process only).
+    /// @param port   TCP port to listen on (0 = in-process only, no listener).
     /// @return True on success.
     bool Init(GameWorld* world, uint16_t port = 0);
 
     /// @brief Process one server tick.
-    ///
-    /// 1. Accept new connections.
-    /// 2. Receive and decode client input.
-    /// 3. Apply input to each player's authoritative movement.
-    /// 4. Tick the world.
-    /// 5. Build and broadcast snapshot.
-    /// @param dt  Delta time in seconds.
     void Tick(float dt);
 
     /// @brief Shut down the server and disconnect all clients.
@@ -66,10 +59,6 @@ public:
     // ---- Client management --------------------------------------------------
 
     /// @brief Register a local (in-process) client.
-    ///
-    /// For single-player with server authority or split-screen.
-    /// @param playerName Display name for the client.
-    /// @return The assigned client id.
     uint32_t AddLocalClient(const std::string& playerName);
 
     /// @brief Apply input for a local client directly (no network).
@@ -83,14 +72,10 @@ public:
 
     // ---- Accessors ----------------------------------------------------------
 
-    /// @brief Number of connected clients (local + remote).
-    [[nodiscard]] size_t ClientCount() const noexcept { return m_Clients.size(); }
-
-    /// @brief Current server tick number.
-    [[nodiscard]] uint32_t GetTick() const noexcept { return m_Tick; }
-
-    /// @brief Returns true after Init() and before Shutdown().
-    [[nodiscard]] bool IsRunning() const noexcept { return m_Running; }
+    [[nodiscard]] size_t   ClientCount() const noexcept { return m_Clients.size(); }
+    [[nodiscard]] uint32_t GetTick()     const noexcept { return m_Tick; }
+    [[nodiscard]] bool     IsRunning()   const noexcept { return m_Running; }
+    [[nodiscard]] uint16_t GetPort()     const noexcept { return m_Port; }
 
 private:
     GameWorld*    m_World{nullptr};
@@ -99,12 +84,24 @@ private:
     uint32_t      m_NextClientId{1};
     bool          m_Running{false};
 
+    NF::Socket    m_ListenSocket;   ///< Server listener (port > 0).
+
     std::unordered_map<uint32_t, std::unique_ptr<ConnectedClient>> m_Clients;
     NetReplicator m_Replicator;
     NetWorldSnapshot m_LastSnapshot;
 
-    /// @brief Gather all player states for snapshot building.
+    // ---- Internal helpers ---------------------------------------------------
+
     [[nodiscard]] std::vector<NetPlayerState> GatherPlayerStates() const;
+
+    /// @brief Accept pending TCP connections and register them as clients.
+    void AcceptNewConnections();
+
+    /// @brief Receive and decode messages from all remote clients.
+    void ReceiveRemoteInput();
+
+    /// @brief Broadcast the current snapshot to all remote clients.
+    void BroadcastSnapshot();
 };
 
 } // namespace NF::Game

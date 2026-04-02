@@ -64,13 +64,13 @@
 - [x] add Phase 6 unit tests (30 tests: protocol, channel, replicator, server, client)
 
 ## Phase 7 — Platform Networking & Orchestrator Integration
-- [ ] implement platform Socket (Win32 Winsock2 / POSIX)
-- [ ] add Orchestrator net-mode enum (Solo, ListenServer, Dedicated, Client)
-- [ ] wire GameServer + GameClient lifecycle into Orchestrator
-- [ ] add local loopback integration test (server + client in-process)
-- [ ] implement listen-server mode (host plays while serving)
-- [ ] implement connection handshake end-to-end over real socket
-- [ ] add Phase 7 unit + integration tests
+- [x] implement platform Socket (Win32 Winsock2 / POSIX)
+- [x] add Orchestrator net-mode enum (Solo, ListenServer, Dedicated, Client)
+- [x] wire GameServer + GameClient lifecycle into Orchestrator
+- [x] add local loopback integration test (server + client in-process)
+- [x] implement listen-server mode (host plays while serving)
+- [x] implement connection handshake end-to-end over real socket
+- [x] add Phase 7 unit + integration tests (18 tests)
 
 ## Phase 8 — Chunk Streaming & LOD
 - [ ] implement ChunkStreamer (load/unload within radius)
