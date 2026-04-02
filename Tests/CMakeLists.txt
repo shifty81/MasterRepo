@@ -27,6 +27,7 @@ add_executable(NFTests
     Interaction/InteractionTests.cpp
     Movement/MovementTests.cpp
     Multiplayer/MultiplayerTests.cpp
+    ChunkStreaming/ChunkStreamingTests.cpp
 )
 
 target_include_directories(NFTests PRIVATE ${CMAKE_SOURCE_DIR}/Source)

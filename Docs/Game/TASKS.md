@@ -73,12 +73,12 @@
 - [x] add Phase 7 unit + integration tests (18 tests)
 
 ## Phase 8 — Chunk Streaming & LOD
-- [ ] implement ChunkStreamer (load/unload within radius)
-- [ ] add background-thread chunk generation from seed
-- [ ] implement distance-based mesh LOD
-- [ ] add memory budget / chunk eviction policy
-- [ ] add save-on-unload for modified chunks
-- [ ] add Phase 8 unit tests
+- [x] implement ChunkStreamer (load/unload within radius)
+- [x] add background-thread chunk generation from seed
+- [x] implement distance-based mesh LOD
+- [x] add memory budget / chunk eviction policy
+- [x] add save-on-unload for modified chunks
+- [x] add Phase 8 unit tests (22 tests)
 
 ## Phase 9 — Audio Foundation
 - [ ] implement platform audio backend (WASAPI / stub)

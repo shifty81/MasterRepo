@@ -23,6 +23,9 @@ add_library(NFGame STATIC
     Voxel/VoxelMesher.cpp
     Voxel/ChunkMeshCache.cpp
 
+    # Chunk Streaming (Phase 8)
+    Voxel/ChunkStreamer.cpp
+
     # Interaction Loop (Phase 3)
     Interaction/RigState.cpp
     Interaction/Inventory.cpp

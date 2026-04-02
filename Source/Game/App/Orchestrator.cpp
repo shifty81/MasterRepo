@@ -1,5 +1,6 @@
 #include "Game/App/Orchestrator.h"
 #include "Game/World/DevWorldConfig.h"
+#include "Game/Voxel/ChunkCoord.h"
 #include "Core/Logging/Log.h"
 
 namespace NF::Game {
@@ -33,6 +34,18 @@ bool Orchestrator::Init(RenderDevice* renderDevice, const NetParams& params)
         m_GameWorld.Initialize("Content");
         m_Level.Load("DevWorld");
         m_InteractionLoop.Init(&m_GameWorld.GetVoxelEditApi());
+
+        // Phase 8: initialise chunk streamer.
+        m_Streamer = std::make_unique<ChunkStreamer>();
+        ChunkStreamConfig streamCfg;
+        streamCfg.LoadRadius   = 4;
+        streamCfg.UnloadRadius = 6;
+        streamCfg.MaxLoadedChunks = 512;
+        streamCfg.MaxLoadsPerTick = 4;
+        streamCfg.MaxUnloadsPerTick = 4;
+        streamCfg.SaveOnUnload = true;
+        m_Streamer->Init(&m_GameWorld.GetChunkMap(), nullptr,
+                         streamCfg, m_GameWorld.GetConfig().Seed());
     }
 
     // ---- Networking ----
@@ -113,6 +126,23 @@ void Orchestrator::Tick(float dt)
         if (m_NetMode != NetMode::Dedicated)
         {
             m_PlayerMovement.Update(dt, m_GameWorld.GetChunkMap());
+
+            // Phase 8: tick chunk streamer with player position.
+            if (m_Streamer)
+            {
+                const auto& pos = m_PlayerMovement.GetPosition();
+                const ChunkCoord viewerChunk = WorldToChunk(
+                    static_cast<int32_t>(pos.X),
+                    static_cast<int32_t>(pos.Y),
+                    static_cast<int32_t>(pos.Z));
+                m_Streamer->Tick(viewerChunk);
+            }
+        }
+        else
+        {
+            // Dedicated server: stream around origin.
+            if (m_Streamer)
+                m_Streamer->Tick({0, 0, 0});
         }
         break;
     }
@@ -142,6 +172,7 @@ void Orchestrator::Shutdown()
 
     if (m_Client) { m_Client->Disconnect(); m_Client.reset(); }
     if (m_Server) { m_Server->Shutdown();   m_Server.reset(); }
+    if (m_Streamer) { m_Streamer->Shutdown(); m_Streamer.reset(); }
 
     m_GameWorld.Shutdown();
     m_Level.Unload();

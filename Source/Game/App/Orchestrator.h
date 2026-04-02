@@ -6,6 +6,7 @@
 #include "Game/Movement/PlayerMovement.h"
 #include "Game/Net/GameServer.h"
 #include "Game/Net/GameClient.h"
+#include "Game/Voxel/ChunkStreamer.h"
 #include <memory>
 #include <string>
 
@@ -79,6 +80,9 @@ public:
     [[nodiscard]] bool IsInitialized() const noexcept { return m_Initialized; }
     [[nodiscard]] NetMode GetNetMode() const noexcept { return m_NetMode; }
 
+    /// @brief Returns the chunk streamer (non-null after Init for server modes).
+    [[nodiscard]] ChunkStreamer* GetChunkStreamer() noexcept { return m_Streamer.get(); }
+
     /// @brief Returns the GameServer (non-null when Solo/ListenServer/Dedicated).
     [[nodiscard]] GameServer* GetServer() noexcept { return m_Server.get(); }
     /// @brief Returns the GameClient (non-null when ListenServer/Client).
@@ -101,6 +105,9 @@ private:
     std::unique_ptr<GameClient>  m_Client;
     uint32_t                     m_LocalClientId{0};
     NetParams                    m_NetParams;
+
+    // Phase 8 chunk streaming
+    std::unique_ptr<ChunkStreamer> m_Streamer;
 };
 
 } // namespace NF::Game

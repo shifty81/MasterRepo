@@ -72,6 +72,17 @@
 - [x] Local loopback integration tests (server + client in-process over TCP)
 - [x] 18 new tests (263 total)
 
+### Phase 8 — Chunk Streaming & LOD ✅
+- [x] ChunkStreamer (load/unload within configurable radius)
+- [x] Background-thread chunk generation (TaskSystem thread pool, seed-based PCG)
+- [x] Distance-based mesh LOD (Full/Simplified/None via ComputeLOD)
+- [x] Memory budget / chunk eviction (MaxLoadedChunks, farthest-first LRU)
+- [x] Save-on-unload for modified chunks (per-chunk .nfck files)
+- [x] ChunkStreamer wired into Orchestrator tick loop (player-position-based)
+- [x] Default terrain generator (deterministic, matches GameWorld pattern)
+- [x] Custom generator callback support
+- [x] 22 new tests (285 total)
+
 ## Current Gaps
 
 ### Documentation
@@ -83,7 +94,6 @@
 
 ### Missing Features (Deferred)
 - [ ] Low-poly visual wrapper over voxel structure
-- [ ] Chunk streaming / LOD
 - [ ] Platform audio backend (WASAPI / CoreAudio / ALSA)
 - [ ] CPack installer packaging
 - [ ] Editor splash screen
