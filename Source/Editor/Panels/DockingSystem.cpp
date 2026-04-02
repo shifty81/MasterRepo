@@ -144,16 +144,19 @@ void DockingSystem::DrawNode(const DockNode& node,
     if (node.isLeaf) {
         // Draw panel chrome via UIRenderer if available
         if (m_Renderer && w > 0.f && h > 0.f) {
+            const float dpi       = m_Renderer->GetDpiScale();
+            const float titleBarH = kPanelTitleBarHeight * dpi;
+
             // Panel background
             m_Renderer->DrawRect({x, y, w, h}, kPanelBgColor);
 
             // Title bar
-            m_Renderer->DrawRect({x, y, w, kPanelTitleBarHeight}, kTitleBarBgColor);
+            m_Renderer->DrawRect({x, y, w, titleBarH}, kTitleBarBgColor);
 
-            // Title text (scale 2 for readability; stb_easy_font is ~7px tall)
+            // Title text — scale 2 at 96 DPI; UIRenderer multiplies by DPI.
             if (!node.panelName.empty()) {
                 m_Renderer->DrawText(node.panelName,
-                                     x + 6.f, y + 4.f,
+                                     x + 6.f * dpi, y + 4.f * dpi,
                                      kTitleTextColor, 2.f);
             }
 
@@ -164,8 +167,10 @@ void DockingSystem::DrawNode(const DockNode& node,
         // Call the panel's content draw callback with the content area
         // (below the title bar).
         if (DrawFn* fn = FindDrawFn(node.panelName)) {
-            float contentY = y + kPanelTitleBarHeight;
-            float contentH = h - kPanelTitleBarHeight;
+            const float dpi       = m_Renderer ? m_Renderer->GetDpiScale() : 1.f;
+            const float titleBarH = kPanelTitleBarHeight * dpi;
+            const float contentY  = y + titleBarH;
+            const float contentH  = h - titleBarH;
             if (contentH > 0.f)
                 (*fn)(x, contentY, w, contentH);
         }

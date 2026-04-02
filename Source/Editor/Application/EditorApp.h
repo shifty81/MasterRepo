@@ -4,12 +4,14 @@
 #include "Engine/ECS/World.h"
 #include "Engine/World/Level.h"
 #include "Game/World/GameWorld.h"
+#include "Editor/Application/EditorInputState.h"
 #include "Editor/Panels/DockingSystem.h"
 #include "Editor/Panels/SceneOutliner.h"
 #include "Editor/Panels/Inspector.h"
 #include "Editor/Panels/ContentBrowser.h"
 #include "Editor/Panels/ConsolePanel.h"
 #include "Editor/Viewport/EditorViewport.h"
+#include <cstdint>
 #include <memory>
 
 namespace NF::Editor {
@@ -33,6 +35,12 @@ public:
     /// @brief Return a pointer to the active ECS world.
     [[nodiscard]] World* GetWorld() noexcept { return &m_Level.GetWorld(); }
 
+#ifdef _WIN32
+    /// @brief Route a Win32 OS event into editor input state.
+    /// Called by the Win32 window procedure on the message-dispatch thread.
+    void DispatchOsEvent(unsigned msg, uintptr_t wParam, intptr_t lParam) noexcept;
+#endif
+
 private:
     std::unique_ptr<RenderDevice> m_RenderDevice;
     UIRenderer                    m_UIRenderer;
@@ -42,6 +50,9 @@ private:
     void*                         m_Hwnd{nullptr};
     int                           m_ClientWidth{1280};
     int                           m_ClientHeight{720};
+
+    EditorInputState              m_Input;     ///< Per-frame OS input state.
+    float                         m_DpiScale{1.f}; ///< Monitor DPI / 96.
 
     /// @brief Advance all panels and issue one frame of rendering.
     /// @param dt Elapsed seconds since the previous frame.

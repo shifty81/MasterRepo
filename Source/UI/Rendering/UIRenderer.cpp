@@ -174,6 +174,9 @@ void UIRenderer::DrawText(std::string_view text, float x, float y,
                            uint32_t color, float scale) {
     if (text.empty()) return;
 
+    // Apply DPI scale so text stays a consistent physical size on all monitors.
+    const float effectiveScale = scale * m_DpiScale;
+
     const float r = static_cast<float>((color >> 24) & 0xFF) / 255.f;
     const float g = static_cast<float>((color >> 16) & 0xFF) / 255.f;
     const float b = static_cast<float>((color >>  8) & 0xFF) / 255.f;
@@ -202,7 +205,7 @@ void UIRenderer::DrawText(std::string_view text, float x, float y,
         const StbVert& v3 = verts[q * 4 + 3];
 
         auto toUI = [&](const StbVert& sv) -> UIVertex {
-            return {x + sv.px * scale, y + sv.py * scale, r, g, b, a};
+            return {x + sv.px * effectiveScale, y + sv.py * effectiveScale, r, g, b, a};
         };
 
         // Triangle 1: v0, v1, v2

@@ -11,15 +11,17 @@ void ContentBrowser::Draw(float x, float y, float w, float h) {
 
     static constexpr uint32_t kTextColor  = 0xB0B0B0FF;
     static constexpr uint32_t kLabelColor = 0x808080FF;
+    const float dpi   = m_Renderer->GetDpiScale();
+    const float lineH = 18.f * dpi;
+    const float padX  = 6.f * dpi;
     const float scale = 2.f;
 
     std::string rootLabel = "Root: " + (m_RootPath.empty() ? "(none)" : m_RootPath);
-    m_Renderer->DrawText(rootLabel, x + 6.f, y + 4.f, kLabelColor, scale);
-
-    m_Renderer->DrawText("Assets/", x + 6.f, y + 24.f, kTextColor, scale);
-    m_Renderer->DrawText("  Definitions/", x + 6.f, y + 42.f, kTextColor, scale);
-    m_Renderer->DrawText("  Textures/", x + 6.f, y + 60.f, kTextColor, scale);
-    m_Renderer->DrawText("  Models/", x + 6.f, y + 78.f, kTextColor, scale);
+    m_Renderer->DrawText(rootLabel,      x + padX, y + 4.f * dpi,             kLabelColor, scale);
+    m_Renderer->DrawText("Assets/",      x + padX, y + 4.f * dpi +     lineH, kTextColor,  scale);
+    m_Renderer->DrawText("  Definitions/", x + padX, y + 4.f * dpi + 2*lineH, kTextColor,  scale);
+    m_Renderer->DrawText("  Textures/",  x + padX, y + 4.f * dpi + 3*lineH,   kTextColor,  scale);
+    m_Renderer->DrawText("  Models/",    x + padX, y + 4.f * dpi + 4*lineH,   kTextColor,  scale);
 }
 
 } // namespace NF::Editor

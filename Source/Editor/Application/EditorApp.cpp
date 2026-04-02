@@ -4,13 +4,22 @@
 #include <chrono>
 
 #ifdef _WIN32
+// Require Windows 10 for per-monitor V2 DPI awareness and GetDpiForWindow.
+#ifndef _WIN32_WINNT
+#  define _WIN32_WINNT 0x0A00
+#endif
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <windowsx.h>  // GET_X_LPARAM, GET_Y_LPARAM
 #endif
 
 namespace NF::Editor {
 
 #ifdef _WIN32
+// ---------------------------------------------------------------------------
+// Win32 window procedure
+// ---------------------------------------------------------------------------
+
 static LRESULT CALLBACK EditorWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     if (msg == WM_DESTROY)
@@ -18,7 +27,96 @@ static LRESULT CALLBACK EditorWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
         PostQuitMessage(0);
         return 0;
     }
+
+    // Route all other messages through the EditorApp stored in user data.
+    // GWLP_USERDATA is set after CreateWindowExW returns, so it may be null
+    // for messages fired during window creation — that is safe.
+    EditorApp* app = reinterpret_cast<EditorApp*>(
+        GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+
+    if (app)
+    {
+        // WM_DPICHANGED: reposition to the OS-suggested rect and return 0 so
+        // DefWindowProc does not override our placement.
+        if (msg == WM_DPICHANGED)
+        {
+            app->DispatchOsEvent(msg,
+                static_cast<uintptr_t>(wParam),
+                static_cast<intptr_t>(lParam));
+            return 0;
+        }
+        app->DispatchOsEvent(msg,
+            static_cast<uintptr_t>(wParam),
+            static_cast<intptr_t>(lParam));
+    }
+
     return DefWindowProcW(hwnd, msg, wParam, lParam);
+}
+
+// ---------------------------------------------------------------------------
+// DispatchOsEvent — updates m_Input and m_DpiScale from raw Win32 messages
+// ---------------------------------------------------------------------------
+
+void EditorApp::DispatchOsEvent(unsigned msg, uintptr_t wParam, intptr_t lParam) noexcept
+{
+    const WPARAM wp = static_cast<WPARAM>(wParam);
+    const LPARAM lp = static_cast<LPARAM>(lParam);
+
+    switch (msg)
+    {
+    case WM_MOUSEMOVE:
+        m_Input.mouseX = static_cast<float>(GET_X_LPARAM(lp));
+        m_Input.mouseY = static_cast<float>(GET_Y_LPARAM(lp));
+        break;
+
+    case WM_LBUTTONDOWN:
+    case WM_LBUTTONDBLCLK:
+        m_Input.mouseX          = static_cast<float>(GET_X_LPARAM(lp));
+        m_Input.mouseY          = static_cast<float>(GET_Y_LPARAM(lp));
+        m_Input.leftDown        = true;
+        m_Input.leftJustPressed = true;
+        SetCapture(static_cast<HWND>(m_Hwnd));
+        break;
+
+    case WM_LBUTTONUP:
+        m_Input.mouseX           = static_cast<float>(GET_X_LPARAM(lp));
+        m_Input.mouseY           = static_cast<float>(GET_Y_LPARAM(lp));
+        m_Input.leftDown         = false;
+        m_Input.leftJustReleased = true;
+        ReleaseCapture();
+        break;
+
+    case WM_RBUTTONDOWN:
+        m_Input.rightDown        = true;
+        m_Input.rightJustPressed = true;
+        break;
+
+    case WM_RBUTTONUP:
+        m_Input.rightDown = false;
+        break;
+
+    case WM_MOUSEWHEEL:
+        m_Input.wheelDelta +=
+            static_cast<float>(GET_WHEEL_DELTA_WPARAM(wp)) / static_cast<float>(WHEEL_DELTA);
+        break;
+
+    case WM_DPICHANGED:
+    {
+        m_DpiScale = static_cast<float>(HIWORD(wp)) / 96.f;
+        m_UIRenderer.SetDpiScale(m_DpiScale);
+        // Reposition window to the DPI-suggested rect.
+        const RECT* suggested = reinterpret_cast<const RECT*>(lp);
+        SetWindowPos(static_cast<HWND>(m_Hwnd), nullptr,
+                     suggested->left, suggested->top,
+                     suggested->right  - suggested->left,
+                     suggested->bottom - suggested->top,
+                     SWP_NOZORDER | SWP_NOACTIVATE);
+        break;
+    }
+
+    default:
+        break;
+    }
 }
 #endif
 
@@ -43,6 +141,10 @@ bool EditorApp::Init() {
     Logger::Log(LogLevel::Info, "Editor", "[2/6] EditorApp — creating platform window");
 
 #ifdef _WIN32
+    // Enable per-monitor V2 DPI awareness before any window is created so the
+    // OS sends WM_DPICHANGED and reports correct DPI via GetDpiForWindow.
+    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+
     HINSTANCE hInstance = GetModuleHandleW(nullptr);
 
     WNDCLASSEXW wc{};
@@ -74,6 +176,16 @@ bool EditorApp::Init() {
         Logger::Log(LogLevel::Error, "Editor", "Failed to create window");
         UnregisterClassW(L"NovaForgeEditor", hInstance);
         return false;
+    }
+
+    // Store 'this' in the window's user data so EditorWndProc can route
+    // input events back to us without a global variable.
+    SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
+
+    // Query the monitor DPI now that the window exists.
+    {
+        UINT dpi = GetDpiForWindow(hwnd);
+        m_DpiScale = static_cast<float>(dpi) / 96.f;
     }
 
     ShowWindow(hwnd, SW_SHOWDEFAULT);
@@ -115,6 +227,7 @@ bool EditorApp::Init() {
     m_UIRenderer.Init();
     m_UIRenderer.SetViewportSize(static_cast<float>(m_ClientWidth),
                                   static_cast<float>(m_ClientHeight));
+    m_UIRenderer.SetDpiScale(m_DpiScale);
 
     Logger::Log(LogLevel::Info, "Editor", "[6/6] EditorApp — wiring panels and layout");
     // Wire UIRenderer to all subsystems
@@ -124,6 +237,10 @@ bool EditorApp::Init() {
     m_ContentBrowser.SetUIRenderer(&m_UIRenderer);
     m_ConsolePanel.SetUIRenderer(&m_UIRenderer);
     m_Viewport.SetUIRenderer(&m_UIRenderer);
+
+    // Wire input state to interactive panels
+    m_SceneOutliner.SetInputState(&m_Input);
+    m_ConsolePanel.SetInputState(&m_Input);
 
     // Panels
     m_SceneOutliner.SetWorld(&m_Level.GetWorld());
@@ -238,6 +355,9 @@ void EditorApp::Run() {
         float dt = std::chrono::duration<float>(now - lastTime).count();
         lastTime = now;
         TickFrame(dt);
+
+        // Clear edge-triggered input flags after all systems have read them.
+        m_Input.FlushFrameEvents();
     }
 #else
     while (m_Running) {
