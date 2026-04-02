@@ -99,8 +99,9 @@ void GameServer::AcceptNewConnections()
 {
     if (m_Port == 0) return; // no listener
 
-    // Accept up to a few connections per tick.
-    for (int i = 0; i < 4; ++i)
+    // Accept up to kMaxAcceptsPerTick connections per tick.
+    static constexpr int kMaxAcceptsPerTick = 4;
+    for (int i = 0; i < kMaxAcceptsPerTick; ++i)
     {
         NF::Socket incoming = m_ListenSocket.Accept();
         if (!incoming.IsConnected()) break;
@@ -161,11 +162,18 @@ void GameServer::ReceiveRemoteInput()
                 auto ar = msg.BeginRead();
                 uint32_t nameLen = 0;
                 ar.Serialize(nameLen);
+
+                // Clamp to a reasonable maximum to prevent abuse.
+                static constexpr uint32_t kMaxPlayerNameLen = 128;
+                if (nameLen > kMaxPlayerNameLen) nameLen = kMaxPlayerNameLen;
+
                 std::string name(nameLen, '\0');
-                for (uint32_t i = 0; i < nameLen; ++i) {
-                    char c = 0;
-                    ar.Serialize(c);
-                    name[i] = c;
+                if (nameLen > 0) {
+                    for (uint32_t i = 0; i < nameLen; ++i) {
+                        char c = 0;
+                        ar.Serialize(c);
+                        name[i] = c;
+                    }
                 }
                 client->PlayerName = name;
                 client->Welcomed   = true;

@@ -24,8 +24,9 @@ using Catch::Approx;
 static uint16_t GetListenPort(Socket& listener) {
     struct sockaddr_in addr{};
     socklen_t len = sizeof(addr);
-    getsockname(listener.GetFD(),
+    int rc = getsockname(listener.GetFD(),
                 reinterpret_cast<struct sockaddr*>(&addr), &len);
+    if (rc != 0) return 0;
     return ntohs(addr.sin_port);
 }
 
@@ -400,13 +401,8 @@ TEST_CASE("GameClient: Connect to real server succeeds", "[Multiplayer]") {
     // For a direct-connect test we need a listener.  Use raw Socket.
     Socket listener;
     REQUIRE(listener.Listen(0)); // OS picks free port
-
-    // Read back the port the OS assigned.
-    struct sockaddr_in addr{};
-    socklen_t len = sizeof(addr);
-    getsockname(listener.GetFD(),
-                reinterpret_cast<struct sockaddr*>(&addr), &len);
-    uint16_t port = ntohs(addr.sin_port);
+    uint16_t port = GetListenPort(listener);
+    REQUIRE(port > 0);
 
     listener.SetNonBlocking(true);
 
@@ -425,12 +421,7 @@ TEST_CASE("GameClient: double Connect returns false", "[Multiplayer]") {
     Socket listener;
     REQUIRE(listener.Listen(0));
     listener.SetNonBlocking(true);
-
-    struct sockaddr_in addr{};
-    socklen_t len = sizeof(addr);
-    getsockname(listener.GetFD(),
-                reinterpret_cast<struct sockaddr*>(&addr), &len);
-    uint16_t port = ntohs(addr.sin_port);
+    uint16_t port = GetListenPort(listener);
 
     GameClient client;
     client.Connect("127.0.0.1", port, "Player1");
@@ -444,12 +435,7 @@ TEST_CASE("GameClient: Update does not crash when connected", "[Multiplayer]") {
     Socket listener;
     REQUIRE(listener.Listen(0));
     listener.SetNonBlocking(true);
-
-    struct sockaddr_in addr{};
-    socklen_t len = sizeof(addr);
-    getsockname(listener.GetFD(),
-                reinterpret_cast<struct sockaddr*>(&addr), &len);
-    uint16_t port = ntohs(addr.sin_port);
+    uint16_t port = GetListenPort(listener);
 
     GameClient client;
     client.Connect("127.0.0.1", port, "TestPlayer");
@@ -466,12 +452,7 @@ TEST_CASE("GameClient: SubmitInput does not crash when connected", "[Multiplayer
     Socket listener;
     REQUIRE(listener.Listen(0));
     listener.SetNonBlocking(true);
-
-    struct sockaddr_in addr{};
-    socklen_t len = sizeof(addr);
-    getsockname(listener.GetFD(),
-                reinterpret_cast<struct sockaddr*>(&addr), &len);
-    uint16_t port = ntohs(addr.sin_port);
+    uint16_t port = GetListenPort(listener);
 
     GameClient client;
     client.Connect("127.0.0.1", port, "TestPlayer");
@@ -573,8 +554,8 @@ TEST_CASE("Socket: NonBlocking accept returns invalid when no pending", "[Phase7
 
 TEST_CASE("Socket: Connect to nothing fails", "[Phase7]") {
     Socket s;
-    // Port 1 is almost certainly not open.
-    REQUIRE_FALSE(s.Connect("127.0.0.1", 1));
+    // Use a high ephemeral port that is almost certainly not listening.
+    REQUIRE_FALSE(s.Connect("127.0.0.1", 65534));
     REQUIRE_FALSE(s.IsConnected());
 }
 
