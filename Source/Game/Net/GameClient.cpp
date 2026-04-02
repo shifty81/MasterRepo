@@ -24,16 +24,16 @@ bool GameClient::Connect(const std::string& host, uint16_t port,
         return false;
     }
 
+    m_Socket.SetNonBlocking(true);
     m_Channel.Attach(&m_Socket);
 
-    // Send ClientHello.
+    // Send ClientHello — stay in Connecting until we receive ServerWelcome.
     auto hello = NF::MakeClientHello(playerName);
     m_Channel.QueueSend(hello);
     m_Channel.Flush();
 
-    m_State = GameClientState::Connected;
     NF::Logger::Log(NF::LogLevel::Info, "GameClient",
-                    "Connected to " + host + ":" + std::to_string(port));
+                    "Connecting to " + host + ":" + std::to_string(port));
     return true;
 }
 
@@ -59,7 +59,7 @@ void GameClient::Disconnect()
 
 void GameClient::Update(float /*dt*/)
 {
-    if (m_State != GameClientState::Connected) return;
+    if (m_State == GameClientState::Disconnected) return;
 
     // Flush outbound.
     m_Channel.Flush();
@@ -77,6 +77,7 @@ void GameClient::Update(float /*dt*/)
         {
             auto ar = msg.BeginRead();
             ar.Serialize(m_ClientId);
+            m_State = GameClientState::Connected;
             NF::Logger::Log(NF::LogLevel::Info, "GameClient",
                             "Assigned client id " + std::to_string(m_ClientId));
             break;
@@ -124,7 +125,6 @@ void GameClient::SubmitInput(const NetClientInput& input)
 
     NF::NetMessage msg(NF::NetMessageType::ClientInput);
 
-    // Serialise input.
     msg.Write(m_ClientId);
     msg.Write(input.Forward);
     msg.Write(input.Right);

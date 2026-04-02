@@ -60,23 +60,50 @@
 - [x] GameClient (connect, input, snapshots)
 - [x] 30 tests
 
+### Phase 7 — Platform Networking & Orchestrator Integration ✅
+- [x] Real POSIX Socket (TCP: Listen/Accept/Connect/Send/Receive, non-blocking)
+- [x] Win32 Winsock2 compile path (cross-platform)
+- [x] Orchestrator NetMode enum (Solo/ListenServer/Dedicated/Client)
+- [x] Orchestrator owns GameServer + GameClient lifecycle
+- [x] GameServer real TCP accept loop + ClientHello→ServerWelcome handshake
+- [x] GameServer snapshot broadcast to remote clients
+- [x] GameClient proper handshake (Connecting→Connected on Welcome)
+- [x] Listen-server mode (host plays while serving)
+- [x] Local loopback integration tests (server + client in-process over TCP)
+- [x] 18 new tests (263 total)
+
+### Phase 8 — Chunk Streaming & LOD ✅
+- [x] ChunkStreamer (load/unload within configurable radius)
+- [x] Background-thread chunk generation (TaskSystem thread pool, seed-based PCG)
+- [x] Distance-based mesh LOD (Full/Simplified/None via ComputeLOD)
+- [x] Memory budget / chunk eviction (MaxLoadedChunks, farthest-first LRU)
+- [x] Save-on-unload for modified chunks (per-chunk .nfck files)
+- [x] ChunkStreamer wired into Orchestrator tick loop (player-position-based)
+- [x] Default terrain generator (deterministic, matches GameWorld pattern)
+- [x] Custom generator callback support
+- [x] 22 new tests (285 total)
+
+### Phase 9 — Audio Foundation ✅
+- [x] AudioDevice with platform backend enum (Null / WASAPI, with fallback)
+- [x] SoundAsset struct (interleaved PCM float samples, mono/stereo)
+- [x] SoundBank (WAV 16-bit/8-bit PCM + IEEE float loading, procedural tone + noise generation)
+- [x] AudioMixer (channel model: ChannelHandle, volume, pan, looping, priority, kMaxChannels=64)
+- [x] SpatialAudio (inverse-distance attenuation, stereo panning via listener orientation)
+- [x] AudioDevice + SoundBank + AudioMixer + SpatialAudio wired into Orchestrator
+- [x] Placeholder sounds generated at init (sfx_mine, sfx_place, sfx_ambient)
+- [x] SpatialAudio listener position updated from PlayerMovement each tick
+- [x] 33 new tests (318 total)
+
 ## Current Gaps
 
 ### Documentation
-- [ ] ROADMAP.md has no plan beyond Phase 6
-- [ ] ARCHITECTURE.md lists 22 Gameplay subdirs but only 14 exist in code (now 22)
+- [ ] ROADMAP.md has no plan beyond Phase 10
 
 ### Stubs / Partial Implementations
-- [ ] Socket transport is a no-op stub — multiplayer cannot connect over a real network
-- [ ] Audio module has minimal stubs — no platform audio playback
-- [ ] Orchestrator does not integrate Phase 6 net code (GameServer/GameClient)
-- [ ] 14 Gameplay systems are empty 2-line stubs (deferred by design)
+- [ ] 22 Gameplay systems are empty 2-line stubs (deferred by design)
 
 ### Missing Features (Deferred)
 - [ ] Low-poly visual wrapper over voxel structure
-- [ ] Chunk streaming / LOD
-- [ ] Real platform socket implementation (Win32 Winsock / POSIX)
-- [ ] Platform audio backend (WASAPI / CoreAudio / ALSA)
 - [ ] CPack installer packaging
 - [ ] Editor splash screen
 - [ ] Editor symbol locator (Ctrl+P)
