@@ -82,6 +82,7 @@ SoundId SoundBank::LoadWav(const std::string& filePath)
             // Skip unknown chunk (pad to word boundary).
             uint32_t skip = ch.size + (ch.size & 1u);
             file.seekg(static_cast<std::streamoff>(skip), std::ios::cur);
+            if (!file.good()) break;
         }
     }
 

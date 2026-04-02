@@ -1,5 +1,6 @@
 #include "Audio/Mixer/AudioMixer.h"
 #include <algorithm>
+#include <cmath>
 
 namespace NF {
 
@@ -87,9 +88,8 @@ void AudioMixer::Update(float dt)
 
         if (duration > 0.f && ch.PlaybackPos >= duration) {
             if (ch.Looping) {
-                // Wrap around.
-                while (ch.PlaybackPos >= duration)
-                    ch.PlaybackPos -= duration;
+                // Wrap around using fmod for efficiency.
+                ch.PlaybackPos = std::fmod(ch.PlaybackPos, duration);
             } else {
                 ch.Playing = false;
                 expired.push_back(handle);

@@ -269,8 +269,10 @@ void ChunkStreamer::DefaultGenerator(Chunk& chunk, uint32_t seed)
             const int wz = coord.Z * kChunkSize + z;
 
             // Deterministic height based on seed + world position.
+            const unsigned uwx = static_cast<unsigned>(wx);
+            const unsigned uwz = static_cast<unsigned>(wz);
             const int rawH = static_cast<int>(
-                (static_cast<unsigned>(wx * 3 + wz * 7 + static_cast<int>(seed)) % 5u));
+                (uwx * 3u + uwz * 7u + static_cast<unsigned>(seed)) % 5u);
             const int height = 8 + rawH;
 
             for (uint8_t y = 0; y < kChunkSize && y < height; ++y)
