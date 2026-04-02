@@ -1,5 +1,6 @@
 #include "Editor/Panels/SceneOutliner.h"
 #include "UI/Rendering/UIRenderer.h"
+#include <string>
 
 namespace NF::Editor {
 
