@@ -59,13 +59,14 @@ private:
     bool m_KeysJustPressed[256]{};
     float m_MouseX{0.f};
     float m_MouseY{0.f};
+    float m_MouseDeltaX{0.f};
+    float m_MouseDeltaY{0.f};
+    float m_PrevMouseX{0.f};
+    float m_PrevMouseY{0.f};
     bool  m_LeftDown{false};
     bool  m_LeftJustPressed{false};
-
-    // Simple FPS camera state
-    float m_CamYaw{0.f};
-    float m_CamPitch{0.3f};
-    float m_CamZoom{30.f};
+    bool  m_RightDown{false};
+    bool  m_MouseTracking{false}; ///< True once we have a valid previous mouse pos.
 
     /// @brief Advance simulation and render one frame.
     void TickFrame(float dt);
@@ -76,7 +77,7 @@ private:
     // Flush per-frame edge-triggered flags after all systems have read them.
     void FlushFrameInput() noexcept;
 
-    /// @brief Compute the current view matrix from the camera state.
+    /// @brief Compute the current view matrix from the player position and look.
     [[nodiscard]] NF::Matrix4x4 GetViewMatrix() const noexcept;
 
     /// @brief Compute the current projection matrix.

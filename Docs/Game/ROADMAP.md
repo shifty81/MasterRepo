@@ -83,5 +83,14 @@ Deliverables:
 ### Phase 5 — Movement & FPS Camera
 Goal: player controller, collision detection, FPS navigation.
 
+Deliverables:
+- ChunkMap::IsSolidAt() and ChunkMap::RaycastVoxel() spatial queries
+- PlayerMovement with WASD, mouse look, jump, sprint, gravity
+- Voxel-aware AABB collision resolution (slide along surfaces)
+- FPS camera locked to player eye position in GameClientApp
+- RMB mouse look + keyboard movement in standalone client
+- HUD position/grounded indicator
+- Tests for solidity, raycast, movement, physics, collision
+
 ### Phase 6 — Multiplayer Foundation
 Goal: server authority, replication, sessions.

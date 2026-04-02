@@ -41,3 +41,14 @@
 - [x] wire ForwardRenderer into GameClientApp
 - [x] generate starter terrain (9 chunks) in GameWorld::Initialize
 - [x] add VoxelMesh unit tests (10 tests)
+
+## Phase 5 — Movement & FPS Camera
+- [x] add ChunkMap::IsSolidAt() voxel solidity query
+- [x] add ChunkMap::RaycastVoxel() DDA voxel raycast
+- [x] implement PlayerMovement (WASD, mouse look, jump, sprint, gravity)
+- [x] implement voxel-aware AABB collision resolution
+- [x] wire PlayerMovement into Orchestrator tick loop
+- [x] wire FPS camera into GameClientApp (eye locked to player position)
+- [x] wire mouse look (RMB) and WASD input into GameClientApp
+- [x] add HUD position/grounded display
+- [x] add Phase 5 unit tests (21 tests: IsSolidAt, raycast, movement, collision)

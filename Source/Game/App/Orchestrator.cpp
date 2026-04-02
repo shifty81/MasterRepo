@@ -17,6 +17,14 @@ bool Orchestrator::Init(RenderDevice* renderDevice)
     // Wire the Phase 3 interaction loop to the voxel edit API.
     m_InteractionLoop.Init(&m_GameWorld.GetVoxelEditApi());
 
+    // Phase 5: Spawn the player movement controller at the world spawn point.
+    {
+        const auto& sp = m_GameWorld.GetSpawnPoint();
+        m_PlayerMovement.SetPosition({sp.Position.X,
+                                       sp.Position.Y + 2.f, // start slightly above terrain
+                                       sp.Position.Z});
+    }
+
     m_Initialized = true;
     Logger::Log(LogLevel::Info, "Game", "Orchestrator::Init complete");
     return true;
@@ -29,6 +37,9 @@ void Orchestrator::Tick(float dt)
     m_Level.Update(dt);
     m_GameWorld.Tick(dt);
     m_InteractionLoop.Tick(dt);
+
+    // Phase 5: integrate player movement with voxel collision.
+    m_PlayerMovement.Update(dt, m_GameWorld.GetChunkMap());
 
     if (m_RenderDevice)
     {

@@ -29,6 +29,9 @@ add_library(NFGame STATIC
     Interaction/MiningTool.cpp
     Interaction/InteractionLoop.cpp
 
+    # Movement (Phase 5)
+    Movement/PlayerMovement.cpp
+
     # Gameplay stubs
     Gameplay/Combat/CombatSystem.cpp
     Gameplay/Economy/TradeMarket.cpp

@@ -25,6 +25,7 @@ add_executable(NFTests
     Voxel/VoxelTests.cpp
     VoxelMesh/VoxelMeshTests.cpp
     Interaction/InteractionTests.cpp
+    Movement/MovementTests.cpp
 )
 
 target_include_directories(NFTests PRIVATE ${CMAKE_SOURCE_DIR}/Source)

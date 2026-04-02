@@ -83,6 +83,32 @@ void GameClientApp::DispatchOsEvent(unsigned msg, uintptr_t wParam, intptr_t lPa
         ReleaseCapture();
         break;
 
+    case WM_RBUTTONDOWN:
+        m_RightDown = true;
+        SetCapture(static_cast<HWND>(m_Hwnd));
+        break;
+
+    case WM_RBUTTONUP:
+        m_RightDown = false;
+        ReleaseCapture();
+        break;
+
+    case WM_MOUSEMOVE:
+    {
+        const float newX = static_cast<float>(GET_X_LPARAM(lp));
+        const float newY = static_cast<float>(GET_Y_LPARAM(lp));
+        if (m_MouseTracking) {
+            m_MouseDeltaX += newX - m_PrevMouseX;
+            m_MouseDeltaY += newY - m_PrevMouseY;
+        }
+        m_PrevMouseX = newX;
+        m_PrevMouseY = newY;
+        m_MouseX = newX;
+        m_MouseY = newY;
+        m_MouseTracking = true;
+        break;
+    }
+
     case WM_KEYDOWN:
     case WM_SYSKEYDOWN:
     {
@@ -256,8 +282,6 @@ void GameClientApp::Run()
         FlushFrameInput();
     }
 #else
-    // Headless loop for CI / non-Windows platforms — run for a fixed number of
-    // frames and exit so automated tests can validate the game systems.
     // Headless loop for CI / non-Windows platforms — run 120 frames
     // (approximately 2 seconds at 60 FPS) to exercise all game systems
     // then exit so automated tests can validate correctness.
@@ -300,6 +324,27 @@ void GameClientApp::Shutdown()
 
 void GameClientApp::TickFrame(float dt)
 {
+    // --- Phase 5: read input and feed to PlayerMovement ---
+    {
+        auto& pm = m_Orchestrator.GetPlayerMovement();
+
+        // WASD movement (Win32 VK codes: W=0x57, A=0x41, S=0x53, D=0x44)
+        float forward = 0.f, right = 0.f;
+        if (m_Keys[0x57]) forward += 1.f; // W
+        if (m_Keys[0x53]) forward -= 1.f; // S
+        if (m_Keys[0x44]) right   += 1.f; // D
+        if (m_Keys[0x41]) right   -= 1.f; // A
+
+        const bool jump   = m_KeysJustPressed[0x20]; // Space
+        const bool sprint = m_Keys[0x10];             // Shift
+
+        pm.SetMoveInput(forward, right, jump, sprint);
+
+        // Mouse look: apply accumulated delta while RMB held (or always).
+        if (m_RightDown && (m_MouseDeltaX != 0.f || m_MouseDeltaY != 0.f))
+            pm.ApplyMouseLook(m_MouseDeltaX, m_MouseDeltaY);
+    }
+
     m_Orchestrator.Tick(dt);
 
     // ---- Phase 4: render voxel chunk meshes ----
@@ -332,12 +377,12 @@ void GameClientApp::DrawHUD()
     const float padX  = 8.f  * dpi;
     const float hudW  = 260.f * dpi;
     const float hudX  = padX;
-    const float hudY  = static_cast<float>(m_ClientHeight) - (lineH * 6.f + 12.f * dpi);
+    const float hudY  = static_cast<float>(m_ClientHeight) - (lineH * 7.f + 12.f * dpi);
     const float scale = 2.f;
 
     // HUD background panel
     m_UIRenderer.DrawRect({hudX - 4.f * dpi, hudY - 4.f * dpi,
-                            hudW + 8.f * dpi, lineH * 6.f + 16.f * dpi}, kHudBg);
+                            hudW + 8.f * dpi, lineH * 7.f + 16.f * dpi}, kHudBg);
 
     const NF::Game::RigState&   rig = m_Orchestrator.GetInteractionLoop().GetRig();
     const NF::Game::Inventory&  inv = m_Orchestrator.GetInteractionLoop().GetInventory();
@@ -389,6 +434,18 @@ void GameClientApp::DrawHUD()
         }
         const std::string invLabel = "Inventory: " + std::to_string(total) + " items";
         m_UIRenderer.DrawText(invLabel.c_str(), hudX, cy, kItemColor, scale);
+        cy += lineH;
+    }
+
+    // Position info (Phase 5)
+    {
+        const auto& pm = m_Orchestrator.GetPlayerMovement();
+        const auto& pos = pm.GetPosition();
+        const std::string posLabel = "Pos: " + std::to_string(static_cast<int>(pos.X))
+                                   + ", " + std::to_string(static_cast<int>(pos.Y))
+                                   + ", " + std::to_string(static_cast<int>(pos.Z))
+                                   + (pm.IsGrounded() ? " [GND]" : " [AIR]");
+        m_UIRenderer.DrawText(posLabel.c_str(), hudX, cy, kTextColor, scale);
     }
 }
 
@@ -401,6 +458,8 @@ void GameClientApp::FlushFrameInput() noexcept
     for (int i = 0; i < 256; ++i)
         m_KeysJustPressed[i] = false;
     m_LeftJustPressed = false;
+    m_MouseDeltaX = 0.f;
+    m_MouseDeltaY = 0.f;
 }
 
 // ---------------------------------------------------------------------------
@@ -409,17 +468,14 @@ void GameClientApp::FlushFrameInput() noexcept
 
 NF::Matrix4x4 GameClientApp::GetViewMatrix() const noexcept
 {
-    const float cp = std::cos(m_CamPitch), sp = std::sin(m_CamPitch);
-    const float cy = std::cos(m_CamYaw),  sy = std::sin(m_CamYaw);
+    const auto& pm = m_Orchestrator.GetPlayerMovement();
+    const NF::Vector3 eye = pm.GetEyePosition();
+    const NF::Vector3 viewDir = pm.GetViewDirection();
 
-    // Target is slightly above world origin so the terrain is visible.
-    NF::Vector3 target{0.f, 6.f, 0.f};
-    NF::Vector3 eye{
-        target.X + m_CamZoom * cp * sy,
-        target.Y + m_CamZoom * sp,
-        target.Z + m_CamZoom * cp * cy
-    };
-    NF::Vector3 forward = (target - eye).Normalized();
+    // Target is eye + viewDir.
+    const NF::Vector3 target{eye.X + viewDir.X, eye.Y + viewDir.Y, eye.Z + viewDir.Z};
+
+    NF::Vector3 forward = viewDir;
     NF::Vector3 right   = forward.Cross({0.f, 1.f, 0.f}).Normalized();
     NF::Vector3 up      = right.Cross(forward);
 
