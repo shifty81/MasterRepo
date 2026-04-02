@@ -8,15 +8,44 @@
 // Startup Smoke Tests — Phase 0 Bootstrap
 // ============================================================================
 
+namespace {
+
+/// @brief Locate the Config/novaforge.project.json manifest from the CWD.
+/// CTest may run from build/bin/, build/, or the repo root.
+std::string FindManifestPath()
+{
+    NF::ProjectManifest probe;
+    if (probe.LoadFromFile("Config/novaforge.project.json"))
+        return "Config/novaforge.project.json";
+    if (probe.LoadFromFile("../Config/novaforge.project.json"))
+        return "../Config/novaforge.project.json";
+    if (probe.LoadFromFile("../../Config/novaforge.project.json"))
+        return "../../Config/novaforge.project.json";
+    return {};
+}
+
+/// @brief Determine the repo root directory relative to CWD.
+std::string FindRepoRoot()
+{
+    NF::ProjectManifest probe;
+    if (probe.LoadFromFile("Config/novaforge.project.json"))
+        return ".";
+    if (probe.LoadFromFile("../Config/novaforge.project.json"))
+        return "..";
+    if (probe.LoadFromFile("../../Config/novaforge.project.json"))
+        return "../..";
+    return ".";
+}
+
+} // anonymous namespace
+
 TEST_CASE("ProjectManifest loads novaforge.project.json", "[bootstrap][manifest]")
 {
-    // Test executable may run from build/bin/, build/, or repo root
+    std::string path = FindManifestPath();
+    REQUIRE_FALSE(path.empty());
+
     NF::ProjectManifest manifest;
-    bool loaded = manifest.LoadFromFile("Config/novaforge.project.json");
-    if (!loaded)
-        loaded = manifest.LoadFromFile("../Config/novaforge.project.json");
-    if (!loaded)
-        loaded = manifest.LoadFromFile("../../Config/novaforge.project.json");
+    bool loaded = manifest.LoadFromFile(path);
 
     REQUIRE(loaded);
     REQUIRE(manifest.IsValid());
@@ -46,15 +75,7 @@ TEST_CASE("ProjectManifest fails gracefully on missing file", "[bootstrap][manif
 
 TEST_CASE("Bootstrap runs successfully with valid RepoRoot", "[bootstrap]")
 {
-    // Determine repo root relative to CWD (may be build/bin/, build/, or repo root)
-    NF::ProjectManifest probe;
-    std::string repoRoot = ".";
-    if (!probe.LoadFromFile("Config/novaforge.project.json"))
-    {
-        repoRoot = "..";
-        if (!probe.LoadFromFile("../Config/novaforge.project.json"))
-            repoRoot = "../..";
-    }
+    std::string repoRoot = FindRepoRoot();
 
     NF::Game::Bootstrap bootstrap;
     NF::Game::BootstrapConfig cfg;

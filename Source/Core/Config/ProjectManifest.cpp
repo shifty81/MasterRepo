@@ -11,17 +11,20 @@ namespace NF {
 
 namespace {
 
+constexpr const char* kWhitespace = " \t\r\n";
+
 /// @brief Trim leading/trailing whitespace and quotes from a value string.
 std::string TrimValue(const std::string& raw)
 {
     std::string s = raw;
     // Strip leading whitespace
-    auto start = s.find_first_not_of(" \t\r\n");
+    auto start = s.find_first_not_of(kWhitespace);
     if (start == std::string::npos) return {};
     s = s.substr(start);
 
     // Strip trailing whitespace and commas
-    auto end = s.find_last_not_of(" \t\r\n,");
+    std::string trailChars = std::string(kWhitespace) + ",";
+    auto end = s.find_last_not_of(trailChars);
     if (end != std::string::npos)
         s = s.substr(0, end + 1);
 
@@ -62,6 +65,21 @@ bool ExtractBoolValue(const std::string& line, const std::string& key, bool defa
     return defaultVal;
 }
 
+// JSON key constants
+constexpr const char* kKeyPhases              = "phases";
+constexpr const char* kKeyName                = "name";
+constexpr const char* kKeyType                = "type";
+constexpr const char* kKeyVersion             = "version";
+constexpr const char* kKeyDefaultWorld        = "defaultWorld";
+constexpr const char* kKeyDefaultStartupMode  = "defaultStartupMode";
+constexpr const char* kKeyContentRoot         = "contentRoot";
+constexpr const char* kKeyConfigRoot          = "configRoot";
+constexpr const char* kKeySaveRoot            = "saveRoot";
+constexpr const char* kKeyLogRoot             = "logRoot";
+constexpr const char* kKeyVoxelAuth           = "voxelAuthoritative";
+constexpr const char* kKeyEditorShips         = "editorShipsWithGame";
+constexpr const char* kKeyAllowSuite          = "allowSuiteFeaturesInRepo";
+
 } // anonymous namespace
 
 // ============================================================================
@@ -93,7 +111,7 @@ bool ProjectManifest::LoadFromFile(const std::string& path)
     while (std::getline(stream, line))
     {
         // Detect array boundaries
-        if (line.find("\"phases\"") != std::string::npos)
+        if (line.find(std::string("\"") + kKeyPhases + "\"") != std::string::npos)
         {
             inPhases = true;
             continue;
@@ -113,51 +131,51 @@ bool ProjectManifest::LoadFromFile(const std::string& path)
 
         // project block
         {
-            auto v = ExtractStringValue(line, "name");
+            auto v = ExtractStringValue(line, kKeyName);
             if (!v.empty()) ProjectName = v;
         }
         {
-            auto v = ExtractStringValue(line, "type");
+            auto v = ExtractStringValue(line, kKeyType);
             if (!v.empty()) ProjectType = v;
         }
         {
-            auto v = ExtractStringValue(line, "version");
+            auto v = ExtractStringValue(line, kKeyVersion);
             if (!v.empty()) ProjectVersion = v;
         }
         {
-            auto v = ExtractStringValue(line, "defaultWorld");
+            auto v = ExtractStringValue(line, kKeyDefaultWorld);
             if (!v.empty()) DefaultWorld = v;
         }
         {
-            auto v = ExtractStringValue(line, "defaultStartupMode");
+            auto v = ExtractStringValue(line, kKeyDefaultStartupMode);
             if (!v.empty()) DefaultStartupMode = v;
         }
 
         // paths block
         {
-            auto v = ExtractStringValue(line, "contentRoot");
+            auto v = ExtractStringValue(line, kKeyContentRoot);
             if (!v.empty()) ContentRoot = v;
         }
         {
-            auto v = ExtractStringValue(line, "configRoot");
+            auto v = ExtractStringValue(line, kKeyConfigRoot);
             if (!v.empty()) ConfigRoot = v;
         }
         {
-            auto v = ExtractStringValue(line, "saveRoot");
+            auto v = ExtractStringValue(line, kKeySaveRoot);
             if (!v.empty()) SaveRoot = v;
         }
         {
-            auto v = ExtractStringValue(line, "logRoot");
+            auto v = ExtractStringValue(line, kKeyLogRoot);
             if (!v.empty()) LogRoot = v;
         }
 
         // rules block
-        if (line.find("\"voxelAuthoritative\"") != std::string::npos)
-            VoxelAuthoritative = ExtractBoolValue(line, "voxelAuthoritative", true);
-        if (line.find("\"editorShipsWithGame\"") != std::string::npos)
-            EditorShipsWithGame = ExtractBoolValue(line, "editorShipsWithGame", false);
-        if (line.find("\"allowSuiteFeaturesInRepo\"") != std::string::npos)
-            AllowSuiteFeaturesInRepo = ExtractBoolValue(line, "allowSuiteFeaturesInRepo", false);
+        if (line.find(std::string("\"") + kKeyVoxelAuth + "\"") != std::string::npos)
+            VoxelAuthoritative = ExtractBoolValue(line, kKeyVoxelAuth, true);
+        if (line.find(std::string("\"") + kKeyEditorShips + "\"") != std::string::npos)
+            EditorShipsWithGame = ExtractBoolValue(line, kKeyEditorShips, false);
+        if (line.find(std::string("\"") + kKeyAllowSuite + "\"") != std::string::npos)
+            AllowSuiteFeaturesInRepo = ExtractBoolValue(line, kKeyAllowSuite, false);
     }
 
     Logger::Log(LogLevel::Info, "Manifest",
