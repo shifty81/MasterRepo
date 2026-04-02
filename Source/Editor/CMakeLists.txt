@@ -21,6 +21,7 @@ target_link_libraries(NFEditor PUBLIC
     NF::Core
     NF::Engine
     NF::Renderer
+    NF::Game
     NF::Physics
     NF::Audio
     NF::Animation

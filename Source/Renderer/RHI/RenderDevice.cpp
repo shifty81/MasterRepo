@@ -5,25 +5,120 @@
 #include "Renderer/RHI/GLHeaders.h"
 #endif
 
+#if defined(NF_HAS_OPENGL) && defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
 namespace NF {
 
-bool RenderDevice::Init(GraphicsAPI api) {
+bool RenderDevice::Init(GraphicsAPI api, void* nativeWindowHandle) {
     m_API = api;
-#ifdef NF_HAS_OPENGL
+    m_NativeWindowHandle = nativeWindowHandle;
+
+#if defined(NF_HAS_OPENGL) && defined(_WIN32)
     if (api == GraphicsAPI::OpenGL) {
+        if (!nativeWindowHandle) {
+            NF_LOG_ERROR("Renderer", "RenderDevice: OpenGL requires a native window handle");
+            return false;
+        }
+
+        HWND hwnd = static_cast<HWND>(nativeWindowHandle);
+        HDC hdc = GetDC(hwnd);
+        if (!hdc) {
+            NF_LOG_ERROR("Renderer", "RenderDevice: GetDC failed");
+            return false;
+        }
+
+        PIXELFORMATDESCRIPTOR pfd{};
+        pfd.nSize        = sizeof(pfd);
+        pfd.nVersion     = 1;
+        pfd.dwFlags      = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+        pfd.iPixelType   = PFD_TYPE_RGBA;
+        pfd.cColorBits   = 32;
+        pfd.cDepthBits   = 24;
+        pfd.cStencilBits = 8;
+        pfd.iLayerType   = PFD_MAIN_PLANE;
+
+        int pixelFormat = ChoosePixelFormat(hdc, &pfd);
+        if (pixelFormat == 0) {
+            NF_LOG_ERROR("Renderer", "RenderDevice: ChoosePixelFormat failed");
+            ReleaseDC(hwnd, hdc);
+            return false;
+        }
+        if (!SetPixelFormat(hdc, pixelFormat, &pfd)) {
+            NF_LOG_ERROR("Renderer", "RenderDevice: SetPixelFormat failed");
+            ReleaseDC(hwnd, hdc);
+            return false;
+        }
+
+        HGLRC hglrc = wglCreateContext(hdc);
+        if (!hglrc) {
+            NF_LOG_ERROR("Renderer", "RenderDevice: wglCreateContext failed");
+            ReleaseDC(hwnd, hdc);
+            return false;
+        }
+        if (!wglMakeCurrent(hdc, hglrc)) {
+            NF_LOG_ERROR("Renderer", "RenderDevice: wglMakeCurrent failed");
+            wglDeleteContext(hglrc);
+            ReleaseDC(hwnd, hdc);
+            return false;
+        }
+
+        m_DeviceContext  = hdc;
+        m_RenderContext  = hglrc;
+
+        NF_LOG_INFO("Renderer", "RenderDevice: WGL context created");
+
+        if (!gladLoaderLoadGL()) {
+            NF_LOG_ERROR("Renderer", "RenderDevice: gladLoaderLoadGL failed");
+            return false;
+        }
+
+        NF_LOG_INFO("Renderer", "RenderDevice: OpenGL function pointers loaded via GLAD");
+        NF_LOG_INFO("Renderer",
+            std::string("RenderDevice: GL_RENDERER = ")
+            + reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
+        NF_LOG_INFO("Renderer",
+            std::string("RenderDevice: GL_VERSION  = ")
+            + reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+
+        glEnable(GL_DEPTH_TEST);
+    }
+#elif defined(NF_HAS_OPENGL)
+    if (api == GraphicsAPI::OpenGL) {
+        // Non-Windows OpenGL path: assume context is already current (e.g. via GLFW).
         if (!gladLoaderLoadGL()) {
             NF_LOG_ERROR("Renderer", "RenderDevice: gladLoaderLoadGL failed -- ensure an OpenGL context is current");
             return false;
         }
         NF_LOG_INFO("Renderer", "RenderDevice: OpenGL function pointers loaded via GLAD");
     }
+#else
+    if (api == GraphicsAPI::OpenGL) {
+        NF_LOG_WARN("Renderer", "RenderDevice: OpenGL requested but NF_HAS_OPENGL not defined; falling back to Null");
+        m_API = GraphicsAPI::Null;
+    }
 #endif
+
     m_Initialised = true;
     NF_LOG_INFO("Renderer", "RenderDevice initialised");
     return true;
 }
 
 void RenderDevice::Shutdown() {
+#if defined(NF_HAS_OPENGL) && defined(_WIN32)
+    if (m_RenderContext) {
+        wglMakeCurrent(nullptr, nullptr);
+        wglDeleteContext(static_cast<HGLRC>(m_RenderContext));
+        m_RenderContext = nullptr;
+    }
+    if (m_DeviceContext && m_NativeWindowHandle) {
+        ReleaseDC(static_cast<HWND>(m_NativeWindowHandle),
+                  static_cast<HDC>(m_DeviceContext));
+        m_DeviceContext = nullptr;
+    }
+#endif
     m_Initialised = false;
     NF_LOG_INFO("Renderer", "RenderDevice shut down");
 }
@@ -31,15 +126,15 @@ void RenderDevice::Shutdown() {
 void RenderDevice::BeginFrame() {
 #ifdef NF_HAS_OPENGL
     if (m_API == GraphicsAPI::OpenGL) {
-        // Platform-specific begin-frame work (e.g. pipeline state reset).
+        // Per-frame state reset can go here.
     }
 #endif
 }
 
 void RenderDevice::EndFrame() {
-#ifdef NF_HAS_OPENGL
-    if (m_API == GraphicsAPI::OpenGL) {
-        // Platform-specific end-frame / buffer swap triggered by the windowing layer.
+#if defined(NF_HAS_OPENGL) && defined(_WIN32)
+    if (m_API == GraphicsAPI::OpenGL && m_DeviceContext) {
+        SwapBuffers(static_cast<HDC>(m_DeviceContext));
     }
 #endif
 }

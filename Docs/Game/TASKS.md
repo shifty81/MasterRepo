@@ -9,12 +9,12 @@
 - [x] add startup smoke-test checklist
 
 ## Phase 1 — Dev World Only
-- [ ] define single dev world target
-- [ ] lock spawn path
-- [ ] wire editor load path into dev world
-- [ ] wire runtime load path into dev world
-- [ ] add basic save/load hooks
-- [ ] add world debug overlay
+- [x] define single dev world target
+- [x] lock spawn path
+- [x] wire editor load path into dev world
+- [x] wire runtime load path into dev world
+- [x] add basic save/load hooks
+- [x] add world debug overlay
 
 ## Phase 2 — Voxel Runtime Only
 - [ ] implement chunk schema

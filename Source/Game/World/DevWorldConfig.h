@@ -1,6 +1,7 @@
 #pragma once
 #include "Core/Math/Vector.h"
 #include "Core/Math/Quaternion.h"
+#include <cstdint>
 #include <string>
 
 namespace NF::Game {
