@@ -1,10 +1,12 @@
 #pragma once
 #include "Renderer/RHI/RenderDevice.h"
+#include "Renderer/Pipeline/ForwardRenderer.h"
 #include "UI/Rendering/UIRenderer.h"
 #include "Engine/ECS/World.h"
 #include "Engine/World/Level.h"
 #include "Game/World/GameWorld.h"
 #include "Game/Interaction/InteractionLoop.h"
+#include "Game/Voxel/ChunkMeshCache.h"
 #include "Editor/Application/EditorInputState.h"
 #include "Editor/Panels/DockingSystem.h"
 #include "Editor/Panels/SceneOutliner.h"
@@ -13,6 +15,7 @@
 #include "Editor/Panels/ConsolePanel.h"
 #include "Editor/Panels/VoxelInspector.h"
 #include "Editor/Panels/HUDPanel.h"
+#include "Editor/Panels/EditorToolbar.h"
 #include "Editor/Viewport/EditorViewport.h"
 #include <cstdint>
 #include <memory>
@@ -46,9 +49,11 @@ public:
 
 private:
     std::unique_ptr<RenderDevice> m_RenderDevice;
+    ForwardRenderer               m_ForwardRenderer;
     UIRenderer                    m_UIRenderer;
     NF::Game::GameWorld           m_GameWorld;
     NF::Game::InteractionLoop     m_InteractionLoop;
+    NF::Game::ChunkMeshCache      m_MeshCache;
     Level                         m_Level;
     bool                          m_Running{false};
     void*                         m_Hwnd{nullptr};
@@ -70,6 +75,7 @@ private:
     EditorViewport m_Viewport;
     VoxelInspector m_VoxelInspector;
     HUDPanel       m_HUDPanel;
+    EditorToolbar  m_Toolbar;
 };
 
 } // namespace NF::Editor

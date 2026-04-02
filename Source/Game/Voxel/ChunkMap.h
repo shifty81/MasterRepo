@@ -48,6 +48,35 @@ public:
     /// @brief Collect all loaded chunk coords.
     [[nodiscard]] std::vector<ChunkCoord> GetLoadedCoords() const;
 
+    // ---- Collision / spatial queries ----------------------------------------
+
+    /// @brief Return true if the voxel at world position (wx,wy,wz) is solid.
+    ///
+    /// If the chunk containing this voxel is not loaded, returns @p unloadedSolid
+    /// (default: true — unloaded voxels block movement).
+    [[nodiscard]] bool IsSolidAt(int32_t wx, int32_t wy, int32_t wz,
+                                 bool unloadedSolid = true) const noexcept;
+
+    /// @brief Result of a voxel raycast query.
+    struct VoxelHit {
+        int32_t x{0}, y{0}, z{0};             ///< World position of the hit voxel.
+        int32_t prevX{0}, prevY{0}, prevZ{0};  ///< Position of the air voxel before the hit.
+        VoxelId id{0};                          ///< Type of the hit voxel.
+        float   distance{0.f};                  ///< Distance from origin to hit.
+        bool    hit{false};                     ///< True if a solid voxel was found.
+    };
+
+    /// @brief Cast a ray through the voxel grid using DDA (3-D).
+    ///
+    /// Walks the ray voxel-by-voxel and returns the first solid voxel hit.
+    /// @param ox,oy,oz  Ray origin in world-space floats.
+    /// @param dx,dy,dz  Ray direction (need not be normalised).
+    /// @param maxDist   Maximum distance to traverse.
+    /// @return A @c VoxelHit with @c hit==true on intersection.
+    [[nodiscard]] VoxelHit RaycastVoxel(float ox, float oy, float oz,
+                                        float dx, float dy, float dz,
+                                        float maxDist = 64.f) const noexcept;
+
     // ---- Iteration ----------------------------------------------------------
 
     /// @brief Invoke @p fn for every loaded chunk.

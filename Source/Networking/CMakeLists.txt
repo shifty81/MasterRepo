@@ -2,6 +2,10 @@ add_library(NFNetworking STATIC
     Transport/Socket.cpp
     Session/SessionManager.cpp
     HTTP/HttpClient.cpp
+
+    # Phase 6: Multiplayer protocol and channel
+    Protocol/NetMessage.cpp
+    Channel/NetChannel.cpp
 )
 
 add_library(NF::Networking ALIAS NFNetworking)

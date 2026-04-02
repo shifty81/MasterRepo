@@ -1,5 +1,6 @@
 #include "Renderer/Pipeline/ForwardRenderer.h"
 #include "Renderer/RHI/RenderDevice.h"
+#include "Renderer/RHI/Shader.h"
 #include "Renderer/Mesh/MeshRenderer.h"
 #include "Renderer/Materials/Material.h"
 #include "Core/Logging/Log.h"
@@ -35,6 +36,17 @@ void ForwardRenderer::EndScene() {
 void ForwardRenderer::Flush() {
     for (auto& cmd : m_Queue) {
         cmd.MaterialPtr->Bind();
+
+        // Upload camera and model matrices to the active shader.
+        // The material's Bind() activates its shader, so we can set
+        // uniforms immediately after.
+        Shader* shader = cmd.MaterialPtr->GetShader();
+        if (shader) {
+            shader->SetMat4("uView",       m_View);
+            shader->SetMat4("uProjection", m_Proj);
+            shader->SetMat4("uModel",      cmd.Transform);
+        }
+
         cmd.MeshPtr->Bind();
         cmd.MeshPtr->Draw();
     }

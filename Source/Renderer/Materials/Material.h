@@ -34,6 +34,9 @@ public:
     /// @brief Bind the shader, upload all uniforms, and bind all textures.
     void Bind();
 
+    /// @brief Return the shader currently assigned to this material.
+    [[nodiscard]] Shader* GetShader() const noexcept { return m_Shader; }
+
 private:
     Shader*                                    m_Shader{nullptr};
     std::vector<std::pair<uint32_t, Texture*>> m_Textures;

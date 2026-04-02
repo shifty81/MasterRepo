@@ -68,3 +68,84 @@ Deliverables:
 - broad galaxy simulation
 - generic tooling layers
 - Atlas-linked workspace features
+
+### Phase 4 — Voxel Mesh Rendering
+Goal: render voxel chunks as lit 3-D geometry in both editor and client.
+
+Deliverables:
+- VoxelMesher generates MeshData from Chunk (culled-face, normals, type-palette)
+- ChunkMeshCache maintains a GPU Mesh per chunk, rebuilds dirty chunks
+- Voxel GLSL shader with Phong lighting and per-type colour palette
+- ForwardRenderer wired into EditorViewport and GameClientApp
+- Starter terrain (9 chunks) generated at world init
+- Tests for mesher correctness (face count, culling, normals, palette)
+
+### Phase 5 — Movement & FPS Camera
+Goal: player controller, collision detection, FPS navigation.
+
+Deliverables:
+- ChunkMap::IsSolidAt() and ChunkMap::RaycastVoxel() spatial queries
+- PlayerMovement with WASD, mouse look, jump, sprint, gravity
+- Voxel-aware AABB collision resolution (slide along surfaces)
+- FPS camera locked to player eye position in GameClientApp
+- RMB mouse look + keyboard movement in standalone client
+- HUD position/grounded indicator
+- Tests for solidity, raycast, movement, physics, collision
+
+### Phase 6 — Multiplayer Foundation
+Goal: server authority, replication, sessions.
+
+Deliverables:
+- NetMessage protocol with typed packets and binary serialisation
+- NetChannel for framed, reliable message delivery over Socket
+- NetReplicator for delta-state snapshot building and application
+- GameServer: headless authoritative host, per-client movement, snapshot broadcast
+- GameClient: session lifecycle, input submission, snapshot reception
+- Replicated data types: NetPlayerState, NetVoxelEdit, NetWorldSnapshot, NetClientInput
+- Tests for protocol, channel, replicator, server, and client
+
+### Phase 7 — Platform Networking & Orchestrator Integration
+Goal: real networked multiplayer over TCP/UDP sockets; Orchestrator owns net mode.
+
+Deliverables:
+- Platform Socket implementation (Win32 Winsock2 / POSIX sockets)
+- Orchestrator net-mode switch (solo / listen-server / dedicated / client)
+- Orchestrator owns GameServer + GameClient lifecycle
+- Local loopback integration test (server + client in same process)
+- Listen-server mode: host plays while serving
+- Dedicated server headless executable or mode flag
+- Connection handshake (hello → welcome → ready) end-to-end over real socket
+
+### Phase 8 — Chunk Streaming & LOD
+Goal: dynamic chunk loading/unloading around the player; distance-based LOD.
+
+Deliverables:
+- ChunkStreamer: loads/unloads chunks within a configurable radius
+- Background thread chunk generation (PCG seed-based)
+- Distance-based mesh LOD (full → simplified → skip)
+- Memory budget / chunk eviction policy
+- Save-on-unload for modified chunks
+- Tests for streaming radius, eviction, and LOD transitions
+
+### Phase 9 — Audio Foundation
+Goal: spatial audio playback in both editor and client.
+
+Deliverables:
+- Platform audio backend (WASAPI on Windows, stub for Linux/macOS)
+- AudioDevice init/shutdown with real hardware
+- Sound asset loading (WAV/OGG)
+- AudioMixer channels with volume/pan
+- SpatialAudio 3D positioning + attenuation
+- Mining / interaction / ambient placeholder sounds
+- Tests for mixer state, spatial attenuation
+
+### Phase 10 — Advanced Gameplay Systems
+Goal: begin implementing the deferred gameplay stubs.
+
+Deliverables (prioritised order):
+- MiningSystem: full mining progression beyond MiningTool
+- BuilderSystem: voxel-based construction / placement
+- ProgressionSystem: XP, unlocks, skill tree baseline
+- InventorySystem + StorageSystem: full container/transfer logic
+- CombatSystem: basic damage model, health, death/respawn
+- Remaining stubs iterated as needed

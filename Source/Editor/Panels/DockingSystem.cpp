@@ -197,10 +197,10 @@ void DockingSystem::DrawNode(const DockNode& node,
     }
 }
 
-void DockingSystem::Draw(float totalWidth, float totalHeight)
+void DockingSystem::Draw(float x, float y, float totalWidth, float totalHeight)
 {
     if (m_Nodes.empty()) return;
-    DrawNode(m_Nodes[0], 0.f, 0.f, totalWidth, totalHeight);
+    DrawNode(m_Nodes[0], x, y, totalWidth, totalHeight);
 }
 
 } // namespace NF::Editor

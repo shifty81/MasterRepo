@@ -19,11 +19,23 @@ add_library(NFGame STATIC
     Voxel/VoxelSerializer.cpp
     Voxel/VoxelDebugOverlay.cpp
 
+    # Voxel Mesh (Phase 4)
+    Voxel/VoxelMesher.cpp
+    Voxel/ChunkMeshCache.cpp
+
     # Interaction Loop (Phase 3)
     Interaction/RigState.cpp
     Interaction/Inventory.cpp
     Interaction/MiningTool.cpp
     Interaction/InteractionLoop.cpp
+
+    # Movement (Phase 5)
+    Movement/PlayerMovement.cpp
+
+    # Multiplayer (Phase 6)
+    Net/NetReplicator.cpp
+    Net/GameServer.cpp
+    Net/GameClient.cpp
 
     # Gameplay stubs
     Gameplay/Combat/CombatSystem.cpp
@@ -40,6 +52,14 @@ add_library(NFGame STATIC
     Gameplay/Salvage/SalvageSystem.cpp
     Gameplay/Season/TitanRaceSystem.cpp
     Gameplay/Characters/CharacterSystem.cpp
+    Gameplay/Station/StationServices.cpp
+    Gameplay/Manufacturing/ManufacturingQueue.cpp
+    Gameplay/Fleet/FleetSystem.cpp
+    Gameplay/WorldSim/WorldSimSystem.cpp
+    Gameplay/Inventory/InventorySystem.cpp
+    Gameplay/Storage/StorageSystem.cpp
+    Gameplay/Anomaly/AnomalySystem.cpp
+    Gameplay/WarSector/WarSectorSystem.cpp
 )
 
 add_library(NF::Game ALIAS NFGame)
@@ -50,6 +70,7 @@ target_link_libraries(NFGame PUBLIC
     NF::Core
     NF::Engine
     NF::Renderer
+    NF::Networking
 )
 
 message(STATUS "  NF::Game configured")

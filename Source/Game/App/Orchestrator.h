@@ -1,15 +1,19 @@
 #pragma once
 #include "Engine/World/Level.h"
 #include "Renderer/RHI/RenderDevice.h"
+#include "Game/World/GameWorld.h"
+#include "Game/Interaction/InteractionLoop.h"
+#include "Game/Movement/PlayerMovement.h"
 #include <memory>
 
 namespace NF::Game {
 
 /// @brief Top-level game runtime orchestrator.
 ///
-/// Owns the active @c Level and holds a non-owning pointer to the
-/// @c RenderDevice provided at Init() time.  Call Init(), then loop
-/// Tick(), then Shutdown().
+/// Owns the active @c Level, the game world (voxel + ECS), the Phase 3
+/// interaction loop, and the Phase 5 player movement controller.
+/// Holds a non-owning pointer to the @c RenderDevice provided at Init()
+/// time.  Call Init(), then loop Tick(), then Shutdown().
 class Orchestrator {
 public:
     Orchestrator() = default;
@@ -44,13 +48,28 @@ public:
     /// @copydoc GetLevel()
     [[nodiscard]] const Level* GetLevel() const noexcept { return &m_Level; }
 
+    /// @brief Returns the game world facade (voxel + ECS + dev-world config).
+    [[nodiscard]] GameWorld&       GetGameWorld()       noexcept { return m_GameWorld; }
+    [[nodiscard]] const GameWorld& GetGameWorld() const noexcept { return m_GameWorld; }
+
+    /// @brief Returns the Phase 3 first interaction loop.
+    [[nodiscard]] InteractionLoop&       GetInteractionLoop()       noexcept { return m_InteractionLoop; }
+    [[nodiscard]] const InteractionLoop& GetInteractionLoop() const noexcept { return m_InteractionLoop; }
+
+    /// @brief Returns the Phase 5 player movement controller.
+    [[nodiscard]] PlayerMovement&       GetPlayerMovement()       noexcept { return m_PlayerMovement; }
+    [[nodiscard]] const PlayerMovement& GetPlayerMovement() const noexcept { return m_PlayerMovement; }
+
     /// @brief Returns true after a successful Init() and before Shutdown().
     [[nodiscard]] bool IsInitialized() const noexcept { return m_Initialized; }
 
 private:
-    Level         m_Level;
-    RenderDevice* m_RenderDevice{nullptr};
-    bool          m_Initialized{false};
+    Level            m_Level;
+    GameWorld        m_GameWorld;
+    InteractionLoop  m_InteractionLoop;
+    PlayerMovement   m_PlayerMovement;
+    RenderDevice*    m_RenderDevice{nullptr};
+    bool             m_Initialized{false};
 };
 
 } // namespace NF::Game

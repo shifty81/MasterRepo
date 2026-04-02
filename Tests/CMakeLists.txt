@@ -23,7 +23,10 @@ add_executable(NFTests
     Bootstrap/BootstrapSmokeTests.cpp
     DevWorld/DevWorldTests.cpp
     Voxel/VoxelTests.cpp
+    VoxelMesh/VoxelMeshTests.cpp
     Interaction/InteractionTests.cpp
+    Movement/MovementTests.cpp
+    Multiplayer/MultiplayerTests.cpp
 )
 
 target_include_directories(NFTests PRIVATE ${CMAKE_SOURCE_DIR}/Source)
@@ -36,6 +39,7 @@ target_link_libraries(NFTests PRIVATE
     NF::Input
     NF::Physics
     NF::Animation
+    NF::Networking
     Catch2::Catch2WithMain
 )
 

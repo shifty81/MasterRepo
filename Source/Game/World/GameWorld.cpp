@@ -38,6 +38,52 @@ bool GameWorld::Initialize(const std::string& contentRoot)
 
     m_Ready = true;
     Logger::Log(LogLevel::Info, "GameWorld", "Initialized");
+
+    // --- Phase 4: generate a starter terrain chunk at the spawn point ---
+    // Place a flat ground layer of mixed voxel types so there is visible
+    // geometry in both the editor viewport and the standalone game client.
+    {
+        const auto& spPos = m_Config.GetSpawnPoint().Position;
+        // Create chunks in a small area around spawn.
+        for (int cx = -1; cx <= 1; ++cx) {
+            for (int cz = -1; cz <= 1; ++cz) {
+                ChunkCoord coord{cx, 0, cz};
+                Chunk* chunk = m_ChunkMap.GetOrCreateChunk(coord);
+
+                // Fill the bottom half with terrain.
+                for (uint8_t x = 0; x < kChunkSize; ++x) {
+                    for (uint8_t z = 0; z < kChunkSize; ++z) {
+                        // Height varies by a simple pattern based on position.
+                        const int wx = cx * kChunkSize + x;
+                        const int wz = cz * kChunkSize + z;
+                        const int height = 8 + (wx * 3 + wz * 7) % 5;
+
+                        for (uint8_t y = 0; y < kChunkSize && y < height; ++y) {
+                            VoxelType type;
+                            if (y < 3)
+                                type = VoxelType::Rock;
+                            else if (y < height - 2)
+                                type = VoxelType::Stone;
+                            else if (y == height - 1)
+                                type = VoxelType::Dirt;
+                            else
+                                type = VoxelType::Stone;
+
+                            // Scatter ore veins.
+                            if (y > 2 && y < 8 && ((wx + y * 3 + wz * 5) % 17 == 0))
+                                type = VoxelType::Ore;
+
+                            chunk->SetVoxel(x, y, z, static_cast<VoxelId>(type));
+                        }
+                    }
+                }
+            }
+        }
+
+        Logger::Log(LogLevel::Info, "GameWorld",
+                    "Starter terrain: 9 chunks, " +
+                    std::to_string(m_ChunkMap.ChunkCount()) + " loaded");
+    }
     return true;
 }
 

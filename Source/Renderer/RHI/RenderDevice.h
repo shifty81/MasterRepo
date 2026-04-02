@@ -33,6 +33,15 @@ public:
     /// @param a Alpha component in [0, 1].
     void Clear(float r, float g, float b, float a);
 
+    /// @brief Update the OpenGL viewport to the new client dimensions.
+    ///
+    /// Must be called whenever the window is resized so that OpenGL renders
+    /// across the full client area.  Safe to call with the initial window size
+    /// during Init.
+    /// @param w New client width in pixels (ignored when <= 0).
+    /// @param h New client height in pixels (ignored when <= 0).
+    void Resize(int w, int h) noexcept;
+
     /// @brief Return the active graphics API.
     [[nodiscard]] GraphicsAPI GetAPI() const noexcept { return m_API; }
 
