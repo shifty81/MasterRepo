@@ -19,6 +19,12 @@ add_library(NFGame STATIC
     Voxel/VoxelSerializer.cpp
     Voxel/VoxelDebugOverlay.cpp
 
+    # Interaction Loop (Phase 3)
+    Interaction/RigState.cpp
+    Interaction/Inventory.cpp
+    Interaction/MiningTool.cpp
+    Interaction/InteractionLoop.cpp
+
     # Gameplay stubs
     Gameplay/Combat/CombatSystem.cpp
     Gameplay/Economy/TradeMarket.cpp

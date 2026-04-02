@@ -4,6 +4,7 @@
 #include "Engine/ECS/World.h"
 #include "Engine/World/Level.h"
 #include "Game/World/GameWorld.h"
+#include "Game/Interaction/InteractionLoop.h"
 #include "Editor/Application/EditorInputState.h"
 #include "Editor/Panels/DockingSystem.h"
 #include "Editor/Panels/SceneOutliner.h"
@@ -11,6 +12,7 @@
 #include "Editor/Panels/ContentBrowser.h"
 #include "Editor/Panels/ConsolePanel.h"
 #include "Editor/Panels/VoxelInspector.h"
+#include "Editor/Panels/HUDPanel.h"
 #include "Editor/Viewport/EditorViewport.h"
 #include <cstdint>
 #include <memory>
@@ -46,6 +48,7 @@ private:
     std::unique_ptr<RenderDevice> m_RenderDevice;
     UIRenderer                    m_UIRenderer;
     NF::Game::GameWorld           m_GameWorld;
+    NF::Game::InteractionLoop     m_InteractionLoop;
     Level                         m_Level;
     bool                          m_Running{false};
     void*                         m_Hwnd{nullptr};
@@ -66,6 +69,7 @@ private:
     ConsolePanel   m_ConsolePanel;
     EditorViewport m_Viewport;
     VoxelInspector m_VoxelInspector;
+    HUDPanel       m_HUDPanel;
 };
 
 } // namespace NF::Editor
