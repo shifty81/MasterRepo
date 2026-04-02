@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+namespace NF { class UIRenderer; }
+
 namespace NF::Editor {
 
 /// @brief Axis along which a dock node is split.
@@ -20,16 +22,23 @@ struct DockNode {
     bool        isLeaf{true};
 };
 
+/// @brief Height in pixels of the panel title bar drawn by the docking system.
+constexpr float kPanelTitleBarHeight = 22.f;
+
 /// @brief Manages a tree of dockable panels inside the editor.
 ///
 /// Panels register themselves by name; the system resolves layout
 /// at each frame and calls each panel's Draw() callback in the
-/// correct region.
+/// correct region.  When a UIRenderer is provided the system also
+/// draws panel chrome (background, border, title bar).
 class DockingSystem {
 public:
     using DrawFn = std::function<void(float x, float y, float w, float h)>;
 
     DockingSystem() = default;
+
+    /// @brief Set the UIRenderer used for panel chrome.  May be nullptr.
+    void SetUIRenderer(UIRenderer* renderer) noexcept { m_Renderer = renderer; }
 
     /// @brief Register a named panel with its draw callback.
     /// @param name   Unique panel name.
@@ -71,6 +80,7 @@ private:
     std::vector<DockNode>   m_Nodes;
     std::vector<PanelEntry> m_Panels;
     uint32_t                m_NextId{1};
+    UIRenderer*             m_Renderer{nullptr};
 
     uint32_t    AllocNode();
     DockNode*   FindLeaf(const std::string& name);

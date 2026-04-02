@@ -82,6 +82,11 @@ public:
         return result;
     }
 
+    /// @brief Return the list of all live entity identifiers.
+    [[nodiscard]] const std::vector<EntityId>& GetLiveEntities() const noexcept {
+        return m_LiveEntities;
+    }
+
 private:
     template<typename T>
     std::unordered_map<EntityId, T>& ComponentStorage() {

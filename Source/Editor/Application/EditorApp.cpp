@@ -111,7 +111,20 @@ bool EditorApp::Init() {
     m_Viewport.Init(m_RenderDevice.get());
     m_Viewport.Resize(m_ClientWidth, m_ClientHeight);
 
+    // Initialise the custom UI renderer
+    m_UIRenderer.Init();
+    m_UIRenderer.SetViewportSize(static_cast<float>(m_ClientWidth),
+                                  static_cast<float>(m_ClientHeight));
+
     Logger::Log(LogLevel::Info, "Editor", "[6/6] EditorApp — wiring panels and layout");
+    // Wire UIRenderer to all subsystems
+    m_DockingSystem.SetUIRenderer(&m_UIRenderer);
+    m_SceneOutliner.SetUIRenderer(&m_UIRenderer);
+    m_Inspector.SetUIRenderer(&m_UIRenderer);
+    m_ContentBrowser.SetUIRenderer(&m_UIRenderer);
+    m_ConsolePanel.SetUIRenderer(&m_UIRenderer);
+    m_Viewport.SetUIRenderer(&m_UIRenderer);
+
     // Panels
     m_SceneOutliner.SetWorld(&m_Level.GetWorld());
     m_SceneOutliner.SetOnSelectionChanged([this](EntityId id) {
@@ -122,17 +135,27 @@ bool EditorApp::Init() {
     m_ContentBrowser.SetRootPath(
         manifest.IsValid() ? manifest.ContentRoot : "Content");
 
-    // Register panels with the docking system
+    // Register panels with the docking system — callbacks now forward bounds
     m_DockingSystem.RegisterPanel("SceneOutliner",
-        [this](float, float, float, float) { m_SceneOutliner.Draw(); });
+        [this](float x, float y, float w, float h) {
+            m_SceneOutliner.Draw(x, y, w, h);
+        });
     m_DockingSystem.RegisterPanel("Viewport",
-        [this](float, float, float, float) { m_Viewport.Draw(); });
+        [this](float x, float y, float w, float h) {
+            m_Viewport.Draw(x, y, w, h);
+        });
     m_DockingSystem.RegisterPanel("Inspector",
-        [this](float, float, float, float) { m_Inspector.Draw(); });
+        [this](float x, float y, float w, float h) {
+            m_Inspector.Draw(x, y, w, h);
+        });
     m_DockingSystem.RegisterPanel("ContentBrowser",
-        [this](float, float, float, float) { m_ContentBrowser.Draw(); });
+        [this](float x, float y, float w, float h) {
+            m_ContentBrowser.Draw(x, y, w, h);
+        });
     m_DockingSystem.RegisterPanel("Console",
-        [this](float, float, float, float) { m_ConsolePanel.Draw(); });
+        [this](float x, float y, float w, float h) {
+            m_ConsolePanel.Draw(x, y, w, h);
+        });
 
     // Default layout:
     //   SceneOutliner (20%) | Viewport (56%) | Inspector (24%)
@@ -154,6 +177,11 @@ void EditorApp::TickFrame(float dt)
     m_RenderDevice->Clear(0.18f, 0.18f, 0.18f, 1.f);
     m_Level.Update(dt);
 
+    // Begin UI rendering pass
+    m_UIRenderer.SetViewportSize(static_cast<float>(m_ClientWidth),
+                                  static_cast<float>(m_ClientHeight));
+    m_UIRenderer.BeginFrame();
+
     m_DockingSystem.Update(dt);
     m_SceneOutliner.Update(dt);
     m_Inspector.Update(dt);
@@ -162,6 +190,9 @@ void EditorApp::TickFrame(float dt)
     m_Viewport.Update(dt);
     m_DockingSystem.Draw(static_cast<float>(m_ClientWidth),
                          static_cast<float>(m_ClientHeight));
+
+    // Flush all batched UI draw calls to the GPU
+    m_UIRenderer.EndFrame();
 
     m_RenderDevice->EndFrame();
 }
@@ -222,6 +253,7 @@ void EditorApp::Shutdown() {
     Logger::Log(LogLevel::Info, "Editor", "EditorApp::Shutdown");
     m_GameWorld.Shutdown();
     m_Level.Unload();
+    m_UIRenderer.Shutdown();
     m_RenderDevice->Shutdown();
 
 #ifdef _WIN32

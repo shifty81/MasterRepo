@@ -1,9 +1,16 @@
 #include "Editor/Panels/DockingSystem.h"
+#include "UI/Rendering/UIRenderer.h"
 #include "Core/Logging/Log.h"
 #include <algorithm>
 #include <stdexcept>
 
 namespace NF::Editor {
+
+// --- Editor theme colours (0xRRGGBBAA) ---
+static constexpr uint32_t kPanelBgColor      = 0x2D2D30FF; // dark grey panel background
+static constexpr uint32_t kTitleBarBgColor    = 0x3C3C3CFF; // slightly lighter title bar
+static constexpr uint32_t kTitleTextColor     = 0xCCCCCCFF; // light grey text
+static constexpr uint32_t kPanelBorderColor   = 0x555555FF; // border between panels
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -135,8 +142,33 @@ void DockingSystem::DrawNode(const DockNode& node,
                               float x, float y, float w, float h)
 {
     if (node.isLeaf) {
-        if (DrawFn* fn = FindDrawFn(node.panelName))
-            (*fn)(x, y, w, h);
+        // Draw panel chrome via UIRenderer if available
+        if (m_Renderer && w > 0.f && h > 0.f) {
+            // Panel background
+            m_Renderer->DrawRect({x, y, w, h}, kPanelBgColor);
+
+            // Title bar
+            m_Renderer->DrawRect({x, y, w, kPanelTitleBarHeight}, kTitleBarBgColor);
+
+            // Title text (scale 2 for readability; stb_easy_font is ~7px tall)
+            if (!node.panelName.empty()) {
+                m_Renderer->DrawText(node.panelName,
+                                     x + 6.f, y + 4.f,
+                                     kTitleTextColor, 2.f);
+            }
+
+            // Panel border
+            m_Renderer->DrawOutlineRect({x, y, w, h}, kPanelBorderColor);
+        }
+
+        // Call the panel's content draw callback with the content area
+        // (below the title bar).
+        if (DrawFn* fn = FindDrawFn(node.panelName)) {
+            float contentY = y + kPanelTitleBarHeight;
+            float contentH = h - kPanelTitleBarHeight;
+            if (contentH > 0.f)
+                (*fn)(x, contentY, w, contentH);
+        }
         return;
     }
 

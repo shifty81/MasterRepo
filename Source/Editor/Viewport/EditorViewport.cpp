@@ -1,4 +1,5 @@
 #include "Editor/Viewport/EditorViewport.h"
+#include "UI/Rendering/UIRenderer.h"
 #include <cmath>
 
 namespace NF::Editor {
@@ -16,9 +17,28 @@ void EditorViewport::Update([[maybe_unused]] float dt) {
     // Orbit camera input would be handled here.
 }
 
-void EditorViewport::Draw() {
-    if (!m_Device) return;
-    m_Device->Clear(0.15f, 0.15f, 0.15f, 1.f);
+void EditorViewport::Draw(float x, float y, float w, float h) {
+    // Draw a darker viewport background to distinguish from panels
+    if (m_Renderer) {
+        static constexpr uint32_t kViewportBg    = 0x1E1E1EFF;
+        static constexpr uint32_t kGridLineColor = 0x333333FF;
+        static constexpr uint32_t kLabelColor    = 0x606060FF;
+
+        m_Renderer->DrawRect({x, y, w, h}, kViewportBg);
+
+        // Draw a simple grid overlay to show this is the 3D viewport area
+        const float gridSpacing = 40.f;
+        for (float gx = x + gridSpacing; gx < x + w; gx += gridSpacing)
+            m_Renderer->DrawRect({gx, y, 1.f, h}, kGridLineColor);
+        for (float gy = y + gridSpacing; gy < y + h; gy += gridSpacing)
+            m_Renderer->DrawRect({x, gy, w, 1.f}, kGridLineColor);
+
+        // Center label
+        m_Renderer->DrawText("3D Viewport",
+                             x + w * 0.5f - 50.f,
+                             y + h * 0.5f - 7.f,
+                             kLabelColor, 2.f);
+    }
 }
 
 Matrix4x4 EditorViewport::GetViewMatrix() const noexcept {

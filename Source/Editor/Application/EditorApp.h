@@ -1,5 +1,6 @@
 #pragma once
 #include "Renderer/RHI/RenderDevice.h"
+#include "UI/Rendering/UIRenderer.h"
 #include "Engine/ECS/World.h"
 #include "Engine/World/Level.h"
 #include "Game/World/GameWorld.h"
@@ -34,6 +35,7 @@ public:
 
 private:
     std::unique_ptr<RenderDevice> m_RenderDevice;
+    UIRenderer                    m_UIRenderer;
     NF::Game::GameWorld           m_GameWorld;
     Level                         m_Level;
     bool                          m_Running{false};
