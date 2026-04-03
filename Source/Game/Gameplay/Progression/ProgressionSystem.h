@@ -15,8 +15,8 @@ enum class SkillUnlock : uint8_t {
 
 /// @brief XP + level + skill-unlock progression tracker.
 ///
-/// XP required to reach level N (1-indexed): N * kXpPerLevel cumulative.
-/// Example: level 1 = 100 XP total, level 2 = 300 XP total (100+200), etc.
+/// XP required to reach level N (1-indexed): kXpPerLevel * (N-1) * N / 2 cumulative.
+/// Example: level 2 = 100 XP total, level 3 = 300 XP total (100+200), etc.
 /// Skills unlock at specific levels (see @c SkillUnlock).
 class ProgressionSystem {
 public:

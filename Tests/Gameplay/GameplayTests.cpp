@@ -56,7 +56,7 @@ TEST_CASE("ProgressionSystem: multiple level-ups in one AddXP", "[Progression]")
 TEST_CASE("ProgressionSystem: skills unlock at correct levels", "[Progression]") {
     ProgressionSystem ps;
     REQUIRE(!ps.IsUnlocked(SkillUnlock::Tier2Mining));
-    // XP to reach level 3: sum of 1..2 * 100 = 300
+    // XP to reach level 3: (1 + 2) * 100 = 300
     ps.AddXP(ProgressionSystem::XPThreshold(3));
     REQUIRE(ps.GetLevel() >= 3);
     REQUIRE(ps.IsUnlocked(SkillUnlock::Tier2Mining));
