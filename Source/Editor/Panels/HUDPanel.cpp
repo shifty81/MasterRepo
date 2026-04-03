@@ -1,8 +1,9 @@
 #include "Editor/Panels/HUDPanel.h"
 #include "UI/Rendering/UIRenderer.h"
 #include "Game/Interaction/ResourceItem.h"
-#include <string>
+#include "Game/World/GameWorld.h"
 #include <algorithm>
+#include <string>
 
 namespace NF::Editor {
 
@@ -14,20 +15,21 @@ void HUDPanel::DrawBar(float x, float y, float w, float barH,
 {
     if (!m_Renderer) return;
 
-    constexpr uint32_t kBgColor   = 0x2A2A2AFF;
-    constexpr uint32_t kTextColor = 0xCCCCCCFF;
+    constexpr uint32_t kBgColor   = 0x1F2329FF;
+    constexpr uint32_t kTextColor = 0xDDE3EAFF;
+    constexpr uint32_t kGlowColor = 0xFFFFFF10;
     const float dpi   = m_Renderer->GetDpiScale();
     const float scale = 2.f;
 
-    // Background track
     m_Renderer->DrawRect({x, y, w, barH}, kBgColor);
+    m_Renderer->DrawRect({x, y, w, 1.f}, kGlowColor);
 
-    // Fill bar (clamped to [0,1])
     const float f = std::max(0.f, std::min(1.f, fraction));
-    if (f > 0.f)
+    if (f > 0.f) {
         m_Renderer->DrawRect({x, y, w * f, barH}, fillColor);
+        m_Renderer->DrawRect({x, y, w * f, 1.f}, 0xFFFFFFFF);
+    }
 
-    // Label centered in bar
     if (label)
         m_Renderer->DrawText(label, x + 4.f * dpi, y + 2.f * dpi, kTextColor, scale);
 }
@@ -35,12 +37,15 @@ void HUDPanel::DrawBar(float x, float y, float w, float barH,
 void HUDPanel::Draw(float x, float y, float w, float h) {
     if (!m_Renderer) return;
 
-    constexpr uint32_t kTextColor  = 0xB0B0B0FF;
-    constexpr uint32_t kLabelColor = 0x808080FF;
-    constexpr uint32_t kSepColor   = 0x444444FF;
-    constexpr uint32_t kHealthCol  = 0x3BA83BFF; // green
-    constexpr uint32_t kEnergyCol  = 0x3B7AB8FF; // blue
-    constexpr uint32_t kItemCol    = 0xA87A3BFF; // amber
+    constexpr uint32_t kTextColor   = 0xD5DCE4FF;
+    constexpr uint32_t kLabelColor  = 0x93A1B2FF;
+    constexpr uint32_t kSepColor    = 0x3F4A57FF;
+    constexpr uint32_t kPanelGlow   = 0xFFFFFF08;
+    constexpr uint32_t kHealthCol   = 0x4FCB74FF;
+    constexpr uint32_t kEnergyCol   = 0x4FA3FFFF;
+    constexpr uint32_t kItemCol     = 0xE2B36AFF;
+    constexpr uint32_t kReadyCol    = 0x58C27DFF;
+    constexpr uint32_t kWarnCol     = 0xE0A84EFF;
 
     const float dpi   = m_Renderer->GetDpiScale();
     const float lineH = 18.f * dpi;
@@ -49,11 +54,27 @@ void HUDPanel::Draw(float x, float y, float w, float h) {
     const float scale = 2.f;
     float cy = y + 4.f * dpi;
 
-    // ---- Title --------------------------------------------------------------
+    m_Renderer->DrawRect({x, y, w, 1.f}, kPanelGlow);
     m_Renderer->DrawText("R.I.G. Status", x + padX, cy + 2.f * dpi, kTextColor, scale);
     cy += lineH;
     m_Renderer->DrawRect({x, cy, w, 1.f}, kSepColor);
     cy += 4.f * dpi;
+
+    if (m_GameWorld) {
+        const bool ready = m_GameWorld->HasVisibleWorld();
+        const std::string worldLine = std::string("World: ")
+            + (ready ? "ready" : "not ready")
+            + "  chunks " + std::to_string(m_GameWorld->GetLoadedChunkCount());
+        m_Renderer->DrawText(worldLine, x + padX, cy + 2.f * dpi, ready ? kReadyCol : kWarnCol, scale);
+        cy += lineH;
+
+        const std::string bootLine = std::string("Boot: ") + m_GameWorld->GetBootstrapStatusText();
+        m_Renderer->DrawText(bootLine, x + padX, cy + 2.f * dpi, kLabelColor, 1.5f);
+        cy += lineH;
+
+        m_Renderer->DrawRect({x, cy, w, 1.f}, kSepColor);
+        cy += 4.f * dpi;
+    }
 
     if (!m_Loop) {
         m_Renderer->DrawText("No interaction loop", x + padX, cy + 2.f * dpi, kLabelColor, scale);
@@ -62,12 +83,10 @@ void HUDPanel::Draw(float x, float y, float w, float h) {
 
     const NF::Game::RigState& rig = m_Loop->GetRig();
 
-    // ---- Rig name -----------------------------------------------------------
     const std::string nameStr = "Rig: " + rig.GetName();
     m_Renderer->DrawText(nameStr, x + padX, cy + 2.f * dpi, kLabelColor, scale);
     cy += lineH;
 
-    // ---- Health bar ---------------------------------------------------------
     {
         const float fraction = rig.GetHealth() / NF::Game::RigState::kMaxHealth;
         const std::string label = "HP " + std::to_string(static_cast<int>(rig.GetHealth()))
@@ -77,7 +96,6 @@ void HUDPanel::Draw(float x, float y, float w, float h) {
         cy += barH + 3.f * dpi;
     }
 
-    // ---- Energy bar ---------------------------------------------------------
     {
         const float fraction = rig.GetEnergy() / NF::Game::RigState::kMaxEnergy;
         const std::string label = "EN " + std::to_string(static_cast<int>(rig.GetEnergy()))
@@ -87,7 +105,6 @@ void HUDPanel::Draw(float x, float y, float w, float h) {
         cy += barH + 3.f * dpi;
     }
 
-    // ---- Tool slot ----------------------------------------------------------
     {
         static const char* kToolNames[] = {"Mine", "Place", "Repair"};
         const int slot = rig.GetToolSlot();
@@ -100,7 +117,6 @@ void HUDPanel::Draw(float x, float y, float w, float h) {
     m_Renderer->DrawRect({x, cy, w, 1.f}, kSepColor);
     cy += 4.f * dpi;
 
-    // ---- Inventory ----------------------------------------------------------
     m_Renderer->DrawText("Inventory", x + padX, cy + 2.f * dpi, kTextColor, scale);
     cy += lineH;
 

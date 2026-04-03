@@ -12,6 +12,8 @@ add_library(NFGame STATIC
     World/DevWorldConfig.cpp
     World/WorldSaveLoad.cpp
     World/WorldDebugOverlay.cpp
+    World/WorldFileService.cpp
+    World/DevWorldSerializer.cpp
 
     # Voxel Runtime (Phase 2)
     Voxel/ChunkMap.cpp

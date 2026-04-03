@@ -126,7 +126,6 @@ void RenderDevice::Shutdown() {
 void RenderDevice::BeginFrame() {
 #ifdef NF_HAS_OPENGL
     if (m_API == GraphicsAPI::OpenGL) {
-        // Per-frame state reset can go here.
     }
 #endif
 }
@@ -140,12 +139,65 @@ void RenderDevice::EndFrame() {
 }
 
 void RenderDevice::Resize(int w, int h) noexcept {
+    if (w <= 0 || h <= 0) {
+        return;
+    }
+    m_ViewportX = 0;
+    m_ViewportY = 0;
+    m_ViewportW = w;
+    m_ViewportH = h;
 #ifdef NF_HAS_OPENGL
-    if (m_API == GraphicsAPI::OpenGL && w > 0 && h > 0) {
+    if (m_API == GraphicsAPI::OpenGL) {
         glViewport(0, 0, static_cast<GLsizei>(w), static_cast<GLsizei>(h));
     }
 #else
     (void)w; (void)h;
+#endif
+}
+
+void RenderDevice::SetViewport(int x, int y, int w, int h) noexcept {
+    if (w <= 0 || h <= 0) {
+        return;
+    }
+    m_ViewportX = x;
+    m_ViewportY = y;
+    m_ViewportW = w;
+    m_ViewportH = h;
+#ifdef NF_HAS_OPENGL
+    if (m_API == GraphicsAPI::OpenGL) {
+        glViewport(static_cast<GLint>(x), static_cast<GLint>(y),
+                   static_cast<GLsizei>(w), static_cast<GLsizei>(h));
+    }
+#else
+    (void)x; (void)y; (void)w; (void)h;
+#endif
+}
+
+void RenderDevice::EnableScissor(bool enabled) noexcept {
+#ifdef NF_HAS_OPENGL
+    if (m_API == GraphicsAPI::OpenGL) {
+        if (enabled) {
+            glEnable(GL_SCISSOR_TEST);
+        } else {
+            glDisable(GL_SCISSOR_TEST);
+        }
+    }
+#else
+    (void)enabled;
+#endif
+}
+
+void RenderDevice::SetScissorRect(int x, int y, int w, int h) noexcept {
+    if (w <= 0 || h <= 0) {
+        return;
+    }
+#ifdef NF_HAS_OPENGL
+    if (m_API == GraphicsAPI::OpenGL) {
+        glScissor(static_cast<GLint>(x), static_cast<GLint>(y),
+                  static_cast<GLsizei>(w), static_cast<GLsizei>(h));
+    }
+#else
+    (void)x; (void)y; (void)w; (void)h;
 #endif
 }
 
