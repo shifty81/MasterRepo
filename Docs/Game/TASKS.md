@@ -90,9 +90,9 @@
 - [x] add Phase 9 unit tests (33 tests)
 
 ## Phase 10 — Advanced Gameplay Systems
-- [ ] implement MiningSystem (full mining progression)
-- [ ] implement BuilderSystem (voxel construction)
-- [ ] implement ProgressionSystem (XP, unlocks, skills)
-- [ ] implement InventorySystem + StorageSystem (containers, transfer)
-- [ ] implement CombatSystem (damage, health, death/respawn)
-- [ ] add Phase 10 unit tests
+- [x] implement MiningSystem (full mining progression)
+- [x] implement BuilderSystem (voxel construction)
+- [x] implement ProgressionSystem (XP, unlocks, skills)
+- [x] implement InventorySystem + StorageSystem (containers, transfer)
+- [x] implement CombatSystem (damage, health, death/respawn)
+- [x] add Phase 10 unit tests
