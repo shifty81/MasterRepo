@@ -9,7 +9,8 @@ MiningResult MiningTool::Use(VoxelEditApi& api, RigState& rig,
     MiningResult result{};
 
     // Consume energy regardless of mine outcome (tool still swings).
-    rig.ConsumeEnergy(kEnergyCostPerSwing);
+    // Return value (sufficient energy available) intentionally unused here.
+    [[maybe_unused]] bool hadEnergy = rig.ConsumeEnergy(kEnergyCostPerSwing);
 
     // Attempt to mine the voxel.
     result.voxelReport = api.Mine(wx, wy, wz);
