@@ -445,9 +445,165 @@ void EditorApp::RegisterEditorCommands()
         "About",
         nullptr,
         [](EditorCommandContext& ctx) {
-            if (ctx.console) {
-                Logger::Log(LogLevel::Info, "Editor", "NovaForge Editor - Phase 9 Complete");
-            }
+            Logger::Log(LogLevel::Info, "Editor", "NovaForge Editor - Phase 9 Complete (Build with consolidated editor)");
+        }
+    });
+
+    // World.SaveDevWorldAs
+    m_CommandRegistry.Register(EditorCommand{
+        "World.SaveDevWorldAs",
+        "Save World As...",
+        nullptr,
+        [this](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Save World As (placeholder - would open file dialog)");
+        }
+    });
+
+    // File.NewWorld
+    m_CommandRegistry.Register(EditorCommand{
+        "File.NewWorld",
+        "New World",
+        nullptr,
+        [this](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "New World (placeholder - would create new world)");
+        }
+    });
+
+    // File.OpenWorld
+    m_CommandRegistry.Register(EditorCommand{
+        "File.OpenWorld",
+        "Open World...",
+        nullptr,
+        [this](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Open World (placeholder - would open file dialog)");
+        }
+    });
+
+    // World.ReloadDevWorld
+    m_CommandRegistry.Register(EditorCommand{
+        "World.ReloadDevWorld",
+        "Reload World",
+        nullptr,
+        [this](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Reloading dev world...");
+            m_GameWorld.LoadWorld("Content/Worlds/DevWorld.nfsv");
+            m_MeshCache.RebuildDirty(m_GameWorld.GetChunkMap());
+            Logger::Log(LogLevel::Info, "Editor", "World reloaded");
+        }
+    });
+
+    // World.ValidateState
+    m_CommandRegistry.Register(EditorCommand{
+        "World.ValidateState",
+        "Validate World State",
+        nullptr,
+        [](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "World validation (placeholder)");
+        }
+    });
+
+    // Tool commands (placeholders for now)
+    m_CommandRegistry.Register(EditorCommand{
+        "Tools.SelectMode",
+        "Select Mode",
+        nullptr,
+        [](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Switched to Select mode");
+        }
+    });
+
+    m_CommandRegistry.Register(EditorCommand{
+        "Tools.VoxelInspectMode",
+        "Voxel Inspect Mode",
+        nullptr,
+        [](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Switched to Voxel Inspect mode");
+        }
+    });
+
+    m_CommandRegistry.Register(EditorCommand{
+        "Tools.VoxelAddMode",
+        "Voxel Add Mode",
+        nullptr,
+        [](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Switched to Voxel Add mode");
+        }
+    });
+
+    m_CommandRegistry.Register(EditorCommand{
+        "Tools.VoxelRemoveMode",
+        "Voxel Remove Mode",
+        nullptr,
+        [](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Switched to Voxel Remove mode");
+        }
+    });
+
+    // Help.Controls
+    m_CommandRegistry.Register(EditorCommand{
+        "Help.Controls",
+        "Editor Controls",
+        nullptr,
+        [](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "=== Editor Controls ===");
+            Logger::Log(LogLevel::Info, "Editor", "Viewport: RMB=Rotate, MMB=Pan, Wheel=Zoom");
+            Logger::Log(LogLevel::Info, "Editor", "Toolbar: Play=Reset interaction, Launch Game=Open standalone client");
+        }
+    });
+
+    // Edit commands (placeholders)
+    m_CommandRegistry.Register(EditorCommand{
+        "Edit.Undo",
+        "Undo",
+        nullptr,
+        [](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Undo (not yet implemented)");
+        }
+    });
+
+    m_CommandRegistry.Register(EditorCommand{
+        "Edit.Redo",
+        "Redo",
+        nullptr,
+        [](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Redo (not yet implemented)");
+        }
+    });
+
+    // View commands (placeholders)
+    m_CommandRegistry.Register(EditorCommand{
+        "View.ResetLayout",
+        "Reset Layout",
+        nullptr,
+        [](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Reset layout (placeholder)");
+        }
+    });
+
+    m_CommandRegistry.Register(EditorCommand{
+        "View.ToggleContentBrowser",
+        "Toggle Content Browser",
+        nullptr,
+        [](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Toggle content browser (placeholder)");
+        }
+    });
+
+    m_CommandRegistry.Register(EditorCommand{
+        "View.ToggleInspector",
+        "Toggle Inspector",
+        nullptr,
+        [](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Toggle inspector (placeholder)");
+        }
+    });
+
+    m_CommandRegistry.Register(EditorCommand{
+        "View.ToggleWorldDebug",
+        "Toggle World Debug",
+        nullptr,
+        [](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Toggle world debug (placeholder)");
         }
     });
 
