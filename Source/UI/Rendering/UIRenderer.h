@@ -4,6 +4,13 @@
 #include <string_view>
 #include <vector>
 
+// Windows defines DrawText as a macro (DrawTextA/DrawTextW) which conflicts
+// with NF::UIRenderer::DrawText.  Undefine it here so the method is visible
+// by its correct name regardless of include order.
+#ifdef DrawText
+#  undef DrawText
+#endif
+
 namespace NF {
 
 /// @brief Immediate-mode 2-D renderer used by the UI layer.
