@@ -13,6 +13,11 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <windowsx.h>  // GET_X_LPARAM, GET_Y_LPARAM
+// Windows defines DrawText as a macro (DrawTextA/DrawTextW).  Undefine it so
+// calls to NF::UIRenderer::DrawText are not silently rewritten to DrawTextA.
+#ifdef DrawText
+#  undef DrawText
+#endif
 #endif
 
 namespace NF::Editor {
