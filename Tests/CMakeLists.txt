@@ -29,6 +29,7 @@ add_executable(NFTests
     Multiplayer/MultiplayerTests.cpp
     ChunkStreaming/ChunkStreamingTests.cpp
     Audio/AudioTests.cpp
+    Gameplay/GameplayTests.cpp
 )
 
 target_include_directories(NFTests PRIVATE ${CMAKE_SOURCE_DIR}/Source)
