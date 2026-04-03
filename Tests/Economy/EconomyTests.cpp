@@ -146,7 +146,7 @@ TEST_CASE("TradeMarket: price is clamped to floor when selling repeatedly", "[Tr
     TradeMarket mkt;
     mkt.Initialize(reg, 0);
     NF::Game::Inventory inv;
-    inv.AddItem(NF::Game::ResourceType::Stone, 16); // fill 1 slot
+    inv.AddItem(NF::Game::ResourceType::Stone, 16); // enough items for repeated selling
 
     for (int i = 0; i < 30; ++i) {
         if (inv.HasItem(NF::Game::ResourceType::Stone))

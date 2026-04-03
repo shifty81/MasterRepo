@@ -28,7 +28,7 @@ ManufacturingQueue::ManufacturingQueue() {
     // Recipe: Rock + Metal → Metal (refined, 2 units, 12 s)
     {
         CraftRecipe r;
-        r.output        = NF::Game::ResourceType::Rock;
+        r.output        = NF::Game::ResourceType::Metal;
         r.outputCount   = 2;
         r.duration      = 12.f;
         r.inputs[0]     = { NF::Game::ResourceType::Rock,  4 };
