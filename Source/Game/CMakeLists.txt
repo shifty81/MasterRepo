@@ -12,6 +12,8 @@ add_library(NFGame STATIC
     World/DevWorldConfig.cpp
     World/WorldSaveLoad.cpp
     World/WorldDebugOverlay.cpp
+    World/WorldFileService.cpp
+    World/DevWorldSerializer.cpp
 
     # Voxel Runtime (Phase 2)
     Voxel/ChunkMap.cpp
@@ -34,6 +36,10 @@ add_library(NFGame STATIC
 
     # Movement (Phase 5)
     Movement/PlayerMovement.cpp
+
+    # Character model (low-poly trench-coat explorer)
+    Character/CharacterMeshBuilder.cpp
+    Character/PlayerCharacterRenderer.cpp
 
     # Multiplayer (Phase 6)
     Net/NetReplicator.cpp

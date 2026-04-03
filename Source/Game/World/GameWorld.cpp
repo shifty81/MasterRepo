@@ -1,5 +1,6 @@
 #include "Game/World/GameWorld.h"
 #include "Core/Logging/Log.h"
+#include <cmath>
 #include <vector>
 
 namespace NF::Game {
@@ -8,52 +9,52 @@ bool GameWorld::Initialize(const std::string& contentRoot)
 {
     // Load dev world config
     const std::string configPath = contentRoot + "/Definitions/DevWorld.json";
-    if (!m_Config.LoadFromFile(configPath))
-    {
+    m_UsedFallbackDefinition = false;
+    if (!m_Config.LoadFromFile(configPath)) {
         Logger::Log(LogLevel::Warning, "GameWorld",
                     "DevWorld config not found at " + configPath + "; using defaults");
         m_Config = DevWorldConfig::Defaults();
+        m_UsedFallbackDefinition = true;
     }
 
-    // Load the level using the world id
-    m_Level.Load(m_Config.WorldId());
-
-    // Log world identity and seed at startup
     Logger::Log(LogLevel::Info, "GameWorld",
-                "World: " + m_Config.WorldId()
-                + " | Seed: " + std::to_string(m_Config.Seed()));
+                "[World] Definition loaded: " + m_Config.WorldId());
+    Logger::Log(LogLevel::Info, "GameWorld",
+                std::string("[World] Fallback definition used: ") + (m_UsedFallbackDefinition ? "YES" : "NO"));
+    Logger::Log(LogLevel::Info, "GameWorld",
+                "[World] Seed: " + std::to_string(m_Config.Seed()));
 
     // Create a player entity at the spawn point
+    m_Level.Load(m_Config.WorldId());
     auto& world = m_Level.GetWorld();
     m_PlayerEntity = world.CreateEntity();
     Logger::Log(LogLevel::Info, "GameWorld",
-                "Player entity created: " + std::to_string(m_PlayerEntity));
+                "[World] Player entity created: " + std::to_string(m_PlayerEntity));
 
     // Log spawn point
     const auto& sp = m_Config.GetSpawnPoint();
     Logger::Log(LogLevel::Info, "GameWorld",
-                "Spawn point: (" + std::to_string(sp.Position.X) + ", "
+                "[World] Spawn initialized: (" + std::to_string(sp.Position.X) + ", "
                 + std::to_string(sp.Position.Y) + ", "
                 + std::to_string(sp.Position.Z) + ")");
 
     m_Ready = true;
-    Logger::Log(LogLevel::Info, "GameWorld", "Initialized");
 
-    // --- Phase 4: generate a starter terrain chunk at the spawn point ---
-    // Place a flat ground layer of mixed voxel types so there is visible
-    // geometry in both the editor viewport and the standalone game client.
+    // --- Phase 4: generate starter terrain chunks around spawn ---
     {
-        const auto& spPos = m_Config.GetSpawnPoint().Position;
-        // Create chunks in a small area around spawn.
-        for (int cx = -1; cx <= 1; ++cx) {
-            for (int cz = -1; cz <= 1; ++cz) {
-                ChunkCoord coord{cx, 0, cz};
+        // Use floor division to handle negative spawn positions correctly
+        const int32_t spawnChunkX = static_cast<int32_t>(std::floor(sp.Position.X / kChunkSize));
+        const int32_t spawnChunkY = 0;
+        const int32_t spawnChunkZ = static_cast<int32_t>(std::floor(sp.Position.Z / kChunkSize));
+
+        m_InitialGeneratedChunkCount = 0;
+        for (int cx = spawnChunkX - 1; cx <= spawnChunkX + 1; ++cx) {
+            for (int cz = spawnChunkZ - 1; cz <= spawnChunkZ + 1; ++cz) {
+                ChunkCoord coord{cx, spawnChunkY, cz};
                 Chunk* chunk = m_ChunkMap.GetOrCreateChunk(coord);
 
-                // Fill the bottom half with terrain.
                 for (uint8_t x = 0; x < kChunkSize; ++x) {
                     for (uint8_t z = 0; z < kChunkSize; ++z) {
-                        // Height varies by a simple pattern based on position.
                         const int wx = cx * kChunkSize + x;
                         const int wz = cz * kChunkSize + z;
                         const int height = 8 + (wx * 3 + wz * 7) % 5;
@@ -69,7 +70,6 @@ bool GameWorld::Initialize(const std::string& contentRoot)
                             else
                                 type = VoxelType::Stone;
 
-                            // Scatter ore veins.
                             if (y > 2 && y < 8 && ((wx + y * 3 + wz * 5) % 17 == 0))
                                 type = VoxelType::Ore;
 
@@ -77,13 +77,26 @@ bool GameWorld::Initialize(const std::string& contentRoot)
                         }
                     }
                 }
+
+                ++m_InitialGeneratedChunkCount;
             }
         }
 
+        const int loadedChunks = static_cast<int>(m_ChunkMap.ChunkCount());
         Logger::Log(LogLevel::Info, "GameWorld",
-                    "Starter terrain: 9 chunks, " +
-                    std::to_string(m_ChunkMap.ChunkCount()) + " loaded");
+                    "[World] Initial chunks generated: " + std::to_string(m_InitialGeneratedChunkCount));
+        Logger::Log(LogLevel::Info, "GameWorld",
+                    "[World] Chunk map loaded count: " + std::to_string(loadedChunks));
+
+        m_BootstrapStatusText = loadedChunks > 0
+            ? "descriptor loaded, chunks populated"
+            : "descriptor loaded, chunk map empty";
+
+        Logger::Log(LogLevel::Info, "GameWorld",
+                    "[Viewport] State: " + std::string(loadedChunks > 0 ? "POPULATED" : "EMPTY"));
     }
+
+    Logger::Log(LogLevel::Info, "GameWorld", "Initialized");
     return true;
 }
 
@@ -99,6 +112,7 @@ void GameWorld::Shutdown()
     m_Level.Unload();
     m_PlayerEntity = NullEntity;
     m_Ready = false;
+    m_BootstrapStatusText = "shutdown";
     Logger::Log(LogLevel::Info, "GameWorld", "Shutdown");
 }
 

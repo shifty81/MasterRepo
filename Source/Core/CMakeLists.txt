@@ -8,6 +8,7 @@ add_library(NFCore STATIC
     Platform/Platform.cpp
     Config/ConfigSystem.cpp
     Config/ProjectManifest.cpp
+    Paths/ProjectPathService.cpp
 )
 
 add_library(NF::Core ALIAS NFCore)

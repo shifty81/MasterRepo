@@ -6,11 +6,12 @@
 
 namespace NF::Editor {
 
-// --- Editor theme colours (0xRRGGBBAA) ---
-static constexpr uint32_t kPanelBgColor      = 0x2D2D30FF; // dark grey panel background
-static constexpr uint32_t kTitleBarBgColor    = 0x3C3C3CFF; // slightly lighter title bar
-static constexpr uint32_t kTitleTextColor     = 0xCCCCCCFF; // light grey text
-static constexpr uint32_t kPanelBorderColor   = 0x555555FF; // border between panels
+static constexpr uint32_t kPanelBgColor       = 0x24262BFF;
+static constexpr uint32_t kTitleBarBgColor    = 0x2F343DFF;
+static constexpr uint32_t kTitleBarAccent     = 0x5E89B8FF;
+static constexpr uint32_t kTitleTextColor     = 0xD7DCE3FF;
+static constexpr uint32_t kPanelBorderColor   = 0x4B5563FF;
+static constexpr uint32_t kPanelContentShade  = 0x1A1C20AA;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -138,6 +139,68 @@ void DockingSystem::SplitPanel(const std::string& parentName,
 
 void DockingSystem::Update(float /*dt*/) {}
 
+void DockingSystem::CachePanelRect(const std::string& name,
+                                    float x, float y, float w, float h)
+{
+    for (auto& pr : m_LastPanelRects) {
+        if (pr.name == name) {
+            pr.x = x; pr.y = y; pr.w = w; pr.h = h;
+            return;
+        }
+    }
+    m_LastPanelRects.push_back({name, x, y, w, h});
+}
+
+void DockingSystem::LayoutNode(const DockNode& node,
+                                float x, float y, float w, float h)
+{
+    if (node.isLeaf) {
+        const float dpi       = m_Renderer ? m_Renderer->GetDpiScale() : 1.f;
+        const float titleBarH = kPanelTitleBarHeight * dpi;
+        const float contentY  = y + titleBarH;
+        const float contentH  = h - titleBarH;
+        CachePanelRect(node.panelName, x, contentY, w, contentH);
+        return;
+    }
+
+    DockNode* first  = nullptr;
+    DockNode* second = nullptr;
+    for (auto& n : m_Nodes) {
+        if (n.id == node.firstChild)  first  = &n;
+        if (n.id == node.secondChild) second = &n;
+    }
+    if (!first || !second) return;
+
+    if (node.axis == SplitAxis::Horizontal) {
+        float leftW = w * node.splitRatio;
+        LayoutNode(*first,  x,         y, leftW,     h);
+        LayoutNode(*second, x + leftW, y, w - leftW, h);
+    } else {
+        float topH = h * node.splitRatio;
+        LayoutNode(*first,  x, y,        w, topH);
+        LayoutNode(*second, x, y + topH, w, h - topH);
+    }
+}
+
+void DockingSystem::BuildLayout(float x, float y, float totalWidth, float totalHeight)
+{
+    m_LastPanelRects.clear();
+    if (m_Nodes.empty()) return;
+    LayoutNode(m_Nodes[0], x, y, totalWidth, totalHeight);
+}
+
+bool DockingSystem::GetPanelRect(const std::string& name,
+                                  float& x, float& y, float& w, float& h) const noexcept
+{
+    for (const auto& pr : m_LastPanelRects) {
+        if (pr.name == name) {
+            x = pr.x; y = pr.y; w = pr.w; h = pr.h;
+            return true;
+        }
+    }
+    return false;
+}
+
 void DockingSystem::DrawNode(const DockNode& node,
                               float x, float y, float w, float h)
 {
@@ -146,12 +209,17 @@ void DockingSystem::DrawNode(const DockNode& node,
         if (m_Renderer && w > 0.f && h > 0.f) {
             const float dpi       = m_Renderer->GetDpiScale();
             const float titleBarH = kPanelTitleBarHeight * dpi;
+            const float contentY  = y + titleBarH;
+            const float contentH  = h - titleBarH;
 
             // Panel background
             m_Renderer->DrawRect({x, y, w, h}, kPanelBgColor);
 
             // Title bar
             m_Renderer->DrawRect({x, y, w, titleBarH}, kTitleBarBgColor);
+            m_Renderer->DrawRect({x, y, w, 2.f * dpi}, kTitleBarAccent);
+            if (contentH > 0.f)
+                m_Renderer->DrawRect({x, contentY, w, contentH}, kPanelContentShade);
 
             // Title text — scale 2 at 96 DPI; UIRenderer multiplies by DPI.
             if (!node.panelName.empty()) {
@@ -171,8 +239,11 @@ void DockingSystem::DrawNode(const DockNode& node,
             const float titleBarH = kPanelTitleBarHeight * dpi;
             const float contentY  = y + titleBarH;
             const float contentH  = h - titleBarH;
-            if (contentH > 0.f)
+            if (contentH > 0.f) {
+                if (m_Renderer) m_Renderer->PushClipRect({x, contentY, w, contentH});
                 (*fn)(x, contentY, w, contentH);
+                if (m_Renderer) m_Renderer->PopClipRect();
+            }
         }
         return;
     }
@@ -200,6 +271,7 @@ void DockingSystem::DrawNode(const DockNode& node,
 void DockingSystem::Draw(float x, float y, float totalWidth, float totalHeight)
 {
     if (m_Nodes.empty()) return;
+    BuildLayout(x, y, totalWidth, totalHeight);
     DrawNode(m_Nodes[0], x, y, totalWidth, totalHeight);
 }
 

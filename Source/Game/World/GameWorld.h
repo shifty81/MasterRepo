@@ -8,6 +8,7 @@
 #include "Game/Voxel/VoxelSerializer.h"
 #include "Game/Voxel/VoxelDebugOverlay.h"
 #include "Engine/ECS/World.h"
+#include <string>
 
 namespace NF::Game {
 
@@ -102,6 +103,12 @@ public:
     [[nodiscard]] VoxelEditApi&       GetVoxelEditApi()       noexcept { return m_EditApi; }
     [[nodiscard]] const VoxelEditApi& GetVoxelEditApi() const noexcept { return m_EditApi; }
 
+    [[nodiscard]] bool UsedFallbackDefinition() const noexcept { return m_UsedFallbackDefinition; }
+    [[nodiscard]] int GetInitialGeneratedChunkCount() const noexcept { return m_InitialGeneratedChunkCount; }
+    [[nodiscard]] int GetLoadedChunkCount() const noexcept { return static_cast<int>(m_ChunkMap.ChunkCount()); }
+    [[nodiscard]] bool HasVisibleWorld() const noexcept { return m_ChunkMap.ChunkCount() > 0; }
+    [[nodiscard]] const std::string& GetBootstrapStatusText() const noexcept { return m_BootstrapStatusText; }
+
 private:
     Level             m_Level;
     DevWorldConfig    m_Config;
@@ -113,6 +120,10 @@ private:
     // Voxel layer
     ChunkMap      m_ChunkMap;
     VoxelEditApi  m_EditApi;
+
+    bool              m_UsedFallbackDefinition{false};
+    int               m_InitialGeneratedChunkCount{0};
+    std::string       m_BootstrapStatusText{"uninitialized"};
 };
 
 } // namespace NF::Game
