@@ -1,5 +1,14 @@
 cmake_minimum_required(VERSION 3.20)
+
+# Must be set before project() to take effect via CMP0091
+cmake_policy(SET CMP0091 NEW)
+
 project(NovaForge VERSION 0.1.0 LANGUAGES CXX)
+
+# Enforce a consistent MSVC runtime library across all targets to avoid LNK4098
+if(MSVC)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+endif()
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

@@ -149,3 +149,13 @@ Deliverables (prioritised order):
 - InventorySystem + StorageSystem: full container/transfer logic
 - CombatSystem: basic damage model, health, death/respawn
 - Remaining stubs iterated as needed
+
+### Phase 11 — Economy & Trade
+Goal: establish the resource economy backbone used by all later systems.
+
+Deliverables:
+- ResourceRegistry: static catalog of all resource types with base price, mass, tradeable/craftable flags
+- TradeMarket: commodity market with supply/demand dynamic pricing (buy/sell, price floor/ceiling)
+- ManufacturingQueue: sequential recipe-based crafting queue with ingredient deduction and timed progress
+- StationServices: docking lifecycle, repair/refuel services billed in credits, market + factory access
+- Tests for registry lookup, trade pricing, manufacturing flow, and station services
