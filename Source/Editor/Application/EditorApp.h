@@ -16,6 +16,8 @@
 #include "Editor/Panels/VoxelInspector.h"
 #include "Editor/Panels/HUDPanel.h"
 #include "Editor/Panels/EditorToolbar.h"
+#include "Editor/Panels/MenuBarPanel.h"
+#include "Editor/Commands/EditorCommandRegistry.h"
 #include "Editor/Viewport/EditorViewport.h"
 #include <cstdint>
 #include <memory>
@@ -67,6 +69,12 @@ private:
     /// @param dt Elapsed seconds since the previous frame.
     void TickFrame(float dt);
 
+    /// @brief Register all built-in editor commands.
+    void RegisterEditorCommands();
+
+    /// @brief Draw the menu bar.
+    void DrawMenuBar(float x, float y, float w, float h);
+
     DockingSystem  m_DockingSystem;
     SceneOutliner  m_SceneOutliner;
     Inspector      m_Inspector;
@@ -76,6 +84,10 @@ private:
     VoxelInspector m_VoxelInspector;
     HUDPanel       m_HUDPanel;
     EditorToolbar  m_Toolbar;
+
+    // Command system and menu bar
+    nf::EditorCommandRegistry m_CommandRegistry;
+    nf::MenuBarPanel          m_MenuBar;
 };
 
 } // namespace NF::Editor

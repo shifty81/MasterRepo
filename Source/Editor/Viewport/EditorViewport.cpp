@@ -76,42 +76,36 @@ void EditorViewport::Draw(float x, float y, float w, float h) {
 
     if (!m_Renderer) return;
 
-    static constexpr uint32_t kViewportBg    = 0x1E1E1EFF;
-    static constexpr uint32_t kGridLineColor = 0x333333FF;
-    static constexpr uint32_t kLabelColor    = 0x606060FF;
-    static constexpr uint32_t kCamInfoColor  = 0x808080FF;
+    static constexpr uint32_t kCamInfoColor  = 0xCCCCCCFF;
+    static constexpr uint32_t kBorderColor   = 0x505050FF;
 
-    m_Renderer->DrawRect({x, y, w, h}, kViewportBg);
-
-    // Grid overlay — scale grid spacing with DPI.
-    const float dpi         = m_Renderer->GetDpiScale();
-    const float gridSpacing = 40.f * dpi;
-    for (float gx = x + gridSpacing; gx < x + w; gx += gridSpacing)
-        m_Renderer->DrawRect({gx, y, 1.f, h}, kGridLineColor);
-    for (float gy = y + gridSpacing; gy < y + h; gy += gridSpacing)
-        m_Renderer->DrawRect({x, gy, w, 1.f}, kGridLineColor);
-
-    // Center label
-    m_Renderer->DrawText("3D Viewport",
-                         x + w * 0.5f - 44.f * dpi,
-                         y + h * 0.5f - 7.f  * dpi,
-                         kLabelColor, 2.f);
+    // Draw subtle border around viewport to show its bounds
+    m_Renderer->DrawOutlineRect({x, y, w, h}, kBorderColor);
 
     // Camera info overlay (bottom-left corner of viewport).
     // Converts pitch/yaw to degrees for readability.
-    const float padX = 6.f * dpi;
-    const float padY = 6.f * dpi;
+    const float dpi = m_Renderer->GetDpiScale();
+    const float padX = 8.f * dpi;
+    const float padY = 8.f * dpi;
 
     auto toDeg = [](float rad) -> int {
         return static_cast<int>(rad * (180.f / std::numbers::pi_v<float>));
     };
-    std::string camStr = "Yaw " + std::to_string(toDeg(m_Yaw))
-                       + "  Pitch " + std::to_string(toDeg(m_Pitch))
-                       + "  Zoom " + std::to_string(static_cast<int>(m_Zoom));
+
+    // Draw camera controls info
+    std::string controls = "RMB: Rotate | MMB: Pan | Wheel: Zoom";
+    m_Renderer->DrawText(controls,
+                         x + padX,
+                         y + h - 38.f * dpi,
+                         0x808080FF, 1.3f);
+
+    std::string camStr = "Camera: Yaw " + std::to_string(toDeg(m_Yaw))
+                       + " Pitch " + std::to_string(toDeg(m_Pitch))
+                       + " Zoom " + std::to_string(static_cast<int>(m_Zoom));
     m_Renderer->DrawText(camStr,
                          x + padX,
-                         y + h - 18.f * dpi,
-                         kCamInfoColor, 1.5f);
+                         y + h - 20.f * dpi,
+                         kCamInfoColor, 1.3f);
 }
 
 Matrix4x4 EditorViewport::GetViewMatrix() const noexcept {

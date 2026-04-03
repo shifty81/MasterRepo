@@ -315,6 +315,25 @@ bool EditorApp::Init() {
     m_Toolbar.SetInteractionLoop(&m_InteractionLoop);
     m_Toolbar.SetInputState(&m_Input);
 
+    // Initialize command registry and menu bar
+    {
+        nf::EditorCommandContext cmdContext;
+        cmdContext.app = nullptr;  // We don't have an nf::EditorApp, so use nullptr for now
+        // Note: The nf:: command context expects nf:: namespace panels, but we have NF::Editor:: panels
+        // For now, we'll leave these nullptr and not pass the panel references
+        cmdContext.console = nullptr;
+        cmdContext.contentBrowser = nullptr;
+        cmdContext.inspector = nullptr;
+        m_CommandRegistry.SetContext(cmdContext);
+
+        // Register core commands
+        RegisterEditorCommands();
+
+        // Build menus
+        m_MenuBar.SetCommandRegistry(&m_CommandRegistry);
+        m_MenuBar.BuildDefaultMenus();
+    }
+
     // Panels
     m_SceneOutliner.SetWorld(&m_Level.GetWorld());
     m_SceneOutliner.SetOnSelectionChanged([this](EntityId id) {
@@ -369,6 +388,325 @@ bool EditorApp::Init() {
     return true;
 }
 
+void EditorApp::RegisterEditorCommands()
+{
+    using namespace nf;
+
+    // File.Exit
+    m_CommandRegistry.Register(EditorCommand{
+        "File.Exit",
+        "Exit",
+        nullptr,  // always can execute
+        [this](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "File.Exit command triggered");
+            m_Running = false;
+        }
+    });
+
+    // World.SaveDevWorld
+    m_CommandRegistry.Register(EditorCommand{
+        "World.SaveDevWorld",
+        "Save World",
+        nullptr,
+        [this](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Saving dev world...");
+            m_GameWorld.SaveWorld("Content/Worlds/DevWorld.nfsv");
+            Logger::Log(LogLevel::Info, "Editor", "World saved");
+        }
+    });
+
+    // World.LoadDevWorld
+    m_CommandRegistry.Register(EditorCommand{
+        "World.LoadDevWorld",
+        "Load World",
+        nullptr,
+        [this](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Loading dev world...");
+            m_GameWorld.LoadWorld("Content/Worlds/DevWorld.nfsv");
+            m_MeshCache.RebuildDirty(m_GameWorld.GetChunkMap());
+            Logger::Log(LogLevel::Info, "Editor", "World loaded");
+        }
+    });
+
+    // View.ToggleConsole
+    m_CommandRegistry.Register(EditorCommand{
+        "View.ToggleConsole",
+        "Toggle Console",
+        nullptr,
+        [](EditorCommandContext& ctx) {
+            Logger::Log(LogLevel::Info, "Editor", "Toggle console (placeholder)");
+            // TODO: implement panel visibility toggle
+        }
+    });
+
+    // Help.About
+    m_CommandRegistry.Register(EditorCommand{
+        "Help.About",
+        "About",
+        nullptr,
+        [](EditorCommandContext& ctx) {
+            Logger::Log(LogLevel::Info, "Editor", "NovaForge Editor - Phase 9 Complete (Build with consolidated editor)");
+        }
+    });
+
+    // World.SaveDevWorldAs
+    m_CommandRegistry.Register(EditorCommand{
+        "World.SaveDevWorldAs",
+        "Save World As...",
+        nullptr,
+        [this](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Save World As (placeholder - would open file dialog)");
+        }
+    });
+
+    // File.NewWorld
+    m_CommandRegistry.Register(EditorCommand{
+        "File.NewWorld",
+        "New World",
+        nullptr,
+        [this](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "New World (placeholder - would create new world)");
+        }
+    });
+
+    // File.OpenWorld
+    m_CommandRegistry.Register(EditorCommand{
+        "File.OpenWorld",
+        "Open World...",
+        nullptr,
+        [this](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Open World (placeholder - would open file dialog)");
+        }
+    });
+
+    // World.ReloadDevWorld
+    m_CommandRegistry.Register(EditorCommand{
+        "World.ReloadDevWorld",
+        "Reload World",
+        nullptr,
+        [this](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Reloading dev world...");
+            m_GameWorld.LoadWorld("Content/Worlds/DevWorld.nfsv");
+            m_MeshCache.RebuildDirty(m_GameWorld.GetChunkMap());
+            Logger::Log(LogLevel::Info, "Editor", "World reloaded");
+        }
+    });
+
+    // World.ValidateState
+    m_CommandRegistry.Register(EditorCommand{
+        "World.ValidateState",
+        "Validate World State",
+        nullptr,
+        [](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "World validation (placeholder)");
+        }
+    });
+
+    // Tool commands (placeholders for now)
+    m_CommandRegistry.Register(EditorCommand{
+        "Tools.SelectMode",
+        "Select Mode",
+        nullptr,
+        [](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Switched to Select mode");
+        }
+    });
+
+    m_CommandRegistry.Register(EditorCommand{
+        "Tools.VoxelInspectMode",
+        "Voxel Inspect Mode",
+        nullptr,
+        [](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Switched to Voxel Inspect mode");
+        }
+    });
+
+    m_CommandRegistry.Register(EditorCommand{
+        "Tools.VoxelAddMode",
+        "Voxel Add Mode",
+        nullptr,
+        [](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Switched to Voxel Add mode");
+        }
+    });
+
+    m_CommandRegistry.Register(EditorCommand{
+        "Tools.VoxelRemoveMode",
+        "Voxel Remove Mode",
+        nullptr,
+        [](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Switched to Voxel Remove mode");
+        }
+    });
+
+    // Help.Controls
+    m_CommandRegistry.Register(EditorCommand{
+        "Help.Controls",
+        "Editor Controls",
+        nullptr,
+        [](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "=== Editor Controls ===");
+            Logger::Log(LogLevel::Info, "Editor", "Viewport: RMB=Rotate, MMB=Pan, Wheel=Zoom");
+            Logger::Log(LogLevel::Info, "Editor", "Toolbar: Play=Reset interaction, Launch Game=Open standalone client");
+        }
+    });
+
+    // Edit commands (placeholders)
+    m_CommandRegistry.Register(EditorCommand{
+        "Edit.Undo",
+        "Undo",
+        nullptr,
+        [](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Undo (not yet implemented)");
+        }
+    });
+
+    m_CommandRegistry.Register(EditorCommand{
+        "Edit.Redo",
+        "Redo",
+        nullptr,
+        [](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Redo (not yet implemented)");
+        }
+    });
+
+    // View commands (placeholders)
+    m_CommandRegistry.Register(EditorCommand{
+        "View.ResetLayout",
+        "Reset Layout",
+        nullptr,
+        [](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Reset layout (placeholder)");
+        }
+    });
+
+    m_CommandRegistry.Register(EditorCommand{
+        "View.ToggleContentBrowser",
+        "Toggle Content Browser",
+        nullptr,
+        [](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Toggle content browser (placeholder)");
+        }
+    });
+
+    m_CommandRegistry.Register(EditorCommand{
+        "View.ToggleInspector",
+        "Toggle Inspector",
+        nullptr,
+        [](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Toggle inspector (placeholder)");
+        }
+    });
+
+    m_CommandRegistry.Register(EditorCommand{
+        "View.ToggleWorldDebug",
+        "Toggle World Debug",
+        nullptr,
+        [](EditorCommandContext&) {
+            Logger::Log(LogLevel::Info, "Editor", "Toggle world debug (placeholder)");
+        }
+    });
+
+    Logger::Log(LogLevel::Info, "Editor", "Registered editor commands");
+}
+
+void EditorApp::DrawMenuBar(float x, float y, float w, float h)
+{
+    // Draw menu bar background
+    static constexpr uint32_t kMenuBarBg = 0x2D2D30FF;
+    static constexpr uint32_t kMenuBg    = 0x1B1B1CFF;
+    static constexpr uint32_t kMenuHover = 0x3E3E40FF;
+    static constexpr uint32_t kTextColor = 0xFFFFFFFF;
+    static constexpr uint32_t kSepColor  = 0x444444FF;
+
+    m_UIRenderer.DrawRect({x, y, w, h}, kMenuBarBg);
+    m_UIRenderer.DrawRect({x, y + h - 1.f, w, 1.f}, kSepColor);  // Bottom border
+
+    const float dpi = m_UIRenderer.GetDpiScale();
+    float menuX = x + 8.f * dpi;
+    const float menuY = y + 4.f * dpi;
+    const float menuItemW = 70.f * dpi;
+    const float menuItemH = h - 8.f * dpi;
+
+    // Track which menu is open (if any)
+    static int openMenuIndex = -1;
+    static bool menuWasJustOpened = false;
+
+    const auto& menus = m_MenuBar.GetMenus();
+
+    // Draw each top-level menu item
+    for (size_t i = 0; i < menus.size(); ++i) {
+        const auto& menu = menus[i];
+        const bool isHovered = m_Input.mouseX >= menuX && m_Input.mouseX < menuX + menuItemW &&
+                               m_Input.mouseY >= menuY && m_Input.mouseY < menuY + menuItemH;
+
+        // Draw menu button
+        if (isHovered || static_cast<int>(i) == openMenuIndex) {
+            m_UIRenderer.DrawRect({menuX, menuY, menuItemW, menuItemH}, kMenuHover);
+        }
+        m_UIRenderer.DrawText(menu.label, menuX + 6.f * dpi, menuY + 2.f * dpi, kTextColor, 1.5f);
+
+        // Handle click
+        if (isHovered && m_Input.leftJustPressed && !menuWasJustOpened) {
+            if (openMenuIndex == static_cast<int>(i)) {
+                openMenuIndex = -1;  // Close if clicking the same menu
+            } else {
+                openMenuIndex = static_cast<int>(i);
+                menuWasJustOpened = true;
+            }
+        }
+
+        // Draw dropdown if this menu is open
+        if (openMenuIndex == static_cast<int>(i)) {
+            const float dropdownX = menuX;
+            const float dropdownY = y + h;
+            const float dropdownW = 180.f * dpi;
+            const float itemH = 24.f * dpi;
+            const float dropdownH = static_cast<float>(menu.items.size()) * itemH;
+
+            // Draw dropdown background
+            m_UIRenderer.DrawRect({dropdownX, dropdownY, dropdownW, dropdownH}, kMenuBg);
+            m_UIRenderer.DrawOutlineRect({dropdownX, dropdownY, dropdownW, dropdownH}, kSepColor);
+
+            float itemY = dropdownY;
+            for (const auto& item : menu.items) {
+                const bool itemHovered = m_Input.mouseX >= dropdownX && m_Input.mouseX < dropdownX + dropdownW &&
+                                        m_Input.mouseY >= itemY && m_Input.mouseY < itemY + itemH;
+
+                if (itemHovered) {
+                    m_UIRenderer.DrawRect({dropdownX, itemY, dropdownW, itemH}, kMenuHover);
+                }
+
+                m_UIRenderer.DrawText(item.label, dropdownX + 8.f * dpi, itemY + 4.f * dpi, kTextColor, 1.5f);
+
+                // Handle item click
+                if (itemHovered && m_Input.leftJustPressed) {
+                    m_MenuBar.Trigger(item.commandId);
+                    openMenuIndex = -1;
+                }
+
+                itemY += itemH;
+            }
+
+            // Close menu if clicking outside
+            if (m_Input.leftJustPressed && !menuWasJustOpened) {
+                const bool clickedInside = m_Input.mouseX >= dropdownX && m_Input.mouseX < dropdownX + dropdownW &&
+                                          m_Input.mouseY >= dropdownY && m_Input.mouseY < dropdownY + dropdownH;
+                if (!clickedInside) {
+                    openMenuIndex = -1;
+                }
+            }
+        }
+
+        menuX += menuItemW + 4.f * dpi;
+    }
+
+    // Reset the "just opened" flag after one frame
+    if (menuWasJustOpened && !m_Input.leftDown) {
+        menuWasJustOpened = false;
+    }
+}
+
 void EditorApp::TickFrame(float dt)
 {
     m_RenderDevice->BeginFrame();
@@ -400,12 +738,17 @@ void EditorApp::TickFrame(float dt)
     m_HUDPanel.Update(dt);
     m_InteractionLoop.Tick(dt);
 
-    // Toolbar strip at the top; docking fills the remaining area below.
+    // Menu bar at the very top
+    const float menuBarH = 24.f * m_DpiScale;
+    DrawMenuBar(0.f, 0.f, static_cast<float>(m_ClientWidth), menuBarH);
+
+    // Toolbar strip below menu bar; docking fills the remaining area below.
     const float toolbarH = m_Toolbar.GetHeight() * m_DpiScale;
-    m_Toolbar.Draw(0.f, 0.f, static_cast<float>(m_ClientWidth), toolbarH);
-    m_DockingSystem.Draw(0.f, toolbarH,
+    const float topBarH = menuBarH + toolbarH;
+    m_Toolbar.Draw(0.f, menuBarH, static_cast<float>(m_ClientWidth), toolbarH);
+    m_DockingSystem.Draw(0.f, topBarH,
                          static_cast<float>(m_ClientWidth),
-                         static_cast<float>(m_ClientHeight) - toolbarH);
+                         static_cast<float>(m_ClientHeight) - topBarH);
 
     // Flush all batched UI draw calls to the GPU
     m_UIRenderer.EndFrame();
