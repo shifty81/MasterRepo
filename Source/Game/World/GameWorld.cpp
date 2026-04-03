@@ -1,5 +1,6 @@
 #include "Game/World/GameWorld.h"
 #include "Core/Logging/Log.h"
+#include <cmath>
 #include <vector>
 
 namespace NF::Game {
@@ -41,9 +42,10 @@ bool GameWorld::Initialize(const std::string& contentRoot)
 
     // --- Phase 4: generate starter terrain chunks around spawn ---
     {
-        const int32_t spawnChunkX = static_cast<int32_t>(sp.Position.X) / kChunkSize;
+        // Use floor division to handle negative spawn positions correctly
+        const int32_t spawnChunkX = static_cast<int32_t>(std::floor(sp.Position.X / kChunkSize));
         const int32_t spawnChunkY = 0;
-        const int32_t spawnChunkZ = static_cast<int32_t>(sp.Position.Z) / kChunkSize;
+        const int32_t spawnChunkZ = static_cast<int32_t>(std::floor(sp.Position.Z / kChunkSize));
 
         m_InitialGeneratedChunkCount = 0;
         for (int cx = spawnChunkX - 1; cx <= spawnChunkX + 1; ++cx) {

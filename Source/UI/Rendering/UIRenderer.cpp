@@ -232,7 +232,7 @@ void UIRenderer::DrawText(std::string_view text, float x, float y,
                 return;
             }
             const int safeChars = std::min<int>(static_cast<int>(text.size()), maxChars);
-            text = text.substr(0, static_cast<std::size_t>(safeChars));
+            text = std::string_view(text.data(), static_cast<std::size_t>(safeChars));
         }
     }
 
